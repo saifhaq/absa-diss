@@ -73,8 +73,8 @@ def df_sentences(xml_path = XML_PATH):
 
 def df_subjectivity(xml_path = XML_PATH):
     """
-        Takes XML Training data and returns a pandas dataframe of sentences;
-        returns duplicate sentences if each sentence has multiple aspects of polarity   
+        Takes XML Training data and returns a pandas dataframe of unique sentences;
+        with subjectivity 1 if they express an opinion, 0 if not 
     """
 
     tree = et.parse(xml_path)
@@ -91,29 +91,32 @@ def df_subjectivity(xml_path = XML_PATH):
         try: 
             opinions = list(sentence)[1]
 
+            num_opinions = 0 
+            count_polarity = 0
             for opinion in opinions:
-                category = opinion.attrib['category']
                 polarity = opinion.attrib['polarity']
-                subjectivity = None
+                num_opinions+=1
                 if polarity == "positive":
-                    subjectivity = 1
+                    count_polarity += 1
                 elif polarity == "negative":
-                    subjectivity = -1 
-
-                if subjectivity != None:
-                    sentences_list.append([sentence_id, sentence_text, subjectivity, category])
+                    count_polarity -= 1
+            
+            if (count_polarity !=0):
+                sentences_list.append([sentence_id, sentence_text, 1])
+            else:
+                sentences_list.append([sentence_id, sentence_text, 0])
 
         except:
             pass
 
 
 
-    return pd.DataFrame(sentences_list, columns = ["id", "text", "subjectivity", "category"])
+    return pd.DataFrame(sentences_list, columns = ["id", "text", "subjectivity"])
 
 
 # pd_sentences(XML_PATH).head(10)
 
-df = df_subjectivity(XML_PATH).head(30)
+df = df_subjectivity(XML_PATH).head(40)
 print(df)
 
 # def pd_subjectivity(xml_path = XML_PATH):
