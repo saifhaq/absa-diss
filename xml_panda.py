@@ -100,14 +100,15 @@ def df_subjectivity(xml_path = XML_PATH):
                 elif polarity == "negative":
                     subjectivity = -1 
 
-                sentences_list.append([sentence_id, sentence_text, subjectivity])
+                if subjectivity != None:
+                    sentences_list.append([sentence_id, sentence_text, subjectivity, category])
 
         except:
             pass
 
 
 
-    return pd.DataFrame(sentences_list, columns = ["id", "text", "subjectivity"])
+    return pd.DataFrame(sentences_list, columns = ["id", "text", "subjectivity", "category"])
 
 
 # pd_sentences(XML_PATH).head(10)
