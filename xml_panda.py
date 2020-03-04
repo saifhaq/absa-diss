@@ -1,5 +1,6 @@
 import pandas as pd
 import xml.etree.ElementTree as et
+from collections import Counter
 
 XML_PATH = "/home/saif/uni/diss/absa-diss/ABSA16_Laptops_Train_SB1_v2.xml"
 
@@ -71,6 +72,12 @@ def df_sentences(xml_path = XML_PATH):
 
     return pd.DataFrame(sentences_list, columns = ["id", "text", "category", "polarity"])
 
+
+# def tokenizer(sentence):
+#     """
+#         Takes a sentence, and reuturns a matrix
+#     """
+
 def df_subjectivity(xml_path = XML_PATH):
     """
         Takes XML Training data and returns a pandas dataframe of unique sentences;
@@ -92,21 +99,20 @@ def df_subjectivity(xml_path = XML_PATH):
             opinions = list(sentence)[1]
 
             num_opinions = 0 
-            count_polarity = 0
+            count_subjectivity = 0
             for opinion in opinions:
                 polarity = opinion.attrib['polarity']
                 num_opinions+=1
-                if polarity == "positive":
-                    count_polarity += 1
-                elif polarity == "negative":
-                    count_polarity -= 1
+                if polarity == "positive" or polarity == "negative":
+                    count_subjectivity += 1
             
-            if (count_polarity !=0):
+            if (count_subjectivity !=0):
                 sentences_list.append([sentence_id, sentence_text, 1])
             else:
                 sentences_list.append([sentence_id, sentence_text, 0])
 
         except:
+            # Ignore sentences that do have any opinions labelled
             pass
 
 
@@ -114,10 +120,71 @@ def df_subjectivity(xml_path = XML_PATH):
     return pd.DataFrame(sentences_list, columns = ["id", "text", "subjectivity"])
 
 
-# pd_sentences(XML_PATH).head(10)
 
-df = df_subjectivity(XML_PATH).head(40)
-print(df)
+def df_aspect(xml_path = XML_PATH):
+    """
+        Takes XML Training data and returns a pandas dataframe of sentences;
+        returns duplicate sentences if each sentence has multiple aspects of polarity   
+    """
+
+    tree = et.parse(xml_path)
+    reviews = tree.getroot()
+    sentences = reviews.findall('**/sentence')
+
+    sentences_list = []
+
+    for sentence in sentences:
+
+        sentence_id = sentence.attrib['id']                
+        sentence_text = sentence.find('text').text
+
+        try: 
+            opinions = list(sentence)[1]
+
+            for opinion in opinions:
+                category = opinion.attrib['category']
+                polarity = opinion.attrib['polarity']
+                sentences_list.append([sentence_id, sentence_text, category, polarity])
+
+        except:
+            polarity = 'None'
+            category = 'None'
+            sentences_list.append([sentence_id, sentence_text, category, polarity])
+
+# df = df_sentences(XML_PATH)
+
+# count = len(df[df.polarity == 'neutral'])
+# print(count)
+
+# # Categories
+# sentences = df_sentences(XML_PATH)
+# categories = Counter(sentences.category).most_common(10) 
+# len_categories = len(categories) #82 Categories
+
+# Categories
+# sentences = df_sentences(XML_PATH)
+# categories = Counter(sentences.category).most_common(10) 
+# nonecat = sentences[sentences.category == "None"] 
+df = df_subjectivity(XML_PATH)
+print(df.dtypes)
+# for index, row in df.iterrows():
+#      print(row.text)
+
+# df.to_pickle('subjectivity.pkl')
+
+# categories = Counter(sentences.category).most_common(10) 
+
+# print(df)
+# count = len(df[df.subjectivity == 0])
+
+
+
+
+
+# print("Count: " + str(count))
+# print("Categories: " + str(categories))
+# print(nonecat)
+
 
 # def pd_subjectivity(xml_path = XML_PATH):
 #     """
