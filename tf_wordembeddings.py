@@ -50,14 +50,20 @@ df = pd.read_pickle('subjectivity.pkl')
 # text = text.split(" ")
 
 
-vectorizer = CountVectorizer(stop_words="english")
+def tokenize_text(row):
+   return vectorizer.transform([row['text']]).toarray()
+
+vectorizer = CountVectorizer(stop_words="english", max_features=1000)
 X = vectorizer.fit_transform(df.text)
 
 
-text = [df.text[0]]
-print(text)
+df['vectorized'] = df.apply(tokenize_text, axis=1)
 
-print(len(vectorizer.transform(text).toarray()[0]))
+print(df.vectorized[0][0])
+# text = [df.text[0]]
+# print(text)
+
+# print(len(vectorizer.transform(text).toarray()[0]))
 
 
 # print(df.text)
