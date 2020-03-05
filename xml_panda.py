@@ -214,13 +214,112 @@ def df_polarity(xml_path = XML_PATH):
                     polarity_val = -1 
                 sentences_list.append([sentence_id, sentence_text, polarity_val])
 
-        except:
-            # Ignore sentences that do have any opinions labelled
-            pass
+        except SomeException as se:
+            print('Uhoh, got SomeException:' + se.args[0])
+            # pass
 
 
     return pd.DataFrame(sentences_list, columns = ["id", "text", "polarity"])
 
+
+
+
+def df_aspect_category(xml_path = XML_PATH):
+    """
+        Takes XML Training data and returns a pandas dataframe of sentences;
+    """
+
+    tree = et.parse(xml_path)
+    reviews = tree.getroot()
+    sentences = reviews.findall('**/sentence')
+
+    sentences_list = []
+
+    for sentence in sentences:
+
+        sentence_id = sentence.attrib['id']                
+        sentence_text = sentence.find('text').text
+
+        try: 
+            opinions = list(sentence)[1]
+
+            for opinion in opinions:
+                category = opinion.attrib['category']
+                polarity = opinion.attrib['polarity']
+                sentences_list.append([sentence_id, sentence_text, category, polarity])
+
+        except:
+            pass
+
+    return pd.DataFrame(sentences_list, columns = ["id", "text", "category", "polarity"])
+
+def assign_category(xml_path, n=16):
+    """
+        Returns dataframe with category assignment matrix, being a list with n most common categories 
+    """
+
+    sentences = df_aspect_category(XML_PATH)
+    categories = Counter(sentences.category).most_common(n)
+
+    common_categories = [category_tuple[0] for category_tuple in categories]
+
+    common_df = sentences[sentences['category'].isin(common_categories)]
+
+    assigned = {}
+
+    for i in range(0, len(common_categories)):
+        assigned[common_categories[i]] = i 
+
+    return assigned
+    # common_df[''] = common_df[]
+
+    
+
+    return None
+
+
+    
+
+def df_categories(xml_path, n=16):
+    """
+        Takes XML Training data and returns a pandas dataframe of sentences;
+    """
+
+    tree = et.parse(xml_path)
+    reviews = tree.getroot()
+    sentences = reviews.findall('**/sentence')
+
+    sentences_list = []
+    
+    category_dict = assign_category(xml_path, n)
+
+    for sentence in sentences:
+
+        sentence_id = sentence.attrib['id']                
+        sentence_text = sentence.find('text').text
+        category_matrix = np.zeros((n,), dtype=int)
+
+        try: 
+            opinions = list(sentence)[1]
+            categories = []
+            for opinion in opinions:
+                categories.append(opinion.attrib['category'])
+                location = category_dict[opinion.attrib['category']]
+                category_matrix[location] = 1
+                # category_matrix[i] = assigned(category_dict[opinion.attrib['category']])
+
+            sentences_list.append([sentence_id, sentence_text, categories, category_matrix])
+
+        except:
+            pass
+
+    return pd.DataFrame(sentences_list, columns = ["id", "text", "category", "polarity"])
+
+
+
+df = df_categories(XML_PATH, n=16)
+print(df)
+# def make_categories_dictionary(df):
 
 # df = df_sentences(XML_PATH)
 
@@ -256,19 +355,59 @@ def df_polarity(xml_path = XML_PATH):
 # ('SOFTWARE#GENERAL', 31), 
 # ('KEYBOARD#DESIGN_FEATURES', 29)]
 
-sentences = df_sentences(XML_PATH)
-categories = Counter(sentences.category).most_common(16)
-len_categories = len(categories) #82 Categories
-# print(len_categories)
-common_categories = [category_tuple[0] for category_tuple in categories]
 
-common_df = sentences[sentences['category'].isin(common_categories)]
-common_df["category_index"] = sentences[sentences['category'].isin(common_categories)]
+# assign_category(XML_PATH)
 
-print(common_df.head(5))
+# sentences = df_sentences(XML_PATH)
+# print(sentences)
+# categories = Counter(sentences.category).most_common(16)
+# # len_categories = len(categories) #82 Categories
+
+# common_categories = [category_tuple[0] for category_tuple in categories]
+# common_df = sentences[sentences['category'].isin(common_categories)]
+
+# matrix =  np.zeros((n,), dtype=int)
+# assigned = {}
+
+# for i in range(0, len(common_categories)):
+#     assigned[common_categories[i]] = i 
+
+# print(assigned)
 
 
 
+
+
+
+
+
+
+
+
+
+
+# common_df["category_index"] = sentences[sentences['category'].isin(common_categories)]
+
+# print(common_df.head(5))
+# print(categories)
+# print(categories.values)
+
+# for y in reversed(sorted(categories.values())):
+#     k = popularity_data.keys()[popularity_data.values().index(y)]
+#     print k + ':', y
+#     del popularity_data[k]
+
+# import matplotlib.pyplot as plt
+
+
+# w = categories.Counter(l)
+# plt.bar(w.keys(), w.values())
+
+
+
+# plt.show()
+
+# ----------------------------------------------
 # from sklearn.pipeline import Pipeline
 # from sklearn.linear_model import SGDClassifier
 # from sklearn.naive_bayes import MultinomialNB
