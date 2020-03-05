@@ -13,6 +13,16 @@ from sklearn import svm
 
 test_df = pd.read_pickle('test_subjectivity.pkl')
 train_df = pd.read_pickle('subjectivity.pkl')
+
+
+
+X_train, X_test, y_train, y_test = train_test_split(train_df.text, train_df.subjectivity, test_size = 0.3, random_state = 0)
+
+
+
+
+
+
 # print(df)
 # print(df.dtypes)
 
@@ -58,24 +68,24 @@ train_df = pd.read_pickle('subjectivity.pkl')
 # def tokenize_text(row):
 #    return vectorizer.transform([row['text']]).toarray()
 
-vectorizer = CountVectorizer(stop_words="english", max_features=1000)
-X = vectorizer.fit_transform(train_df.text)
+# vectorizer = CountVectorizer(stop_words="english", max_features=1000)
+# X = vectorizer.fit_transform(train_df.text)
 
 
 # df['vectorized'] = df.apply(tokenize_text, axis=1)
-train_df['vectorized'] = vectorizer.transform(train_df.text)
+# train_df['vectorized'] = vectorizer.transform(train_df.text)
 # test_df['vectorized'] = vectorizer.transform(test_df.text)
 
 # print(df.vectorized[0][0])
 # print(train_df.vectorized[0])
 
 
-x = train_df.vectorized
+# x = train_df.vectorized
 # y = train_df.subjectivity
 
 
-print(x)
-print(train_df)
+# print(x)
+# print(train_df)
 # clf = svm.SVC()(gamma='auto')
 # clf.fit([train_df.vectorized, train_df.subjectivity], test_df.vectorized)
 # # svm.SVC(gamma='auto')

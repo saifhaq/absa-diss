@@ -106,8 +106,63 @@ def df_subjectivity(xml_path = XML_PATH):
 
         # sentence_text = re.sub(r'[^\w\s]','',sentence_text).lower().split(" ")
 
+    sentences_list = []
+
+    for sentence in sentences:
+
+        sentence_id = sentence.attrib['id']                
+        sentence_text = sentence.find('text').text
+
         try: 
             opinions = list(sentence)[1]
+
+            for opinion in opinions:
+                category = opinion.attrib['category']
+                polarity = opinion.attrib['polarity']
+                sentences_list.append([sentence_id, sentence_text, category, polarity])
+
+        except:
+            polarity = 'None'
+            category = 'None'
+            sentences_list.append([sentence_id, sentence_text, category, polarity])
+
+
+def df_polarity(xml_path = XML_PATH):
+    """
+        Takes XML Training data and returns a pandas dataframe of sentences;
+        returns duplicate sentences if each sentence has multiple aspects of polarity   
+    """
+
+    tree = et.parse(xml_path)
+    reviews = tree.getroot()
+    sentences = reviews.findall('**/sentence')
+
+    sentences_list = []
+
+    for sentence in sentences:
+
+        sentence_id = sentence.attrib['id']                
+        sentence_text = sentence.find('text').text
+
+        try: 
+            opinions = list(sentence)[1]
+
+            for opinion in opinions:
+                category = opinion.attrib['category']
+                polarity = opinion.attrib['polarity']
+                
+                if(polarity == "positive"):
+                    polarity_val = 1
+                elif(polarity == "negative"):
+                    polarity_val = -1 
+                sentences_list.append([sentence_id, sentence_text, polarity_val])
+
+        except:
+            # Ignore sentences that do have any opinions labelled
+            pass
+
+
+    return pd.DataFrame(sentences_list, columns = ["id", "text", "polarity"])
 
             num_opinions = 0 
             count_subjectivity = 0
@@ -183,6 +238,80 @@ def df_aspect(xml_path = XML_PATH):
             category = 'None'
             sentences_list.append([sentence_id, sentence_text, category, polarity])
 
+
+def df_polarity(xml_path = XML_PATH):
+    """
+        Takes XML Training data and returns a pandas dataframe of sentences;
+        returns duplicate sentences if each sentence has multiple aspects of polarity   
+    """
+
+    tree = et.parse(xml_path)
+    reviews = tree.getroot()
+    sentences = reviews.findall('**/sentence')
+
+    sentences_list = []
+
+    for sentence in sentences:
+
+        sentence_id = sentence.attrib['id']                
+        sentence_text = sentence.find('text').text
+
+        try: 
+            opinions = list(sentence)[1]
+
+            for opinion in opinions:
+                category = opinion.attrib['category']
+                polarity = opinion.attrib['polarity']
+                
+                if(polarity == "positive"):
+                    polarity_val = 1
+                elif(polarity == "negative"):
+                    polarity_val = -1 
+                sentences_list.append([sentence_id, sentence_text, polarity_val])
+
+        except:
+            # Ignore sentences that do have any opinions labelled
+            pass
+
+
+    return pd.DataFrame(sentences_list, columns = ["id", "text", "polarity"])
+
+
+def df_sentences(xml_path = XML_PATH):
+    """
+        Takes XML Training data and returns a pandas dataframe of sentences;
+        returns duplicate sentences if each sentence has multiple aspects of polarity   
+    """
+
+    tree = et.parse(xml_path)
+    reviews = tree.getroot()
+    sentences = reviews.findall('**/sentence')
+
+    sentences_list = []
+
+    for sentence in sentences:
+
+        sentence_id = sentence.attrib['id']                
+        sentence_text = sentence.find('text').text
+
+        try: 
+            opinions = list(sentence)[1]
+
+            for opinion in opinions:
+                category = opinion.attrib['category']
+                polarity = opinion.attrib['polarity']
+                sentences_list.append([sentence_id, sentence_text, category, polarity])
+
+        except:
+            polarity = 'None'
+            category = 'None'
+            sentences_list.append([sentence_id, sentence_text, category, polarity])
+
+
+
+    return pd.DataFrame(sentences_list, columns = ["id", "text", "category", "polarity"])
+
+
 # df = df_sentences(XML_PATH)
 
 # count = len(df[df.polarity == 'neutral'])
@@ -197,33 +326,19 @@ def df_aspect(xml_path = XML_PATH):
 # sentences = df_sentences(XML_PATH)
 # categories = Counter(sentences.category).most_common(10) 
 # nonecat = sentences[sentences.category == "None"] 
-df = df_subjectivity(XML_PATH)
-test_df = df_test_subjectivity(TEST_XML_PATH)
 
-# vectorizer = CountVectorizer()
-# X_train_counts = vectorizer.fit_transform(df.text)
 
-# print(vectorizer.vocabulary_.get(u'algorithm'))
-# clf = svm.SVC()(gamma='auto')
-# clf.fit([train_df.vectorized, train_df.subjectivity], test_df.vectorized)
 
-# docs_new = ['Laptop is alright, could be better, could be worse', 'This laptop screen gives me no opinions', "Love love love it"]
-# X_new_counts = vectorizer.transform(docs_new)
-# predicted = clf.predict(X_new_counts)
-
+df = df_polarity(XML_PATH)
 
 from sklearn.pipeline import Pipeline
 from sklearn.linear_model import SGDClassifier
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.feature_extraction.text import TfidfTransformer
-
-# text_clf = Pipeline([
-#     ('vect', CountVectorizer()),
-#     ('tfidf', TfidfTransformer()),
-#     ('clf', MultinomialNB()),
-# ])
+from sklearn.metrics import confusion_matrix
 from sklearn.model_selection import train_test_split
-X_train, X_test, y_train, y_test = train_test_split(df.text, df.subjectivity, test_size = 0.3, random_state = 0)
+
+X_train, X_test, y_train, y_test = train_test_split(df.text, df.polarity, test_size = 0.3, random_state = 0)
 
 text_clf = Pipeline([
     ('vect', CountVectorizer()),
@@ -238,6 +353,82 @@ predicted = text_clf.predict(X_test)
 
 mean = np.mean(predicted == y_test)
 print(mean)
+
+
+
+# df = df_subjectivity(XML_PATH)
+# test_df = df_test_subjectivity(TEST_XML_PATH)
+
+# from sklearn.pipeline import Pipeline
+# from sklearn.linear_model import SGDClassifier
+# from sklearn.naive_bayes import MultinomialNB
+# from sklearn.feature_extraction.text import TfidfTransformer
+
+
+
+# from sklearn.model_selection import train_test_split
+# X_train, X_test, y_train, y_test = train_test_split(df.text, df.subjectivity, test_size = 0.3, random_state = 0)
+
+# text_clf = Pipeline([
+#     ('vect', CountVectorizer()),
+#     ('tfidf', TfidfTransformer()),
+#      ('clf', SGDClassifier(loss='hinge', penalty='l2', 
+#      alpha=1e-3, random_state=42,
+#      max_iter=5, tol=None)),    
+#      ])
+
+# text_clf.fit(X_train, y_train)
+# predicted = text_clf.predict(X_test)
+
+# mean = np.mean(predicted == y_test)
+# print(mean)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# vectorizer = CountVectorizer()
+# X_train_counts = vectorizer.fit_transform(df.text)
+
+# print(vectorizer.vocabulary_.get(u'algorithm'))
+# clf = svm.SVC()(gamma='auto')
+# clf.fit([train_df.vectorized, train_df.subjectivity], test_df.vectorized)
+
+# docs_new = ['Laptop is alright, could be better, could be worse', 'This laptop screen gives me no opinions', "Love love love it"]
+# X_new_counts = vectorizer.transform(docs_new)
+# predicted = clf.predict(X_new_counts)
+
+
 
 
 # SVM = svm.SVC(C=1.0, kernel='linear', degree=3, gamma='auto')
