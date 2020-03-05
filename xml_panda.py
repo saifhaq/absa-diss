@@ -215,7 +215,7 @@ test_df = df_test_subjectivity(TEST_XML_PATH)
 from sklearn.pipeline import Pipeline
 from sklearn.linear_model import SGDClassifier
 from sklearn.naive_bayes import MultinomialNB
-
+from sklearn.feature_extraction.text import TfidfTransformer
 
 # text_clf = Pipeline([
 #     ('vect', CountVectorizer()),
@@ -227,6 +227,7 @@ X_train, X_test, y_train, y_test = train_test_split(df.text, df.subjectivity, te
 
 text_clf = Pipeline([
     ('vect', CountVectorizer()),
+    ('tfidf', TfidfTransformer()),
      ('clf', SGDClassifier(loss='hinge', penalty='l2', 
      alpha=1e-3, random_state=42,
      max_iter=5, tol=None)),    
