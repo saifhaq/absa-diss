@@ -72,12 +72,13 @@ def df_sentences(xml_path = XML_PATH):
                 polarity = opinion.attrib['polarity']
                 sentences_list.append([sentence_id, sentence_text, category, polarity])
 
+        # except:
+        #     polarity = 'None'
+        #     category = 'None'
+        #     sentences_list.append([sentence_id, sentence_text, category, polarity])
+
         except:
-            polarity = 'None'
-            category = 'None'
-            sentences_list.append([sentence_id, sentence_text, category, polarity])
-
-
+            pass
 
     return pd.DataFrame(sentences_list, columns = ["id", "text", "category", "polarity"])
 
@@ -104,65 +105,9 @@ def df_subjectivity(xml_path = XML_PATH):
         sentence_id = sentence.attrib['id']                
         sentence_text = sentence.find('text').text
 
-        # sentence_text = re.sub(r'[^\w\s]','',sentence_text).lower().split(" ")
-
-    sentences_list = []
-
-    for sentence in sentences:
-
-        sentence_id = sentence.attrib['id']                
-        sentence_text = sentence.find('text').text
 
         try: 
             opinions = list(sentence)[1]
-
-            for opinion in opinions:
-                category = opinion.attrib['category']
-                polarity = opinion.attrib['polarity']
-                sentences_list.append([sentence_id, sentence_text, category, polarity])
-
-        except:
-            polarity = 'None'
-            category = 'None'
-            sentences_list.append([sentence_id, sentence_text, category, polarity])
-
-
-def df_polarity(xml_path = XML_PATH):
-    """
-        Takes XML Training data and returns a pandas dataframe of sentences;
-        returns duplicate sentences if each sentence has multiple aspects of polarity   
-    """
-
-    tree = et.parse(xml_path)
-    reviews = tree.getroot()
-    sentences = reviews.findall('**/sentence')
-
-    sentences_list = []
-
-    for sentence in sentences:
-
-        sentence_id = sentence.attrib['id']                
-        sentence_text = sentence.find('text').text
-
-        try: 
-            opinions = list(sentence)[1]
-
-            for opinion in opinions:
-                category = opinion.attrib['category']
-                polarity = opinion.attrib['polarity']
-                
-                if(polarity == "positive"):
-                    polarity_val = 1
-                elif(polarity == "negative"):
-                    polarity_val = -1 
-                sentences_list.append([sentence_id, sentence_text, polarity_val])
-
-        except:
-            # Ignore sentences that do have any opinions labelled
-            pass
-
-
-    return pd.DataFrame(sentences_list, columns = ["id", "text", "polarity"])
 
             num_opinions = 0 
             count_subjectivity = 0
@@ -277,41 +222,6 @@ def df_polarity(xml_path = XML_PATH):
     return pd.DataFrame(sentences_list, columns = ["id", "text", "polarity"])
 
 
-def df_sentences(xml_path = XML_PATH):
-    """
-        Takes XML Training data and returns a pandas dataframe of sentences;
-        returns duplicate sentences if each sentence has multiple aspects of polarity   
-    """
-
-    tree = et.parse(xml_path)
-    reviews = tree.getroot()
-    sentences = reviews.findall('**/sentence')
-
-    sentences_list = []
-
-    for sentence in sentences:
-
-        sentence_id = sentence.attrib['id']                
-        sentence_text = sentence.find('text').text
-
-        try: 
-            opinions = list(sentence)[1]
-
-            for opinion in opinions:
-                category = opinion.attrib['category']
-                polarity = opinion.attrib['polarity']
-                sentences_list.append([sentence_id, sentence_text, category, polarity])
-
-        except:
-            polarity = 'None'
-            category = 'None'
-            sentences_list.append([sentence_id, sentence_text, category, polarity])
-
-
-
-    return pd.DataFrame(sentences_list, columns = ["id", "text", "category", "polarity"])
-
-
 # df = df_sentences(XML_PATH)
 
 # count = len(df[df.polarity == 'neutral'])
@@ -327,34 +237,96 @@ def df_sentences(xml_path = XML_PATH):
 # categories = Counter(sentences.category).most_common(10) 
 # nonecat = sentences[sentences.category == "None"] 
 
+# Categories
+
+# ('LAPTOP#GENERAL', 634), 
+# ('LAPTOP#OPERATION_PERFORMANCE', 278), 
+# ('LAPTOP#DESIGN_FEATURES', 253), 
+# ('LAPTOP#QUALITY', 224),
+# ('LAPTOP#MISCELLANEOUS', 142),
+# ('LAPTOP#USABILITY', 141), 
+# ('SUPPORT#QUALITY', 138), 
+# ('LAPTOP#PRICE', 136), 
+# ('COMPANY#GENERAL', 90), 
+# ('BATTERY#OPERATION_PERFORMANCE', 86), 
+# ('LAPTOP#CONNECTIVITY', 55), 
+# ('DISPLAY#QUALITY', 53), 
+# ('LAPTOP#PORTABILITY', 51), 
+# ('OS#GENERAL', 35), 
+# ('SOFTWARE#GENERAL', 31), 
+# ('KEYBOARD#DESIGN_FEATURES', 29)]
+
+sentences = df_sentences(XML_PATH)
+categories = Counter(sentences.category).most_common(16)
+len_categories = len(categories) #82 Categories
+# print(len_categories)
+common_categories = [category_tuple[0] for category_tuple in categories]
+
+common_df = sentences[sentences['category'].isin(common_categories)]
+common_df["category_index"] = sentences[sentences['category'].isin(common_categories)]
+
+print(common_df.head(5))
 
 
-df = df_polarity(XML_PATH)
 
-from sklearn.pipeline import Pipeline
-from sklearn.linear_model import SGDClassifier
-from sklearn.naive_bayes import MultinomialNB
-from sklearn.feature_extraction.text import TfidfTransformer
-from sklearn.metrics import confusion_matrix
-from sklearn.model_selection import train_test_split
+# from sklearn.pipeline import Pipeline
+# from sklearn.linear_model import SGDClassifier
+# from sklearn.naive_bayes import MultinomialNB
+# from sklearn.feature_extraction.text import TfidfTransformer
+# from sklearn.metrics import confusion_matrix
+# from sklearn.model_selection import train_test_split
 
-X_train, X_test, y_train, y_test = train_test_split(df.text, df.polarity, test_size = 0.3, random_state = 0)
+# df = df_polarity(XML_PATH)
 
-text_clf = Pipeline([
-    ('vect', CountVectorizer()),
-    ('tfidf', TfidfTransformer()),
-     ('clf', SGDClassifier(loss='hinge', penalty='l2', 
-     alpha=1e-3, random_state=42,
-     max_iter=5, tol=None)),    
-     ])
+# X_train, X_test, y_train, y_test = train_test_split(df.text, df.polarity, test_size = 0.3, random_state = 0)
 
-text_clf.fit(X_train, y_train)
-predicted = text_clf.predict(X_test)
+# text_clf = Pipeline([
+#     ('vect', CountVectorizer()),
+#     ('tfidf', TfidfTransformer()),
+#      ('clf', SGDClassifier(loss='hinge', penalty='l2', 
+#      alpha=1e-3, random_state=42,
+#      max_iter=5, tol=None)),    
+#      ])
 
-mean = np.mean(predicted == y_test)
-print(mean)
+# text_clf.fit(X_train, y_train)
+# predicted = text_clf.predict(X_test)
+
+# mean = np.mean(predicted == y_test)
+# print(mean)
 
 
+# print(len(sentences))
+# print(len(common_df))
+# nonetype = sentences.loc[sentences['category'] == "None"]
+# print(nonetype)
+# ----------------------------------------------------------------------
+
+# from sklearn.pipeline import Pipeline
+# from sklearn.linear_model import SGDClassifier
+# from sklearn.naive_bayes import MultinomialNB
+# from sklearn.feature_extraction.text import TfidfTransformer
+# from sklearn.metrics import confusion_matrix
+# from sklearn.model_selection import train_test_split
+
+# df = df_polarity(XML_PATH)
+
+# X_train, X_test, y_train, y_test = train_test_split(df.text, df.polarity, test_size = 0.3, random_state = 0)
+
+# text_clf = Pipeline([
+#     ('vect', CountVectorizer()),
+#     ('tfidf', TfidfTransformer()),
+#      ('clf', SGDClassifier(loss='hinge', penalty='l2', 
+#      alpha=1e-3, random_state=42,
+#      max_iter=5, tol=None)),    
+#      ])
+
+# text_clf.fit(X_train, y_train)
+# predicted = text_clf.predict(X_test)
+
+# mean = np.mean(predicted == y_test)
+# print(mean)
+
+# ----------------------------------------------------------------------
 
 # df = df_subjectivity(XML_PATH)
 # test_df = df_test_subjectivity(TEST_XML_PATH)
@@ -383,6 +355,7 @@ print(mean)
 # mean = np.mean(predicted == y_test)
 # print(mean)
 
+# ----------------------------------------------------------------------
 
 
 
