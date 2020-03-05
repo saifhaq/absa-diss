@@ -1,17 +1,18 @@
-import tensorflow as tf
+# import tensorflow as tf
 import pandas as pd 
-from tensorflow import keras
-from tensorflow.keras import layers
+# from tensorflow import keras
+# from tensorflow.keras import layers
 import string
 import re
 
 # import sklearn.feature_extraction.text.CountVectorizer as CountVectorizer
 # from sklearn import CountVectorizer
 from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.model_selection import train_test_split
+from sklearn import svm
 
-
-
-df = pd.read_pickle('subjectivity.pkl')
+test_df = pd.read_pickle('test_subjectivity.pkl')
+train_df = pd.read_pickle('subjectivity.pkl')
 # print(df)
 # print(df.dtypes)
 
@@ -33,14 +34,18 @@ df = pd.read_pickle('subjectivity.pkl')
 
 # df.text = df.text.apply(str)
 
-# df.text = df.text.str.replace('[^A-z ]','').str.replace(' +',' ').str.strip().lower()
+# train_df.text = train_df.text.str.replace('[^A-z ]','').str.replace(' +',' ').str.strip()
+# train_df.text = re.sub(r'[^\w\s]','',train_df.text.lower().split(" ")
 
-# for sentence in df.text:
+# for sentence in train_df.text:
 
 #     sentence = re.sub(r'[^\w\s]','',sentence)
 
 #     print(sentence.lower().split(" "))
 
+# train_df.text = re.sub(r'[^\w\s]','',train_df.text) 
+
+# train_df.text = train_df.text.apply(re.sub(r'[^\w\s]','',train_df.text) )
 
 # print(vectorizer.get_feature_names())
 # counts = vectorizer.transform(df.text)
@@ -50,16 +55,35 @@ df = pd.read_pickle('subjectivity.pkl')
 # text = text.split(" ")
 
 
-def tokenize_text(row):
-   return vectorizer.transform([row['text']]).toarray()
+# def tokenize_text(row):
+#    return vectorizer.transform([row['text']]).toarray()
 
 vectorizer = CountVectorizer(stop_words="english", max_features=1000)
-X = vectorizer.fit_transform(df.text)
+X = vectorizer.fit_transform(train_df.text)
 
 
-df['vectorized'] = df.apply(tokenize_text, axis=1)
+# df['vectorized'] = df.apply(tokenize_text, axis=1)
+train_df['vectorized'] = vectorizer.transform(train_df.text)
+# test_df['vectorized'] = vectorizer.transform(test_df.text)
 
-print(df.vectorized[0][0])
+# print(df.vectorized[0][0])
+# print(train_df.vectorized[0])
+
+
+x = train_df.vectorized
+# y = train_df.subjectivity
+
+
+print(x)
+print(train_df)
+# clf = svm.SVC()(gamma='auto')
+# clf.fit([train_df.vectorized, train_df.subjectivity], test_df.vectorized)
+# # svm.SVC(gamma='auto')
+
+# sentence = "this sentence is straight facts"
+# tokenized_sentence = vectorizer.transform([sentence])
+# print(clf.predict(tokenized_sentence))
+
 # text = [df.text[0]]
 # print(text)
 

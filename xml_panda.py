@@ -1,8 +1,17 @@
 import pandas as pd
 import xml.etree.ElementTree as et
 from collections import Counter
+import re
+
+
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.model_selection import train_test_split
+from sklearn import svm
+import numpy as np 
+
 
 XML_PATH = "/home/saif/uni/diss/absa-diss/ABSA16_Laptops_Train_SB1_v2.xml"
+TEST_XML_PATH = "/home/saif/uni/diss/absa-diss/ABSA16_Laptops_Test_SB1.xml"
 
 tree = et.parse(XML_PATH)
 reviews = tree.getroot()
@@ -95,6 +104,8 @@ def df_subjectivity(xml_path = XML_PATH):
         sentence_id = sentence.attrib['id']                
         sentence_text = sentence.find('text').text
 
+        # sentence_text = re.sub(r'[^\w\s]','',sentence_text).lower().split(" ")
+
         try: 
             opinions = list(sentence)[1]
 
@@ -119,6 +130,27 @@ def df_subjectivity(xml_path = XML_PATH):
 
     return pd.DataFrame(sentences_list, columns = ["id", "text", "subjectivity"])
 
+
+def df_test_subjectivity(xml_path = XML_PATH):
+    """
+        Takes XML Test data and returns a pandas dataframe of sentences;
+    """
+
+    tree = et.parse(xml_path)
+    reviews = tree.getroot()
+    sentences = reviews.findall('**/sentence')
+
+    sentences_list = []
+
+    for sentence in sentences:
+
+        sentence_id = sentence.attrib['id']                
+        sentence_text = sentence.find('text').text
+        sentences_list.append([sentence_id, sentence_text])
+
+
+
+    return pd.DataFrame(sentences_list, columns = ["id", "text"])
 
 
 def df_aspect(xml_path = XML_PATH):
@@ -166,11 +198,60 @@ def df_aspect(xml_path = XML_PATH):
 # categories = Counter(sentences.category).most_common(10) 
 # nonecat = sentences[sentences.category == "None"] 
 df = df_subjectivity(XML_PATH)
-print(df.dtypes)
+test_df = df_test_subjectivity(TEST_XML_PATH)
+
+# vectorizer = CountVectorizer()
+# X_train_counts = vectorizer.fit_transform(df.text)
+
+# print(vectorizer.vocabulary_.get(u'algorithm'))
+# clf = svm.SVC()(gamma='auto')
+# clf.fit([train_df.vectorized, train_df.subjectivity], test_df.vectorized)
+
+# docs_new = ['Laptop is alright, could be better, could be worse', 'This laptop screen gives me no opinions', "Love love love it"]
+# X_new_counts = vectorizer.transform(docs_new)
+# predicted = clf.predict(X_new_counts)
+
+
+from sklearn.pipeline import Pipeline
+from sklearn.linear_model import SGDClassifier
+from sklearn.naive_bayes import MultinomialNB
+
+
+# text_clf = Pipeline([
+#     ('vect', CountVectorizer()),
+#     ('tfidf', TfidfTransformer()),
+#     ('clf', MultinomialNB()),
+# ])
+from sklearn.model_selection import train_test_split
+X_train, X_test, y_train, y_test = train_test_split(df.text, df.subjectivity, test_size = 0.3, random_state = 0)
+
+text_clf = Pipeline([
+    ('vect', CountVectorizer()),
+     ('clf', SGDClassifier(loss='hinge', penalty='l2', 
+     alpha=1e-3, random_state=42,
+     max_iter=5, tol=None)),    
+     ])
+
+text_clf.fit(X_train, y_train)
+predicted = text_clf.predict(X_test)
+
+mean = np.mean(predicted == y_test)
+print(mean)
+
+
+# SVM = svm.SVC(C=1.0, kernel='linear', degree=3, gamma='auto')
+# SVM.fit(Train_X_Tfidf,Train_Y)
+
+# np.mean(predicted == df.subjectivity)
+
+# text_clf.fit(df.text, df.subjectivity)
+# predicted = text_clf.predict(docs_new)
+
+# print(df.dtypes)
 # for index, row in df.iterrows():
 #      print(row.text)
 
-# df.to_pickle('subjectivity.pkl')
+# df.to_pickle('test_subjectivity.pkl')
 
 # categories = Counter(sentences.category).most_common(10) 
 
