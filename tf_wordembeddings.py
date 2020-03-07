@@ -10,18 +10,34 @@ import re
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.model_selection import train_test_split
 from sklearn import svm
+from sklearn.feature_extraction.text import TfidfTransformer
 
 test_df = pd.read_pickle('test_subjectivity.pkl')
-train_df = pd.read_pickle('subjectivity.pkl')
+df = pd.read_pickle('subjectivity.pkl')
+df = pd.read_pickle('tensorflow_text.pkl')
 
 
+# train_df.text = train_df.text.str.replace('[^A-z ]','').str.replace(' +',' ').str.strip()
+# train_df.text = re.sub(r'[^\w\s]','',train_df.text.lower().split(" ")
+# X_train, X_test, y_train, y_test = train_test_split(train_df.text, train_df.subjectivity, test_size = 0.3, random_state = 0)
 
-X_train, X_test, y_train, y_test = train_test_split(train_df.text, train_df.subjectivity, test_size = 0.3, random_state = 0)
+print(df)
+vectorizer = CountVectorizer()
+text_counts = vectorizer.fit_transform(df.text)
 
+tfidf_transformer = TfidfTransformer()
+text_idf = tfidf_transformer.fit_transform(text_counts)
 
+print(text_idf[0])
+# print(X_train_tfidf.shape)
 
+# docs_new = ['Great laptop would highly recommend', 'OpenGL on the GPU is fast']
+# X_new_counts = vectorizer.transform(docs_new)
+# X_new_tfidf = tfidf_transformer.transform(X_new_counts)
+# print(X_new_tfidf.toarray()[0])
 
-
+# for i in range(0, len(X_new_tfidf.toarray()[0])):
+#    print(X_new_tfidf.toarray()[0][i])
 
 # print(df)
 # print(df.dtypes)

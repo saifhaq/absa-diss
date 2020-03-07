@@ -83,10 +83,14 @@ def df_sentences(xml_path = XML_PATH):
     return pd.DataFrame(sentences_list, columns = ["id", "text", "category", "polarity"])
 
 
-# def tokenizer(sentence):
-#     """
-#         Takes a sentence, and reuturns a matrix
-#     """
+def tokenizer(df):
+    """
+        Takes a sentence, and reuturns a matrix
+    """
+
+    df.text
+
+
 
 def df_subjectivity(xml_path = XML_PATH):
     """
@@ -214,9 +218,9 @@ def df_polarity(xml_path = XML_PATH):
                     polarity_val = -1 
                 sentences_list.append([sentence_id, sentence_text, polarity_val])
 
-        except SomeException as se:
-            print('Uhoh, got SomeException:' + se.args[0])
-            # pass
+        except Exception as se:
+            # print('Uhoh, got SomeException:' + se.args[0])
+            pass
 
 
     return pd.DataFrame(sentences_list, columns = ["id", "text", "polarity"])
@@ -265,7 +269,7 @@ def assign_category(xml_path, n=16):
 
     common_df = sentences[sentences['category'].isin(common_categories)]
 
-    assigned = {}
+    assigned = []
 
     for i in range(0, len(common_categories)):
         assigned[common_categories[i]] = i 
@@ -298,6 +302,7 @@ def df_categories(xml_path, n=16):
         sentence_id = sentence.attrib['id']                
         sentence_text = sentence.find('text').text
         category_matrix = np.zeros((n,), dtype=int)
+        sentence_text =  re.sub(r'[^\w\s]','',sentence_text.lower())
 
         try: 
             opinions = list(sentence)[1]
@@ -313,12 +318,22 @@ def df_categories(xml_path, n=16):
         except:
             pass
 
-    return pd.DataFrame(sentences_list, columns = ["id", "text", "category", "polarity"])
+    return pd.DataFrame(sentences_list, columns = ["id", "text", "category", "matrix"])
 
 
 
-df = df_categories(XML_PATH, n=16)
-print(df)
+
+ 
+category_dict = assign_category(XML_PATH, 16)
+print(category_dict)
+
+
+# df = df_categories(XML_PATH, 16)
+# df.to_pickle('tensorflow_text.pkl')
+
+
+
+
 # def make_categories_dictionary(df):
 
 # df = df_sentences(XML_PATH)
@@ -384,8 +399,62 @@ print(df)
 
 
 
+df = df_subjectivity(XML_PATH)
+print(df)
+vectorizer = CountVectorizer()
+
+## --------------------------------------------------
 
 
+# from sklearn.pipeline import Pipeline
+# from sklearn.linear_model import SGDClassifier
+# from sklearn.naive_bayes import MultinomialNB
+# from sklearn.feature_extraction.text import TfidfTransformer
+# from sklearn.metrics import confusion_matrix
+# from sklearn.model_selection import train_test_split
+# from sklearn.svm import SVC
+
+
+# df = df_categories(XML_PATH, n=16)
+# print(df)
+
+# df.sort_values("matrix", inplace = True) 
+
+
+# duplicateRowsDF = df[df.duplicated()]
+# print("Duplicate Rows except first occurrence based on all columns are :")
+# print(duplicateRowsDF)
+
+
+# X_train, X_test, y_train, y_test = train_test_split(df.text, df.matrix, test_size = 0.3, random_state = 0)
+
+# text_clf = Pipeline([
+#     ('vect', CountVectorizer()),
+#     ('tfidf', TfidfTransformer()),
+#     ('clf', SVC(decision_function_shape='ovo'))   
+#     ])
+
+
+# print(y_train)
+
+
+
+
+# print(y_train)
+# text_clf.fit(X_train, y_train)
+# dec = clf.decision_function([[1]])
+# clf.decision_function_shape = "ovr"
+# dec = clf.decision_function([[1]])
+# dec.shape[1]
+
+# predicted = text_clf.predict(X_test)
+
+# mean = np.mean(predicted == y_test)
+# print(mean)
+
+
+
+## --------------------------------------------------
 # common_df["category_index"] = sentences[sentences['category'].isin(common_categories)]
 
 # print(common_df.head(5))
@@ -410,7 +479,6 @@ print(df)
 # ----------------------------------------------
 # from sklearn.pipeline import Pipeline
 # from sklearn.linear_model import SGDClassifier
-# from sklearn.naive_bayes import MultinomialNB
 # from sklearn.feature_extraction.text import TfidfTransformer
 # from sklearn.metrics import confusion_matrix
 # from sklearn.model_selection import train_test_split
@@ -422,9 +490,7 @@ print(df)
 # text_clf = Pipeline([
 #     ('vect', CountVectorizer()),
 #     ('tfidf', TfidfTransformer()),
-#      ('clf', SGDClassifier(loss='hinge', penalty='l2', 
-#      alpha=1e-3, random_state=42,
-#      max_iter=5, tol=None)),    
+#      ('clf', SGDClassifier()),    
 #      ])
 
 # text_clf.fit(X_train, y_train)
