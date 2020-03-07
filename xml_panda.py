@@ -259,7 +259,7 @@ def df_aspect_category(xml_path = XML_PATH):
 
 def assign_category(xml_path, n=16):
     """
-        Returns dataframe with category assignment matrix, being a list with n most common categories 
+        Returns dictionary of n most common categories 
     """
 
     sentences = df_aspect_category(XML_PATH)
@@ -269,7 +269,7 @@ def assign_category(xml_path, n=16):
 
     common_df = sentences[sentences['category'].isin(common_categories)]
 
-    assigned = []
+    assigned = {}
 
     for i in range(0, len(common_categories)):
         assigned[common_categories[i]] = i 
@@ -301,7 +301,7 @@ def df_categories(xml_path, n=16):
 
         sentence_id = sentence.attrib['id']                
         sentence_text = sentence.find('text').text
-        category_matrix = np.zeros((n,), dtype=int)
+        category_matrix = np.zeros((n, ), dtype=int)
         sentence_text =  re.sub(r'[^\w\s]','',sentence_text.lower())
 
         try: 
@@ -324,10 +324,10 @@ def df_categories(xml_path, n=16):
 
 
  
-category_dict = assign_category(XML_PATH, 16)
-print(category_dict)
-
-
+# category_dict = assign_category(XML_PATH, 16)
+# print(category_dict)
+df = df_categories(XML_PATH, 16)
+print(df.matrix.to_numpy())
 # df = df_categories(XML_PATH, 16)
 # df.to_pickle('tensorflow_text.pkl')
 
@@ -399,9 +399,9 @@ print(category_dict)
 
 
 
-df = df_subjectivity(XML_PATH)
-print(df)
-vectorizer = CountVectorizer()
+# df = df_subjectivity(XML_PATH)
+# print(df)
+# vectorizer = CountVectorizer()
 
 ## --------------------------------------------------
 
