@@ -61,29 +61,60 @@ reverse_word_map = dict(map(reversed, tokenizer.word_index.items()))
 X_train, X_test, y_train, y_test = train_test_split(cap_vector, labels, test_size = 0.3, random_state = 0)
  
 
-model = tf.keras.Sequential([
-    tf.keras.layers.Embedding(vocab_size, 73),
-    tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(64)),
-    tf.keras.layers.Dense(64, activation='relu'),
-    tf.keras.layers.Dense(1)
-])
 
-model.compile(loss=tf.keras.losses.BinaryCrossentropy(from_logits=True),
-              optimizer=tf.keras.optimizers.Adam(1e-4),
-              metrics=['accuracy'])
-              
 train_dataset = tf.data.Dataset.from_tensor_slices((X_train,y_train))
 test_dataset = tf.data.Dataset.from_tensor_slices((X_test,y_test))
 
 
-history = model.fit(train_dataset, epochs=10,
-                    validation_data=test_dataset, 
-                    validation_steps=30)   
 
-test_loss, test_acc = model.evaluate(test_dataset)
+BUFFER_SIZE = 10000
+BATCH_SIZE = 64
 
-print('Test Loss: {}'.format(test_loss))
-print('Test Accuracy: {}'.format(test_acc))
+train_dataset = (train_dataset
+                 .shuffle(BUFFER_SIZE)
+                 .padded_batch(BATCH_SIZE, padded_shapes=([None],[])))
+
+test_dataset = (test_dataset
+                .padded_batch(BATCH_SIZE,  padded_shapes=([None],[])))
+
+# embedding = "https://tfhub.dev/google/tf2-preview/gnews-swivel-20dim/1"
+# # hub_layer = tf.keras.hub.KerasLayer(embedding, input_shape=[], 
+# #                            dtype=tf.string, trainable=True)
+
+
+# hub_layer(train_dataset[:3])
+# model = tf.keras.Sequential()
+# model.add(hub_layer)
+# model.add(tf.keras.layers.Dense(16, activation='relu'))
+# model.add(tf.keras.layers.Dense(1))
+
+# model.summary()
+
+
+# model = tf.keras.Sequential([
+#     tf.keras.layers.Embedding(vocab_size, 64, input_length=73),
+#     tf.keras.layers.Flatten(),
+#     tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(64)),
+#     tf.keras.layers.Dense(64, activation='relu'),
+#     tf.keras.layers.Dense(1)
+# ])
+# # model.summary()
+
+# model.compile(loss=tf.keras.losses.BinaryCrossentropy(from_logits=True),
+#               optimizer=tf.keras.optimizers.Adam(1e-4),
+#               metrics=['accuracy'])
+              
+
+# history = model.fit(train_dataset, epochs=10,
+#                     validation_data=test_dataset, 
+#                     validation_steps=30)   
+
+# test_loss, test_acc = model.evaluate(test_dataset)
+
+# print('Test Loss: {}'.format(test_loss))
+# print('Test Accuracy: {}'.format(test_acc))
+
+
 
 
 # print(y_train[22])
