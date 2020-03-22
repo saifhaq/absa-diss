@@ -10,8 +10,8 @@ from sklearn import svm
 import numpy as np 
 
 
-XML_PATH = "/home/saif/uni/diss/absa-diss/ABSA16_Laptops_Train_SB1_v2.xml"
-TEST_XML_PATH = "/home/saif/uni/diss/absa-diss/ABSA16_Laptops_Test_SB1.xml"
+XML_PATH = "/home/saif/uni/absa-diss/ABSA16_Laptops_Train_SB1_v2.xml"
+TEST_XML_PATH = "/home/saif/absa-diss/ABSA16_Laptops_Test_SB1.xml"
 
 tree = et.parse(XML_PATH)
 reviews = tree.getroot()
@@ -46,6 +46,8 @@ def pre_process_sentence(text):
     """
     Strips, removes
     """
+    processed = re.sub(r'[^\w\s]','',df.text.lower())
+    return(processed)
 
 def df_sentences(xml_path = XML_PATH):
     """
@@ -322,12 +324,19 @@ def df_categories(xml_path, n=16):
 
 
 
+df = df_categories(XML_PATH)
+print(df)
+# df.to_pickle('aspect_category_detection.pkl')
 
- 
+
+
+
+
+
 # category_dict = assign_category(XML_PATH, 16)
 # print(category_dict)
-df = df_categories(XML_PATH, 16)
-print(df.matrix.to_numpy())
+# df = df_categories(XML_PATH, 16)
+# print(df.matrix.to_numpy())
 # df = df_categories(XML_PATH, 16)
 # df.to_pickle('tensorflow_text.pkl')
 
@@ -485,7 +494,7 @@ print(df.matrix.to_numpy())
 
 # df = df_polarity(XML_PATH)
 
-# X_train, X_test, y_train, y_test = train_test_split(df.text, df.polarity, test_size = 0.3, random_state = 0)
+# X_train, X_test, y_train, y_test = train_test_split(df.text[:5000], df.polarity[:5000], test_size = 0.3, random_state = 0)
 
 # text_clf = Pipeline([
 #     ('vect', CountVectorizer()),
@@ -504,8 +513,58 @@ print(df.matrix.to_numpy())
 # print(len(common_df))
 # nonetype = sentences.loc[sentences['category'] == "None"]
 # print(nonetype)
-# ----------------------------------------------------------------------
 
+# from sklearn.pipeline import Pipeline
+# from sklearn.linear_model import SGDClassifier
+# from sklearn.feature_extraction.text import TfidfTransformer
+# from sklearn.metrics import confusion_matrix
+# from sklearn.model_selection import train_test_split
+
+# df = df_subjectivity(XML_PATH)
+# print(df)
+# X_train, X_test, y_train, y_test = train_test_split(df.text[:5000], df.subjectivity[:5000], test_size = 0.3, random_state = 0)
+
+# text_clf = Pipeline([
+#     ('vect', CountVectorizer()),
+#     ('tfidf', TfidfTransformer()),
+#      ('clf', SGDClassifier()),    
+#      ])
+
+# text_clf.fit(X_train, y_train)
+# predicted = text_clf.predict(X_test)
+
+# mean = np.mean(predicted == y_test)
+# print(mean)
+
+
+# print(len(sentences))
+# ----------------------------------------------------------------------
+# from sklearn.pipeline import Pipeline
+# from sklearn.linear_model import SGDClassifier
+# from sklearn.feature_extraction.text import TfidfTransformer
+# from sklearn.metrics import confusion_matrix
+# from sklearn.model_selection import train_test_split
+
+# df = df_subjectivity(XML_PATH)
+# print(df)
+# X_train, X_test, y_train, y_test = train_test_split(df.text[:5000], df.subjectivity[:5000], test_size = 0.3, random_state = 0)
+
+# text_clf = Pipeline([
+#     ('vect', CountVectorizer()),
+#     ('tfidf', TfidfTransformer()),
+#      ('clf', SGDClassifier()),    
+#      ])
+
+# text_clf.fit(X_train, y_train)
+# predicted = text_clf.predict(X_test)
+
+# mean = np.mean(predicted == y_test)
+# print(mean)
+
+
+# print(len(sentences))
+
+# ---------------------------------------
 # from sklearn.pipeline import Pipeline
 # from sklearn.linear_model import SGDClassifier
 # from sklearn.naive_bayes import MultinomialNB

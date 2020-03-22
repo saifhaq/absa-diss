@@ -3,9 +3,12 @@ import pandas as pd
 import tensorflow as tf
 import tensorflow_datasets as tfds
 from sklearn.model_selection import train_test_split
-from tensorflow.keras import layers
 import numpy as np
 import matplotlib.pyplot as plt
+import re
+from sklearn.feature_extraction.text import CountVectorizer
+from collections import Counter 
+from sklearn.model_selection import train_test_split
 
 def plot_graphs(history, metric):
   plt.plot(history.history[metric])
@@ -15,22 +18,9 @@ def plot_graphs(history, metric):
   plt.legend([metric, 'val_'+metric])
   plt.show()
 
-# import os
-import re
-
-
-# df = pd.read_pickle('subjectivity.pkl')
 
 df = pd.read_pickle('tensorflow_text.pkl')
 
-# encoder = tfds.features.text.SubwordTextEncoder(
-#     vocab_list=df.text
-# )
-
-# tf.keras.preprocessing.text.Tokenizer(
-#     num_words=None, filters='!"#$%&()*+,-./:;<=>?@[\\]^_`{|}~\t\n', lower=True,
-#     split=' ', char_level=False, oov_token=None, document_count=0,
-# )
 
 # https://www.tensorflow.org/tutorials/text/image_captioning
 def calc_max_length(tensor):
@@ -58,12 +48,101 @@ train_seqs = tokenizer.texts_to_sequences(df.text)
 cap_vector = tf.keras.preprocessing.sequence.pad_sequences(train_seqs, padding='post')
 max_length = calc_max_length(train_seqs)
 
-# reverse_word_map = dict(map(reversed, tokenizer.word_index.items()))
+vocab_size = len(Counter(" ".join(df.text).split(" ")))
 
-def sequence_to_text(list_of_indices):
-    # Looking up words in dictionary
-    words = [tokenizer.index_word.get(letter) for letter in list_of_indices]
-    return(words)
+
+labels = np.stack(df.matrix, axis=0)
+
+
+# .append 
+# A = np.vstack((, X[X[:,0] < 3]))
+
+reverse_word_map = dict(map(reversed, tokenizer.word_index.items()))
+X_train, X_test, y_train, y_test = train_test_split(cap_vector, labels, test_size = 0.3, random_state = 0)
+ 
+
+model = tf.keras.Sequential([
+    tf.keras.layers.Embedding(vocab_size, 73),
+    tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(64)),
+    tf.keras.layers.Dense(64, activation='relu'),
+    tf.keras.layers.Dense(1)
+])
+
+model.compile(loss=tf.keras.losses.BinaryCrossentropy(from_logits=True),
+              optimizer=tf.keras.optimizers.Adam(1e-4),
+              metrics=['accuracy'])
+              
+train_dataset = tf.data.Dataset.from_tensor_slices((X_train,y_train))
+test_dataset = tf.data.Dataset.from_tensor_slices((X_test,y_test))
+
+
+history = model.fit(train_dataset, epochs=10,
+                    validation_data=test_dataset, 
+                    validation_steps=30)   
+
+test_loss, test_acc = model.evaluate(test_dataset)
+
+print('Test Loss: {}'.format(test_loss))
+print('Test Accuracy: {}'.format(test_acc))
+
+
+# print(y_train[22])
+# print(X_train[22])
+
+# x = 22
+# for i in range(len(y_train[x])):
+#   if y_train[x][i] == 1:
+#     print(category_dict_inverted[i])
+
+# words = []
+# for i in range(len(X_train[x])):
+#   words.append(reverse_word_map[X_train[x][i]])
+# print(words)
+
+# embedding_layer = tf.keras.layers.Embedding(1000, 5)
+# result = embedding_layer(tf.constant([1,2,3]))
+# result.numpy()
+
+# vectorizer = CountVectorizer(stop_words='english')
+
+# print(vectorizer)
+
+# encoder = tfds.features.text.SubwordTextEncoder(
+#     vocab_list=df.text.unique
+# )
+
+# print(encoder.subwords)
+
+
+# train_batches = cap_vector.shuffle(1000).padded_batch(10)
+# print(train_batches)
+# (train_data, test_data), info = tfds.load(
+#     df.text, 
+#     split = (tfds.Split.TRAIN, tfds.Split.TEST), 
+#     with_info=True, as_supervised=True)
+
+
+# print(train_data)
+# for i in range(len(df.text)):
+#   tokenized = re.sub('[,?.]','', df.text).lower().split(' ') #Let's tokenize our text by just take each word
+#   vocab = {k:v for v,k in enumerate(np.unique(tokenized))}
+
+# print(tokenized)
+# print(cap_vector)
+# x = tf.data.Dataset.from_tensor_slices(cap_vector)
+# y = tf.data.Dataset.from_tensor_slices(df.matrix)
+
+# print(tokenizer)
+
+# words_ids = tf.constant([vocab["abutere"], vocab["patientia"]])
+
+
+# embeddings = tf.keras.layers.Embedding(VOCAB_LEN, EMBED_SIZE)
+# embed = embeddings(words_ids)
+
+# with tf.Session() as sess:
+#     sess.run(tf.global_variables_initializer())
+#     print(sess.run(embed))
 
 # img_name_train, img_name_val, cap_train, cap_val = train_test_split(cap_vector,
 #                                                                     df.matrix,
@@ -76,17 +155,52 @@ def sequence_to_text(list_of_indices):
 # df.matrix = df['matrix'].tolist()
 # l = tf.convert_to_tensor(df.matrix)
 
-some = df.matrix.to_numpy()
-# l = [l.tolist() for l in some]
-l = np.stack( some, axis=0 )
+# some = df.matrix.to_numpy()
+# # # l = [l.tolist() for l in some]
+# l = np.stack( some, axis=0 )
 
-X_train, X_test, y_train, y_test = train_test_split(cap_vector, l, test_size = 0.2, random_state = 0)
+# # X_train, X_test, y_train, y_test = train_test_split(cap_vector, l, test_size = 0.2, random_state = 0)
 
-print(X_train.shape)
-print(y_train.shape)
 
-print(sequence_to_text(X_train[0]))
-print(X_train[0])
+# print(X_train)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# print(X_train.shape)
+# print(y_train.shape)
+
+# print(sequence_to_text(X_train[0]))
+# print(X_train[0])
 
 # print(df.matrix.reshape)
 # print(df.matrix.shape)

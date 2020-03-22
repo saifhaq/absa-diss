@@ -1,7 +1,7 @@
-# import tensorflow as tf
+import tensorflow as tf
 import pandas as pd 
-# from tensorflow import keras
-# from tensorflow.keras import layers
+from tensorflow import keras
+from tensorflow.keras import layers
 import string
 import re
 
@@ -110,23 +110,23 @@ print(text_idf[0])
 # tokenized_sentence = vectorizer.transform([sentence])
 # print(clf.predict(tokenized_sentence))
 
-# text = [df.text[0]]
-# print(text)
+text = [df.text[0]]
+print(text)
 
-# print(len(vectorizer.transform(text).toarray()[0]))
+print(len(vectorizer.transform(text).toarray()[0]))
 
 
-# print(df.text)
-# print(df['text'].head(30))
-# (train_data, test_data), info = tfds.load(
-#     'imdb_reviews/subwords8k', 
-#     split = (tfds.Split.TRAIN, tfds.Split.TEST), 
-#     with_info=True, as_supervised=True)
+print(df.text)
+print(df['text'].head(30))
+(train_data, test_data), info = tfds.load(
+    'imdb_reviews/subwords8k', 
+    split = (tfds.Split.TRAIN, tfds.Split.TEST), 
+    with_info=True, as_supervised=True)
 
-# tf.keras.preprocessing.text.Tokenizer(
-#     num_words=1000, filters='!"#$%&()*+,-./:;<=>?@[\\]^_`{|}~\t\n', lower=True,
-#     split=' '
-#     , char_level=False, oov_token=None, document_count=0, **kwargs
-# )
+tf.keras.preprocessing.text.Tokenizer(
+    num_words=1000, filters='!"#$%&()*+,-./:;<=>?@[\\]^_`{|}~\t\n', lower=True,
+    split=' '
+    , char_level=False, oov_token=None, document_count=0, **kwargs
+)
 # df = pd.DataFrame({'sentences': ['This is a very good site. I will recommend it to others.', 'Can you please give me a call at 9983938428. have issues with the listings.', 'good work! keep it up']})
 # df['tokenized_sents'] = df.apply(lambda row: nltk.word_tokenize(row['sentences']), axis=1)
