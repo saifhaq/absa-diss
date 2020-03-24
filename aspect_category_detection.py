@@ -113,7 +113,7 @@ adam = tf.keras.optimizers.Adam(1e-4)
 
 model.summary()
 
-model.compile(loss='categorical_crossentropy',
+model.compile(loss='binary_crossentropy',
               optimizer=sgd,
               metrics=['accuracy'])
               
