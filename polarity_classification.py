@@ -118,7 +118,7 @@ adam = tf.keras.optimizers.Adam(1e-4)
 
 model.summary()
 
-model.compile(loss=tf.keras.losses.BinaryCrossentropy(),
+model.compile(loss='categorical_hinge',
               optimizer=adam,
               metrics=['accuracy'])
               

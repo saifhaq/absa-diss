@@ -325,12 +325,12 @@ def df_categories(xml_path, n=10):
 XML_SB1_TEST_GOLD_PATH = "/home/saif/uni/absa-diss/EN_LAPT_SB1_TEST_.xml.gold"
 
 
-# df = df_categories(XML_PATH, n=10)
-# print(df)
-# df.to_pickle('aspect_category_detection_train_10_classes.pkl')
+df = df_categories(XML_PATH, n=16)
+print(df)
+df.to_pickle('aspect_category_detection_train_10_classes.pkl')
 
 
-df = df_categories(XML_SB1_TEST_GOLD_PATH, n=10)
+df = df_categories(XML_SB1_TEST_GOLD_PATH, n=16)
 print(df)
 df.to_pickle('aspect_category_detection_test_10_classes.pkl')
 
