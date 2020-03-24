@@ -217,7 +217,7 @@ def df_polarity(xml_path = XML_PATH):
                 if(polarity == "positive"):
                     polarity_val = 1
                 elif(polarity == "negative"):
-                    polarity_val = -1 
+                    polarity_val = 0 
                 sentences_list.append([sentence_id, sentence_text, polarity_val])
 
         except Exception as se:
@@ -322,14 +322,16 @@ def df_categories(xml_path, n=16):
 
     return pd.DataFrame(sentences_list, columns = ["id", "text", "category", "matrix"])
 
+XML_SB1_TEST_GOLD_PATH = "/home/saif/uni/absa-diss/EN_LAPT_SB1_TEST_.xml.gold"
 
 
-df = df_categories(XML_PATH)
+df = df_polarity(XML_PATH)
 print(df)
-# df.to_pickle('aspect_category_detection.pkl')
+df.to_pickle('polarity.pkl')
 
-
-
+# negative = df.loc[(df["polarity"] == 1)]
+# print(negative)
+# print(len(negative))
 
 
 
