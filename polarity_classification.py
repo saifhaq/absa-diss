@@ -118,21 +118,29 @@ adam = tf.keras.optimizers.Adam(1e-4)
 
 model.summary()
 
+METRICS = [
+      tf.keras.metrics.BinaryAccuracy(name='accuracy'),
+      tf.keras.metrics.Precision(name='precision'),
+      tf.keras.metrics.Recall(name='recall'),
+]
+
 model.compile(loss='categorical_hinge',
               optimizer=adam,
-              metrics=['accuracy'])
+              metrics=METRICS)
               
 
 history = model.fit(x_train, 
                     y_train, 
-                    epochs=25,
+                    epochs=75,
                     validation_data=(x_val, y_val),
                     verbose = 1
                     
                     )   
 
-test_loss, test_acc = model.evaluate(x_test, y_test)
+test_loss, test_acc, precision, recall = model.evaluate(x_test, y_test)
+
+F1 = 2 * (precision * recall) / (precision + recall)
 
 print('Test Loss: {}'.format(test_loss))
 print('Test Accuracy: {}'.format(test_acc))
-# 
+print(F1)

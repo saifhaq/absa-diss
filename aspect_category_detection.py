@@ -82,8 +82,8 @@ embedding_layer = tf.keras.layers.Embedding(len(word_index) + 1,
 # Test Loss: 0.5253028400084201
 # Test Accuracy: 0.730337083339691
 model = tf.keras.Sequential()
-model.add(tf.keras.layers.Embedding(vocab_size+1, 16))
-# model.add(embedding_layer)
+# model.add(tf.keras.layers.Embedding(vocab_size+1, 16))
+model.add(embedding_layer)
 
 # model.add(Dropout(0.2))
 
@@ -108,7 +108,7 @@ model.add(tf.keras.layers.LSTM(128))
 model.add(tf.keras.layers.Dense(10, activation='sigmoid'))
 
 
-sgd = tf.keras.optimizers.SGD(lr=0.02, decay=1e-6, momentum=0.9, nesterov=True)
+sgd = tf.keras.optimizers.SGD(lr=0.0005, decay=1e-6, momentum=0.9, nesterov=True)
 adam = tf.keras.optimizers.Adam(1e-4)
 
 model.summary()
@@ -120,14 +120,14 @@ METRICS = [
 ]
 
 model.compile(loss='binary_crossentropy',
-              optimizer=adam,
+              optimizer=sgd,
               metrics=METRICS)
               
 
 
 history = model.fit(x_train, 
                     y_train, 
-                    epochs=100,
+                    epochs=1000,
                     validation_data=(x_val, y_val),
                     verbose = 1,                     
                     )   
