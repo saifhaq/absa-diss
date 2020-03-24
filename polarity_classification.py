@@ -42,10 +42,10 @@ x_test = tf.keras.preprocessing.sequence.pad_sequences(test_seqs, padding='post'
 y_test = np.stack(test_df.polarity, axis=0)
 
 
-X_train, X_val, y_train, y_val = train_test_split(cap_vector, labels, test_size = 0.1, random_state = 0)
+x_train, x_val, y_train, y_val = train_test_split(cap_vector, labels, test_size = 0.1, random_state = 0)
 
-train_dataset = tf.data.Dataset.from_tensor_slices((X_train,y_train))
-test_dataset = tf.data.Dataset.from_tensor_slices((X_val,y_val))
+# train_dataset = tf.data.Dataset.from_tensor_slices((X_train,y_train))
+# test_dataset = tf.data.Dataset.from_tensor_slices((X_val,y_val))
 
 
 # Convolution
@@ -98,31 +98,34 @@ model.add(tf.keras.layers.Conv1D(filters,
                  strides=1))
 model.add(tf.keras.layers.MaxPooling1D(pool_size=pool_size))
 
+
+
 model.add(tf.keras.layers.Conv1D(filters,
                  kernel_size,
                  padding='valid',
                  activation='relu',
                  strides=1))
 model.add(tf.keras.layers.MaxPooling1D(pool_size=pool_size))
+model.add(tf.keras.layers.LSTM(10))
 
-model.add(tf.keras.layers.LSTM(lstm_output_size))
-model.add(tf.keras.layers.Dense(1, activation=tf.nn.sigmoid))
+# model.add(tf.keras.layers.LSTM(lstm_output_size))
+model.add(tf.keras.layers.Dense(1, activation='sigmoid'))
 
 
-
-
+sgd = tf.keras.optimizers.SGD(lr=0.02, decay=1e-6, momentum=0.9, nesterov=True)
+adam = tf.keras.optimizers.Adam(1e-4)
 
 model.summary()
 
 model.compile(loss=tf.keras.losses.BinaryCrossentropy(),
-              optimizer=tf.keras.optimizers.Adam(1e-4),
+              optimizer=adam,
               metrics=['accuracy'])
               
 
-history = model.fit(X_train, 
+history = model.fit(x_train, 
                     y_train, 
-                    epochs=20,
-                    validation_data=(X_val, y_val),
+                    epochs=25,
+                    validation_data=(x_val, y_val),
                     verbose = 1
                     
                     )   
