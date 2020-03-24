@@ -313,8 +313,8 @@ def df_categories(xml_path, n=10):
                 categories.append(opinion.attrib['category'])
                 location = category_dict[opinion.attrib['category']]
                 category_matrix[location] = 1
-                # category_matrix[i] = assigned(category_dict[opinion.attrib['category']])
-
+                    # category_matrix[i] = assigned(category_dict[opinion.attrib['category']])
+         
             sentences_list.append([sentence_id, sentence_text, categories, category_matrix])
 
         except:
@@ -325,17 +325,17 @@ def df_categories(xml_path, n=10):
 XML_SB1_TEST_GOLD_PATH = "/home/saif/uni/absa-diss/EN_LAPT_SB1_TEST_.xml.gold"
 
 
-df = df_categories(XML_PATH, n=10)
-print(df)
+df = df_categories(XML_PATH, n=8)
+print(len(df))
 df.to_pickle('aspect_category_detection_train_10_classes.pkl')
 
 
-df = df_categories(XML_SB1_TEST_GOLD_PATH, n=10)
+df = df_categories(XML_SB1_TEST_GOLD_PATH, n=8)
 print(df)
 df.to_pickle('aspect_category_detection_test_10_classes.pkl')
 
 
-
+from sklearn.metrics import confusion_matrix
 from sklearn.pipeline import Pipeline
 from sklearn.linear_model import SGDClassifier
 from sklearn.feature_extraction.text import TfidfTransformer
@@ -364,3 +364,4 @@ print(mean)
 print(f1_score(y_test, predicted, average="macro"))
 print(precision_score(y_test, predicted, average="macro"))
 print(recall_score(y_test, predicted, average="macro"))   
+print(confusion_matrix(y_test, predicted))

@@ -8,6 +8,7 @@ from collections import Counter
 from sklearn.model_selection import train_test_split
 import os
 from sklearn.metrics import f1_score
+import matplotlib.pyplot as plt
 
 df = pd.read_pickle('aspect_category_detection_train_10_classes.pkl')
 test_df = pd.read_pickle('aspect_category_detection_test_10_classes.pkl')
@@ -85,7 +86,7 @@ model = tf.keras.Sequential()
 # model.add(tf.keras.layers.Embedding(vocab_size+1, 16))
 model.add(embedding_layer)
 
-# model.add(Dropout(0.2))
+model.add(tf.keras.layers.Dropout(0.2))
 
 model.add(tf.keras.layers.Conv1D(filters,
                  kernel_size,
@@ -102,13 +103,17 @@ model.add(tf.keras.layers.Conv1D(filters,
                  activation='relu',
                  strides=1))
 model.add(tf.keras.layers.MaxPooling1D(pool_size=pool_size))
-model.add(tf.keras.layers.LSTM(128))
+
+# model.add(tf.keras.layers.LSTM(128))
+
+model.add(tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(128)))
+
 
 # model.add(tf.keras.layers.LSTM(lstm_output_size))
-model.add(tf.keras.layers.Dense(10, activation='sigmoid'))
+model.add(tf.keras.layers.Dense(8, activation='softmax'))
 
 
-sgd = tf.keras.optimizers.SGD(lr=0.0005, decay=1e-6, momentum=0.9, nesterov=True)
+sgd = tf.keras.optimizers.SGD(lr=0.005, decay=1e-6, momentum=0.9, nesterov=True)
 adam = tf.keras.optimizers.Adam(1e-4)
 
 model.summary()
@@ -120,14 +125,14 @@ METRICS = [
 ]
 
 model.compile(loss='binary_crossentropy',
-              optimizer=sgd,
+              optimizer=adam,
               metrics=METRICS)
               
 
 
 history = model.fit(x_train, 
                     y_train, 
-                    epochs=1000,
+                    epochs=75,
                     validation_data=(x_val, y_val),
                     verbose = 1,                     
                     )   
@@ -143,3 +148,16 @@ print('Test Accuracy: {}'.format(test_acc))
 print(F1)
 # print(history.history)
 # 
+
+def plot_graphs(history, metric):
+  plt.plot(history.history[metric])
+  plt.plot(history.history['val_'+metric], '')
+  plt.xlabel("Epochs")
+  plt.ylabel(metric)
+  plt.legend([metric, 'val_'+metric])
+  plt.show()
+
+
+plot_graphs(history, 'accuracy')
+plot_graphs(history, 'precision')
+plot_graphs(history, 'recall')
