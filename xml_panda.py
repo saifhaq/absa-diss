@@ -325,9 +325,9 @@ def df_categories(xml_path, n=16):
 XML_SB1_TEST_GOLD_PATH = "/home/saif/uni/absa-diss/EN_LAPT_SB1_TEST_.xml.gold"
 
 
-df = df_polarity(XML_PATH)
+df = df_polarity(XML_SB1_TEST_GOLD_PATH)
 print(df)
-df.to_pickle('polarity.pkl')
+df.to_pickle('polarity_gold_test.pkl')
 
 # negative = df.loc[(df["polarity"] == 1)]
 # print(negative)
@@ -488,27 +488,31 @@ df.to_pickle('polarity.pkl')
 # plt.show()
 
 # ----------------------------------------------
-# from sklearn.pipeline import Pipeline
-# from sklearn.linear_model import SGDClassifier
-# from sklearn.feature_extraction.text import TfidfTransformer
-# from sklearn.metrics import confusion_matrix
-# from sklearn.model_selection import train_test_split
+from sklearn.pipeline import Pipeline
+from sklearn.linear_model import SGDClassifier
+from sklearn.feature_extraction.text import TfidfTransformer
+from sklearn.metrics import confusion_matrix
+from sklearn.model_selection import train_test_split
 
-# df = df_polarity(XML_PATH)
+train_df = df_polarity(XML_PATH)
+test_df = df_polarity(XML_SB1_TEST_GOLD_PATH)
 
-# X_train, X_test, y_train, y_test = train_test_split(df.text[:5000], df.polarity[:5000], test_size = 0.3, random_state = 0)
+# x_train, x_val, y_train, y_val = train_test_split(train_df.text, train_df.polarity, test_size = 0.3, random_state = 0)
 
-# text_clf = Pipeline([
-#     ('vect', CountVectorizer()),
-#     ('tfidf', TfidfTransformer()),
-#      ('clf', SGDClassifier()),    
-#      ])
+x_train, y_train = train_df.text, train_df.polarity
+x_test, y_test = test_df.text, test_df.polarity
 
-# text_clf.fit(X_train, y_train)
-# predicted = text_clf.predict(X_test)
+text_clf = Pipeline([
+    ('vect', CountVectorizer()),
+    ('tfidf', TfidfTransformer()),
+     ('clf', SGDClassifier()),    
+     ])
 
-# mean = np.mean(predicted == y_test)
-# print(mean)
+text_clf.fit(x_train, y_train)
+
+predicted = text_clf.predict(x_test)
+mean = np.mean(predicted == y_test)
+print(mean)
 
 
 # print(len(sentences))

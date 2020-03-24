@@ -57,13 +57,24 @@ pool_size = 4
 lstm_output_size = 70
 
 
+# model = tf.keras.Sequential()
+# model.add(tf.keras.layers.Embedding(vocab_size, 1))
+# model.add(tf.keras.layers.GlobalAveragePooling1D())
+# model.add(tf.keras.layers.Dense(128, activation=tf.nn.relu))
+# model.add(tf.keras.layers.Dense(1, activation=tf.nn.sigmoid))
+
+
 model = tf.keras.Sequential()
-model.add(tf.keras.layers.Embedding(vocab_size, 1))
-model.add(tf.keras.layers.GlobalAveragePooling1D())
-model.add(tf.keras.layers.Dense(128, activation=tf.nn.relu))
+model.add(tf.keras.layers.Embedding(vocab_size+2, 16))
+model.add(Dropout(0.25))
+model.add(tf.keras.layers.Conv1D(filters,
+                 kernel_size,
+                 padding='valid',
+                 activation='relu',
+                 strides=1))
+model.add(tf.keras.layers.MaxPooling1D(pool_size=pool_size))
+model.add(tf.keras.layers.LSTM(lstm_output_size))
 model.add(tf.keras.layers.Dense(1, activation=tf.nn.sigmoid))
-
-
 
 # model = tf.keras.Sequential()
 # model.add(tf.keras.layers.Embedding(vocab_size+2, 16))
