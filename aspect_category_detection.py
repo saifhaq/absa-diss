@@ -9,8 +9,8 @@ from sklearn.model_selection import train_test_split
 from tensorflow.keras.layers import Dense, Dropout, Activation
 import os
 
-df = pd.read_pickle('aspect_category_detection.pkl')
-test_df = pd.read_pickle('aspect_category_detection_gold_test.pkl')
+df = pd.read_pickle('aspect_category_detection_train_10_classes.pkl')
+test_df = pd.read_pickle('aspect_category_detection_test_10_classes.pkl')
 
 
 
@@ -102,10 +102,10 @@ model.add(tf.keras.layers.Conv1D(filters,
                  activation='relu',
                  strides=1))
 model.add(tf.keras.layers.MaxPooling1D(pool_size=pool_size))
-model.add(tf.keras.layers.LSTM(10))
+model.add(tf.keras.layers.LSTM(128))
 
 # model.add(tf.keras.layers.LSTM(lstm_output_size))
-model.add(tf.keras.layers.Dense(16, activation='sigmoid'))
+model.add(tf.keras.layers.Dense(10, activation='sigmoid'))
 
 
 sgd = tf.keras.optimizers.SGD(lr=0.02, decay=1e-6, momentum=0.9, nesterov=True)
@@ -114,13 +114,13 @@ adam = tf.keras.optimizers.Adam(1e-4)
 model.summary()
 
 model.compile(loss='categorical_crossentropy',
-              optimizer=adam,
+              optimizer=sgd,
               metrics=['accuracy'])
               
 
 history = model.fit(x_train, 
                     y_train, 
-                    epochs=2,
+                    epochs=100,
                     validation_data=(x_val, y_val),
                     verbose = 1
                     
