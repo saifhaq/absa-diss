@@ -28,6 +28,7 @@ tokenizer.word_index['<unk>'] = 1
 tokenizer.index_word[1] = '<unk>'
 
 
+
 train_seqs = tokenizer.texts_to_sequences(df.text)
 cap_vector = tf.keras.preprocessing.sequence.pad_sequences(train_seqs, padding='post')
 

@@ -325,9 +325,9 @@ def df_categories(xml_path, n=16):
 XML_SB1_TEST_GOLD_PATH = "/home/saif/uni/absa-diss/EN_LAPT_SB1_TEST_.xml.gold"
 
 
-df = df_polarity(XML_SB1_TEST_GOLD_PATH)
+df = df_categories(XML_SB1_TEST_GOLD_PATH)
 print(df)
-df.to_pickle('polarity_gold_test.pkl')
+df.to_pickle('aspect_category_detection_gold_test.pkl')
 
 # negative = df.loc[(df["polarity"] == 1)]
 # print(negative)

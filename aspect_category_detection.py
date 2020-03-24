@@ -7,10 +7,11 @@ import numpy as np
 from collections import Counter 
 from sklearn.model_selection import train_test_split
 from tensorflow.keras.layers import Dense, Dropout, Activation
-
+import os
 
 df = pd.read_pickle('aspect_category_detection.pkl')
-print(df)
+test_df = pd.read_pickle('aspect_category_detection_gold_test.pkl')
+
 
 
 top_k = 5000
@@ -35,10 +36,31 @@ vocab_size = len(Counter(" ".join(df.text).split(" ")))
 
 labels = np.stack(df.matrix, axis=0)
 
-X_train, X_test, y_train, y_test = train_test_split(cap_vector, labels, test_size = 0.2, random_state = 0)
+x_train, x_val, y_train, y_val = train_test_split(cap_vector, labels, test_size = 0.2, random_state = 0)
 
-train_dataset = tf.data.Dataset.from_tensor_slices((X_train,y_train))
-test_dataset = tf.data.Dataset.from_tensor_slices((X_test,y_test))
+test_seqs = tokenizer.texts_to_sequences(test_df.text)
+x_test = tf.keras.preprocessing.sequence.pad_sequences(test_seqs, padding='post')
+y_test = np.stack(test_df.matrix, axis=0)
+
+
+word_index = tokenizer.word_index
+
+embeddings_index = {}
+f = open(os.path.join('glove.6B', 'glove.6B.100d.txt'))
+for line in f:
+    values = line.split()
+    word = values[0]
+    coefs = np.asarray(values[1:], dtype='float32')
+    embeddings_index[word] = coefs
+f.close()
+
+embedding_matrix = np.zeros((len(word_index) + 1, 100))
+for word, i in word_index.items():
+    embedding_vector = embeddings_index.get(word)
+    if embedding_vector is not None:
+        # words not found in embedding index will be all-zeros.
+        embedding_matrix[i] = embedding_vector
+
 
 
 # Convolution
@@ -50,45 +72,62 @@ pool_size = 4
 lstm_output_size = 70
 
 
+
+embedding_layer = tf.keras.layers.Embedding(len(word_index) + 1,
+                            100,
+                            weights=[embedding_matrix],
+                            trainable=False)
+
+# 50 Epochs
+# Test Loss: 0.5253028400084201
+# Test Accuracy: 0.730337083339691
 model = tf.keras.Sequential()
-model.add(tf.keras.layers.Embedding(vocab_size+2, 16))
-model.add(Dropout(0.25))
+# model.add(tf.keras.layers.Embedding(vocab_size+2, 16))
+model.add(embedding_layer)
+
+# model.add(Dropout(0.2))
+
 model.add(tf.keras.layers.Conv1D(filters,
                  kernel_size,
                  padding='valid',
                  activation='relu',
                  strides=1))
 model.add(tf.keras.layers.MaxPooling1D(pool_size=pool_size))
-model.add(tf.keras.layers.LSTM(lstm_output_size))
-model.add(tf.keras.layers.Dense(16, activation=tf.nn.sigmoid))
 
-# model = tf.keras.Sequential()
-# model.add(tf.keras.layers.Embedding(vocab_size+2, 64))
-# # model.add(tf.keras.layers.TimeDistributed(tf.keras.layers.GlobalAveragePooling1D()))
-# # model.add(tf.keras.layers.GlobalAveragePooling1D())
-# model.add(tf.keras.layers.Dense(128, activation=tf.nn.relu))
-# model.add(tf.keras.layers.Dense(16, activation=tf.nn.relu))
+
+
+model.add(tf.keras.layers.Conv1D(filters,
+                 kernel_size,
+                 padding='valid',
+                 activation='relu',
+                 strides=1))
+model.add(tf.keras.layers.MaxPooling1D(pool_size=pool_size))
+model.add(tf.keras.layers.LSTM(10))
+
+# model.add(tf.keras.layers.LSTM(lstm_output_size))
+model.add(tf.keras.layers.Dense(16, activation='sigmoid'))
+
+
+sgd = tf.keras.optimizers.SGD(lr=0.02, decay=1e-6, momentum=0.9, nesterov=True)
+adam = tf.keras.optimizers.Adam(1e-4)
 
 model.summary()
 
-model.compile(loss = 'categorical_crossentropy',
-              optimizer=tf.keras.optimizers.Adam(1e-4),
+model.compile(loss='categorical_crossentropy',
+              optimizer=adam,
               metrics=['accuracy'])
               
 
-print(len(y_train[0]))
-history = model.fit(X_train, 
+history = model.fit(x_train, 
                     y_train, 
-                    epochs=20,
-                    validation_data=(X_test, y_test),
-                    verbose = 1 
+                    epochs=2,
+                    validation_data=(x_val, y_val),
+                    verbose = 1
                     
                     )   
 
-test_loss, test_acc = model.evaluate(X_test, y_test)
+test_loss, test_acc = model.evaluate(x_test, y_test)
 
 print('Test Loss: {}'.format(test_loss))
 print('Test Accuracy: {}'.format(test_acc))
-
-
-
+# 
