@@ -266,13 +266,14 @@ def assign_category(xml_path, n=16):
 
     sentences = df_aspect_category(XML_PATH)
     categories = Counter(sentences.category).most_common(n)
-
+    print(categories)
     common_categories = [category_tuple[0] for category_tuple in categories]
 
     common_df = sentences[sentences['category'].isin(common_categories)]
 
     assigned = {}
 
+    
     for i in range(0, len(common_categories)):
         assigned[common_categories[i]] = i 
 
@@ -312,7 +313,10 @@ def df_categories(xml_path, n=10):
             for opinion in opinions:
                 categories.append(opinion.attrib['category'])
                 location = category_dict[opinion.attrib['category']]
-                category_matrix[location] = 1
+                try:
+                    category_matrix[location] = 1
+                except:
+                    pass
                     # category_matrix[i] = assigned(category_dict[opinion.attrib['category']])
          
             sentences_list.append([sentence_id, sentence_text, categories, category_matrix])

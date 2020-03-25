@@ -124,40 +124,58 @@ METRICS = [
       tf.keras.metrics.Recall(name='recall'),
 ]
 
-model.compile(loss='binary_crossentropy',
+model.compile(loss='logcosh',
               optimizer=adam,
               metrics=METRICS)
               
 
 
-history = model.fit(x_train, 
-                    y_train, 
-                    epochs=75,
-                    validation_data=(x_val, y_val),
-                    verbose = 1,                     
-                    )   
+# history = model.fit(x_train, 
+#                     y_train, 
+#                     epochs=75,
+#                     validation_data=(x_val, y_val),
+#                     verbose = 1,                     
+#                     )   
 
 
 
-test_loss, test_acc, precision, recall = model.evaluate(x_test, y_test)
+# test_loss, test_acc, precision, recall = model.evaluate(x_test, y_test)
 
-F1 = 2 * (precision * recall) / (precision + recall)
+# F1 = 2 * (precision * recall) / (precision + recall)
 
-print('Test Loss: {}'.format(test_loss))
-print('Test Accuracy: {}'.format(test_acc))
-print(F1)
-# print(history.history)
-# 
+# print('Test Loss: {}'.format(test_loss))
+# print('Test Accuracy: {}'.format(test_acc))
+# print(F1)
+# # print(history.history)
+# # 
 
-def plot_graphs(history, metric):
-  plt.plot(history.history[metric])
-  plt.plot(history.history['val_'+metric], '')
-  plt.xlabel("Epochs")
-  plt.ylabel(metric)
-  plt.legend([metric, 'val_'+metric])
-  plt.show()
+# def plot_graphs(history, metric):
+#   plt.plot(history.history[metric])
+#   plt.plot(history.history['val_'+metric], '')
+#   plt.xlabel("Epochs")
+#   plt.ylabel(metric)
+#   plt.legend([metric, 'val_'+metric])
+#   plt.show()
 
 
-plot_graphs(history, 'accuracy')
-plot_graphs(history, 'precision')
-plot_graphs(history, 'recall')
+# plot_graphs(history, 'accuracy')
+# plot_graphs(history, 'precision')
+# plot_graphs(history, 'recall')
+
+# model.save('aspect_category_model') 
+
+model = tf.keras.models.load_model('aspect_category_model')
+sentence = "I love the laptop, it is so fast! It is very expensive though."
+sentence2 = "It is alright, I would recommend to students"
+sentence_processed = re.sub(r'[^\w\s]','',sentence.lower())
+
+sentence_seq = tokenizer.texts_to_sequences(sentence_processed)
+sentence_vector = tf.keras.preprocessing.sequence.pad_sequences(sentence_seq, padding='post', maxlen=73)
+
+
+# test_seqs = tokenizer.texts_to_sequences(test_df.text)
+# x_test = tf.keras.preprocessing.sequence.pad_sequences(test_seqs, padding='post')
+
+# print(len(model.predict([[[sentence_vector]]])))
+# print(len(sentence_vector))
+# model.predict([sentence_vector])

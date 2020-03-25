@@ -85,9 +85,9 @@ lstm_output_size = 70
 
 
 
-# 50 Epochs
-# Test Loss: 0.5253028400084201
-# Test Accuracy: 0.730337083339691
+# # 50 Epochs
+# # Test Loss: 0.5253028400084201
+# # Test Accuracy: 0.730337083339691
 model = tf.keras.Sequential()
 model.add(tf.keras.layers.Embedding(vocab_size+2, 16))
 # model.add(Dropout(0.2))
@@ -108,6 +108,7 @@ model.add(tf.keras.layers.Conv1D(filters,
                  strides=1))
 model.add(tf.keras.layers.MaxPooling1D(pool_size=pool_size))
 model.add(tf.keras.layers.LSTM(10))
+# model.add(tf.keras.layers.Dense(128, activation='sigmoid'))
 
 # model.add(tf.keras.layers.LSTM(lstm_output_size))
 model.add(tf.keras.layers.Dense(1, activation='sigmoid'))
@@ -129,18 +130,51 @@ model.compile(loss='categorical_hinge',
               metrics=METRICS)
               
 
-history = model.fit(x_train, 
-                    y_train, 
-                    epochs=75,
-                    validation_data=(x_val, y_val),
-                    verbose = 1
+# history = model.fit(x_train, 
+#                     y_train, 
+#                     epochs=75,
+#                     validation_data=(x_val, y_val),
+#                     verbose = 1
                     
-                    )   
+#                     )   
 
-test_loss, test_acc, precision, recall = model.evaluate(x_test, y_test)
+# test_loss, test_acc, precision, recall = model.evaluate(x_test, y_test)
 
-F1 = 2 * (precision * recall) / (precision + recall)
+# F1 = 2 * (precision * recall) / (precision + recall)
 
-print('Test Loss: {}'.format(test_loss))
-print('Test Accuracy: {}'.format(test_acc))
-print(F1)
+# print('Test Loss: {}'.format(test_loss))
+# print('Test Accuracy: {}'.format(test_acc))
+# print(F1)
+
+# model.save('polarity_classification_model') 
+
+model = tf.keras.models.load_model('polarity_classification_model')
+
+sentence = "I love the laptop, it is so fast! It is very expensive though."
+sentence2 = "paris is a city"
+
+sentence_processed = re.sub(r'[^\w\s]','',sentence2.lower())
+sentence_seq = tokenizer.texts_to_sequences(sentence_processed)
+sentence_vector = tf.keras.preprocessing.sequence.pad_sequences(sentence_seq, padding='post', maxlen=73)
+
+x = 86
+
+
+print(x_train[87])
+print( model.predict([[x_train[x]]])[0][0])
+
+
+
+category_dict = {'LAPTOP#GENERAL': 0, 'LAPTOP#OPERATION_PERFORMANCE': 1, 'LAPTOP#DESIGN_FEATURES': 2, 'LAPTOP#QUALITY': 3, 'LAPTOP#MISCELLANEOUS': 4, 'LAPTOP#USABILITY': 5, 'SUPPORT#QUALITY': 6, 'LAPTOP#PRICE': 7, 'COMPANY#GENERAL': 8, 'BATTERY#OPERATION_PERFORMANCE': 9, 'LAPTOP#CONNECTIVITY': 10, 'DISPLAY#QUALITY': 11, 'LAPTOP#PORTABILITY': 12, 'OS#GENERAL': 13, 'SOFTWARE#GENERAL': 14, 'KEYBOARD#DESIGN_FEATURES': 15}
+category_dict_inverted = {v: k for k, v in category_dict.items()}
+reverse_word_map = dict(map(reversed, tokenizer.word_index.items()))
+
+words = []
+for i in range(len(x_train[x])):
+  words.append(reverse_word_map[x_train[x][i]])
+print(words)
+
+# for i in range(1,len(x_train)-1):
+#       if model.predict([[x_train[i]]])[0][0] < 0.5:
+#             print(i)#
+
