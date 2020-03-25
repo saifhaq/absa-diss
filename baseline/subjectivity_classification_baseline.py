@@ -16,6 +16,8 @@ test_df = pd.read_pickle(path.join('pandas_data','subjectivity_test.pkl'))
 x_train, y_train = train_df.text, train_df.subjectivity
 x_test, y_test = test_df.text, test_df.subjectivity
 
+# x_train, x_val, y_train, y_val = train_test_split(train_df.text, train_df.subjectivity, test_size = 0.2, random_state = 0)
+
 text_clf = Pipeline([
     ('vect', CountVectorizer()),
     ('tfidf', TfidfTransformer()),
@@ -35,3 +37,6 @@ print('---------------')
 print('Test F1: {}'.format(f1_score(y_test, predicted, average="macro")))
 
 # print(confusion_matrix(y_test, predicted))
+
+# F1 0.408 with test data
+# F1 0.613 with 0.2 split val data
