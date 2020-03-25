@@ -150,21 +150,17 @@ model.compile(loss='categorical_hinge',
 
 model = tf.keras.models.load_model('polarity_classification_model')
 
-sentence = "I love the laptop, it is so fast! It is very expensive though."
-sentence2 = ["amazing i love it"]
+sentence = []
+text = "I love the laptop, it is so fast! It is very expensive though."
+text_processed = re.sub(r'[^\w\s]','',text.lower())
 
-# sentence_processed = re.sub(r'[^\w\s]','',sentence2.lower())
 
-sentence_seq = tokenizer.texts_to_sequences(sentence2)
-
+sentence.append(text_processed)
+sentence_seq = tokenizer.texts_to_sequences(sentence)
 sentence_vector = tf.keras.preprocessing.sequence.pad_sequences(sentence_seq, padding='post', maxlen=73)
 
-x = 86
+print(model.predict([[sentence_vector[0]]])[0][0])
 
-# print(model.predict(sentence_vector[0])[0][0])
-print( model.predict([[sentence_vector[0]]])[0][0])
-
-# print( model.predict([[x_train[x]]])[0][0])
 
 
 
