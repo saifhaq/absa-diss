@@ -151,28 +151,31 @@ model.compile(loss='categorical_hinge',
 model = tf.keras.models.load_model('polarity_classification_model')
 
 sentence = "I love the laptop, it is so fast! It is very expensive though."
-sentence2 = "paris is a city"
+sentence2 = ["amazing i love it"]
 
-sentence_processed = re.sub(r'[^\w\s]','',sentence2.lower())
-sentence_seq = tokenizer.texts_to_sequences(sentence_processed)
+# sentence_processed = re.sub(r'[^\w\s]','',sentence2.lower())
+
+sentence_seq = tokenizer.texts_to_sequences(sentence2)
+
 sentence_vector = tf.keras.preprocessing.sequence.pad_sequences(sentence_seq, padding='post', maxlen=73)
 
 x = 86
 
+# print(model.predict(sentence_vector[0])[0][0])
+print( model.predict([[sentence_vector[0]]])[0][0])
 
-print(x_train[87])
-print( model.predict([[x_train[x]]])[0][0])
+# print( model.predict([[x_train[x]]])[0][0])
 
 
 
-category_dict = {'LAPTOP#GENERAL': 0, 'LAPTOP#OPERATION_PERFORMANCE': 1, 'LAPTOP#DESIGN_FEATURES': 2, 'LAPTOP#QUALITY': 3, 'LAPTOP#MISCELLANEOUS': 4, 'LAPTOP#USABILITY': 5, 'SUPPORT#QUALITY': 6, 'LAPTOP#PRICE': 7, 'COMPANY#GENERAL': 8, 'BATTERY#OPERATION_PERFORMANCE': 9, 'LAPTOP#CONNECTIVITY': 10, 'DISPLAY#QUALITY': 11, 'LAPTOP#PORTABILITY': 12, 'OS#GENERAL': 13, 'SOFTWARE#GENERAL': 14, 'KEYBOARD#DESIGN_FEATURES': 15}
-category_dict_inverted = {v: k for k, v in category_dict.items()}
-reverse_word_map = dict(map(reversed, tokenizer.word_index.items()))
+# category_dict = {'LAPTOP#GENERAL': 0, 'LAPTOP#OPERATION_PERFORMANCE': 1, 'LAPTOP#DESIGN_FEATURES': 2, 'LAPTOP#QUALITY': 3, 'LAPTOP#MISCELLANEOUS': 4, 'LAPTOP#USABILITY': 5, 'SUPPORT#QUALITY': 6, 'LAPTOP#PRICE': 7, 'COMPANY#GENERAL': 8, 'BATTERY#OPERATION_PERFORMANCE': 9, 'LAPTOP#CONNECTIVITY': 10, 'DISPLAY#QUALITY': 11, 'LAPTOP#PORTABILITY': 12, 'OS#GENERAL': 13, 'SOFTWARE#GENERAL': 14, 'KEYBOARD#DESIGN_FEATURES': 15}
+# category_dict_inverted = {v: k for k, v in category_dict.items()}
+# reverse_word_map = dict(map(reversed, tokenizer.word_index.items()))
 
-words = []
-for i in range(len(x_train[x])):
-  words.append(reverse_word_map[x_train[x][i]])
-print(words)
+# words = []
+# for i in range(len(x_train[x])):
+#   words.append(reverse_word_map[x_train[x][i]])
+# print(words)
 
 # for i in range(1,len(x_train)-1):
 #       if model.predict([[x_train[i]]])[0][0] < 0.5:
