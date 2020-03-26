@@ -68,13 +68,10 @@ def gloveEmbedding(d):
   return embedding_matrix
 
 
-# Convolution
+# CNN
 kernel_size = 5
 filters = 64
 pool_size = 4
-
-# LSTM
-lstm_output_size = 70
 
 
 glove_matrix = gloveEmbedding(100)

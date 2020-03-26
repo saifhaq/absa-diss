@@ -8,14 +8,58 @@ from collections import Counter
 from sklearn.model_selection import train_test_split
 import os.path as path
 
+
+def gloveEmbedding(d):
+  """
+    Returns a d dimensional glove embedding 
+
+    :param d: {50, 100, 200, 300} dimensional glove word embeddings
+  """
+  embeddings_word_weight_dict = {}
+  file_name = "glove.6B."+str(d)+"d.txt"
+  glove_txt = open(path.join('glove.6B', file_name))
+
+  for line in glove_txt:
+      values = line.split()
+      word = values[0]
+      weight = np.asarray(values[1:], dtype='float32')
+      embeddings_word_weight_dict[word] = weight
+  glove_txt.close()
+
+  embedding_matrix = np.zeros((len(word_index) + 1, 100))
+  for word, i in word_index.items():
+      embedding_vector = embeddings_word_weight_dict.get(word)
+      if embedding_vector is not None:
+          embedding_matrix[i] = embedding_vector
+
+  return embedding_matrix
+
+
+def evaluateModel(m, x_test, y_test):
+      """
+        Prints out loss, accuracy, precision, recall and F-1 measure of a model
+
+        :param m: tensorflow model 
+      """
+      test_loss, test_acc, test_precision, test_recall = model.evaluate(x_test, y_test)
+      F1 = 2 * (test_precision * test_recall) / (test_precision + test_recall)
+
+      print('---------------')
+      print('Test Loss: {}'.format(test_loss))
+      print('Test Accuracy: {}'.format(test_acc))
+      print('Test Precision: {}'.format(test_precision))
+      print('Test Recall: {}'.format(test_recall))
+      print('---------------')
+      print('Test F1: {}'.format(F1))
+
+
+
 train_df = pd.read_pickle(path.join('pandas_data', 'subjectivity_train.pkl'))
 test_df = pd.read_pickle(path.join('pandas_data','subjectivity_test.pkl'))
 
 
 
-
-top_k = 5000
-tokenizer = tf.keras.preprocessing.text.Tokenizer(num_words=top_k,
+tokenizer = tf.keras.preprocessing.text.Tokenizer(num_words=1000,
                                                   oov_token="<unk>",
                                                   filters='!"#$%&()*+.,-/:;=?@[\]^_`{|}~ ')
 tokenizer.fit_on_texts(train_df.text)
@@ -41,18 +85,22 @@ y_test = np.stack(test_df.subjectivity, axis=0)
 word_index = tokenizer.word_index
 vocab_size = len(Counter(" ".join(train_df.text).split(" ")))
 
-
-# Convolution
+# CNN
 kernel_size = 5
 filters = 64
 pool_size = 4
 
-# LSTM
-lstm_output_size = 70
-
+glove_dimension = 100
+glove_matrix = gloveEmbedding(glove_dimension)
+embedding_layer = tf.keras.layers.Embedding(len(word_index) + 1,
+                            glove_dimension,
+                            weights=[glove_matrix],
+                            trainable=False)
 
 model = tf.keras.Sequential()
-model.add(tf.keras.layers.Embedding(vocab_size+2, 16))
+
+# model.add(tf.keras.layers.Embedding(vocab_size+2, 16))
+model.add(embedding_layer)
 
 model.add(tf.keras.layers.Conv1D(filters,
                  kernel_size,
@@ -87,7 +135,7 @@ METRICS = [
       tf.keras.metrics.Recall(name='recall'),
 ]
 
-model.compile(loss='categorical_hinge',
+model.compile(loss='mean_squared_error',
               optimizer=adam,
               metrics=METRICS)
               
@@ -100,20 +148,13 @@ history = model.fit(x_train,
                     
                     )   
 
-test_loss, test_acc, test_precision, test_recall = model.evaluate(x_test, y_test)
-
-F1 = 2 * (test_precision * test_recall) / (test_precision + test_recall)
-
-print('---------------')
-print('Test Loss: {}'.format(test_loss))
-print('Test Accuracy: {}'.format(test_acc))
-print('Test Precision: {}'.format(test_precision))
-print('Test Recall: {}'.format(test_recall))
-print('---------------')
-print('Test F1: {}'.format(F1))
+# Prints evaluation metrics of test data
+evaluateModel(model, x_test, y_test)
 
 model.save(path.join('tensorflow_models', 'subjectivity_classification_model')) 
 
+
+# F1 Measure 0.808
 
 # model = tf.keras.models.load_model('polarity_classification_model')
 
@@ -127,20 +168,3 @@ model.save(path.join('tensorflow_models', 'subjectivity_classification_model'))
 # sentence_vector = tf.keras.preprocessing.sequence.pad_sequences(sentence_seq, padding='post', maxlen=73)
 
 # print(model.predict([[sentence_vector[0]]])[0][0])
-
-
-
-
-# category_dict = {'LAPTOP#GENERAL': 0, 'LAPTOP#OPERATION_PERFORMANCE': 1, 'LAPTOP#DESIGN_FEATURES': 2, 'LAPTOP#QUALITY': 3, 'LAPTOP#MISCELLANEOUS': 4, 'LAPTOP#USABILITY': 5, 'SUPPORT#QUALITY': 6, 'LAPTOP#PRICE': 7, 'COMPANY#GENERAL': 8, 'BATTERY#OPERATION_PERFORMANCE': 9, 'LAPTOP#CONNECTIVITY': 10, 'DISPLAY#QUALITY': 11, 'LAPTOP#PORTABILITY': 12, 'OS#GENERAL': 13, 'SOFTWARE#GENERAL': 14, 'KEYBOARD#DESIGN_FEATURES': 15}
-# category_dict_inverted = {v: k for k, v in category_dict.items()}
-# reverse_word_map = dict(map(reversed, tokenizer.word_index.items()))
-
-# words = []
-# for i in range(len(x_train[x])):
-#   words.append(reverse_word_map[x_train[x][i]])
-# print(words)
-
-# for i in range(1,len(x_train)-1):
-#       if model.predict([[x_train[i]]])[0][0] < 0.5:
-#             print(i)#
-
