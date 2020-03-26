@@ -9,9 +9,10 @@ from sklearn.model_selection import train_test_split
 import os
 from sklearn.metrics import f1_score
 import matplotlib.pyplot as plt
+import os.path as path
 
-train_df = pd.read_pickle('aspect_category_detection_train_10_classes.pkl')
-test_df = pd.read_pickle('aspect_category_detection_test_10_classes.pkl')
+train_df = pd.read_pickle(path.join('pandas_data', 'aspect_category_detection_train.pkl'))
+test_df = pd.read_pickle(path.join('pandas_data','aspect_category_detection_test.pkl'))
 
 
 top_k = 5000
@@ -85,7 +86,7 @@ model = tf.keras.Sequential()
 # model.add(tf.keras.layers.Embedding(vocab_size+1, 16))
 model.add(embedding_layer)
 
-model.add(tf.keras.layers.Dropout(0.2))
+# model.add(tf.keras.layers.Dropout(0.2))
 
 # model.add(tf.keras.layers.Conv1D(filters,
 #                  kernel_size,
@@ -107,7 +108,7 @@ model.add(tf.keras.layers.Dropout(0.2))
 
 model.add(tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(128)))
 model.add(tf.keras.layers.Dense(128, activation='relu'))
-model.add(tf.keras.layers.Dense(8, activation='sigmoid'))
+model.add(tf.keras.layers.Dense(8, activation='softmax'))
 
 
 sgd = tf.keras.optimizers.SGD(lr=0.005, decay=1e-6, momentum=0.9, nesterov=True)
@@ -121,7 +122,7 @@ METRICS = [
       tf.keras.metrics.Recall(name='recall'),
 ]
 
-model.compile(loss='binary_crossentropy',
+model.compile(loss='categorical_crossentropy',
               optimizer=adam,
               metrics=METRICS)
               
@@ -129,7 +130,7 @@ model.compile(loss='binary_crossentropy',
 
 history = model.fit(x_train, 
                     y_train, 
-                    epochs=75,
+                    epochs=50,
                     validation_data=(x_val, y_val),
                     verbose = 1,                     
                     )   
@@ -162,6 +163,9 @@ def plot_graphs(history, metric):
 plot_graphs(history, 'accuracy')
 plot_graphs(history, 'precision')
 plot_graphs(history, 'recall')
+
+# Test F1: 0.27393938058777995
+# Test F1: 0.2880794737881986
 
 # model.save('aspect_category_model') 
 

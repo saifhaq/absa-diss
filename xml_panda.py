@@ -147,36 +147,6 @@ def df_test_subjectivity(xml_path):
     return pd.DataFrame(sentences_list, columns = ["id", "text"])
 
 
-def df_aspect(xml_path):
-    """
-        Takes XML Training data and returns a pandas dataframe of sentences;
-        returns duplicate sentences if each sentence has multiple aspects of polarity   
-    """
-
-    tree = et.parse(xml_path)
-    reviews = tree.getroot()
-    sentences = reviews.findall('**/sentence')
-
-    sentences_list = []
-
-    for sentence in sentences:
-
-        sentence_id = sentence.attrib['id']                
-        sentence_text = sentence.find('text').text
-
-        try: 
-            opinions = list(sentence)[1]
-
-            for opinion in opinions:
-                category = opinion.attrib['category']
-                polarity = opinion.attrib['polarity']
-                sentences_list.append([sentence_id, sentence_text, category, polarity])
-
-        except:
-            polarity = 'None'
-            category = 'None'
-            sentences_list.append([sentence_id, sentence_text, category, polarity])
-
 
 def df_polarity(xml_path):
     """
@@ -247,30 +217,34 @@ def df_aspect_category(xml_path):
 
     return pd.DataFrame(sentences_list, columns = ["id", "text", "category", "polarity"])
 
-def assign_category(xml_path, n=16):
+def assign_category(xml_path, n):
     """
         Returns dictionary of n most common categories 
     """
 
     sentences = df_aspect_category(xml_path)
     categories = Counter(sentences.category).most_common(n)
+
     common_categories = [category_tuple[0] for category_tuple in categories]
 
     common_df = sentences[sentences['category'].isin(common_categories)]
 
     assigned = {}
 
-    
     for i in range(0, len(common_categories)):
         assigned[common_categories[i]] = i 
 
     return assigned
+    # common_df[''] = common_df[]
 
     
 
+    return None
+
+
     
 
-def df_categories(xml_path, n=10):
+def df_categories(xml_path, n):
     """
         Takes XML Training data and returns a pandas dataframe of sentences;
     """
@@ -282,7 +256,7 @@ def df_categories(xml_path, n=10):
     sentences_list = []
     
     category_dict = assign_category(xml_path, n)
-    print(category_dict)
+
     for sentence in sentences:
 
         sentence_id = sentence.attrib['id']                
@@ -298,13 +272,10 @@ def df_categories(xml_path, n=10):
                 location = category_dict[opinion.attrib['category']]
                 try:
                     category_matrix[location] = 1
-                except:
+                except: 
                     pass
-                    # catego
-                train_df = df_polarity(XML_PATH)
-                test_df = df_polarity(XML_SB1_TEST_GOLD_PATH)
-                ry_matrix[i] = assigned(category_dict[opinion.attrib['category']])
-         
+                # category_matrix[i] = assigned(category_dict[opinion.attrib['category']])
+
             sentences_list.append([sentence_id, sentence_text, categories, category_matrix])
 
         except:
@@ -322,13 +293,22 @@ TEST_XML_PATH = "ABSA16_Laptops_Test_GOLD_SB1.xml"
 # train_df.to_pickle(path.join('pandas_data', 'polarity_train.pkl'))
 # test_df.to_pickle(path.join('pandas_data', 'polarity_test.pkl'))
 
-train_df = df_subjectivity(TRAIN_XML_PATH)
-test_df = df_subjectivity(TEST_XML_PATH)
-train_df.to_pickle(path.join('pandas_data', 'subjectivity_train.pkl'))
-test_df.to_pickle(path.join('pandas_data', 'subjectivity_test.pkl'))
+# train_df = df_subjectivity(TRAIN_XML_PATH)
+# test_df = df_subjectivity(TEST_XML_PATH)
+# train_df.to_pickle(path.join('pandas_data', 'subjectivity_train.pkl'))
+# test_df.to_pickle(path.join('pandas_data', 'subjectivity_test.pkl'))
 
-pos =  train_df.loc[(train_df["subjectivity"] == 0)]
-print(pos)
+
+train_df = df_categories(TRAIN_XML_PATH, 8)
+test_df = df_categories(TEST_XML_PATH, 8)
+train_df.to_pickle(path.join('pandas_data', 'aspect_category_detection_train.pkl'))
+test_df.to_pickle(path.join('pandas_data', 'aspect_category_detection_test.pkl'))
+
+
+# print(train_df)
+
+# pos =  train_df.loc[(train_df["subjectivity"] == 0)]
+# print(pos)
 
 # df = df_categories(XML_PATH, n=8)
 # print(len(df))
