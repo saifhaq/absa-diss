@@ -275,8 +275,11 @@ def df_categories(xml_path, n):
                 except: 
                     pass
                 # category_matrix[i] = assigned(category_dict[opinion.attrib['category']])
-
-            sentences_list.append([sentence_id, sentence_text, categories, category_matrix])
+            z = np.count_nonzero(category_matrix)
+            if z == 0:
+                pass
+            else:
+                sentences_list.append([sentence_id, sentence_text, categories, category_matrix])
 
         except:
             pass
@@ -299,8 +302,10 @@ TEST_XML_PATH = "ABSA16_Laptops_Test_GOLD_SB1.xml"
 # test_df.to_pickle(path.join('pandas_data', 'subjectivity_test.pkl'))
 
 
-train_df = df_categories(TRAIN_XML_PATH, 8)
-test_df = df_categories(TEST_XML_PATH, 8)
+train_df = df_categories(TRAIN_XML_PATH, 4)
+test_df = df_categories(TEST_XML_PATH, 4)
+
+print(len(train_df))
 train_df.to_pickle(path.join('pandas_data', 'aspect_category_detection_train.pkl'))
 test_df.to_pickle(path.join('pandas_data', 'aspect_category_detection_test.pkl'))
 

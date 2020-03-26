@@ -122,7 +122,7 @@ model.add(embedding_layer)
 
 model.add(tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(128)))
 # model.add(tf.keras.layers.Dense(256, activation='relu'))
-model.add(tf.keras.layers.Dense(8, activation='softmax'))
+model.add(tf.keras.layers.Dense(3, activation='softmax'))
 
 
 sgd = tf.keras.optimizers.SGD(lr=0.005, decay=1e-6, momentum=0.9, nesterov=True)
