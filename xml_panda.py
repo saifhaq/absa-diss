@@ -268,17 +268,16 @@ def df_categories(xml_path, n):
             opinions = list(sentence)[1]
             categories = []
             for opinion in opinions:
-                categories.append(opinion.attrib['category'])
-                location = category_dict[opinion.attrib['category']]
-                try:
-                    category_matrix[location] = 1
-                except: 
-                    pass
+                if opinion.attrib['category'] == 'LAPTOP#GENERAL':
+                    categories.append(opinion.attrib['category'])
+                    location = category_dict[opinion.attrib['category']]
+                    try:
+                        category_matrix[location] = 1
+                    except: 
+                        pass
                 # category_matrix[i] = assigned(category_dict[opinion.attrib['category']])
             z = np.count_nonzero(category_matrix)
-            if z == 0:
-                pass
-            else:
+            if (z!=0):
                 sentences_list.append([sentence_id, sentence_text, categories, category_matrix])
 
         except:
@@ -302,12 +301,14 @@ TEST_XML_PATH = "ABSA16_Laptops_Test_GOLD_SB1.xml"
 # test_df.to_pickle(path.join('pandas_data', 'subjectivity_test.pkl'))
 
 
-train_df = df_categories(TRAIN_XML_PATH, 4)
-test_df = df_categories(TEST_XML_PATH, 4)
+train_df = df_categories(TRAIN_XML_PATH, 2)
+test_df = df_categories(TEST_XML_PATH, 2)
 
-print(len(train_df))
-train_df.to_pickle(path.join('pandas_data', 'aspect_category_detection_train.pkl'))
-test_df.to_pickle(path.join('pandas_data', 'aspect_category_detection_test.pkl'))
+print(test_df)
+
+
+# train_df.to_pickle(path.join('pandas_data', 'aspect_category_detection_train.pkl'))
+# test_df.to_pickle(path.join('pandas_data', 'aspect_category_detection_test.pkl'))
 
 
 # print(train_df)

@@ -122,7 +122,7 @@ model.add(embedding_layer)
 
 model.add(tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(128)))
 # model.add(tf.keras.layers.Dense(256, activation='relu'))
-model.add(tf.keras.layers.Dense(3, activation='softmax'))
+model.add(tf.keras.layers.Dense(2, activation='softmax'))
 
 
 sgd = tf.keras.optimizers.SGD(lr=0.005, decay=1e-6, momentum=0.9, nesterov=True)
@@ -181,6 +181,9 @@ plot_graphs(history, 'recall')
 # Test F1: 0.27393938058777995
 # Test F1: 0.2880794737881986
 # Test F1: 0.3110465132665278
+# Test F1: 0.4668587686230232 4 classes
+# Test F1: 0.7537314022980798 2 classes
+
 model.save(path.join('tensorflow_models', 'aspect_category_detection_model')) 
 
 # model.save('aspect_category_model') 
