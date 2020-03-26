@@ -36,6 +36,11 @@ train_labels = np.stack(train_df.matrix, axis=0)
 test_seqs = tokenizer.texts_to_sequences(test_df.text)
 
 x_train, x_val, y_train, y_val = train_test_split(train_vector, train_labels, test_size = 0.2, random_state = 0)
+
+# x, x_val, y, y_val = train_test_split(train_vector, train_labels, test_size = 0.2, random_state = 0)
+# x_train, x_test, y_train, y_test = train_test_split(x, y, test_size = 0.2, random_state = 0)
+
+
 x_test = tf.keras.preprocessing.sequence.pad_sequences(test_seqs, padding='post')
 y_test = np.stack(test_df.matrix, axis=0)
 
@@ -86,6 +91,15 @@ model = tf.keras.Sequential()
 # model.add(tf.keras.layers.Embedding(vocab_size+1, 16))
 model.add(embedding_layer)
 
+# model.add(tf.keras.layers.Bidirectional(tf.keras.layers.GRU(128, return_sequences=True, dropout=0.1,
+#                                                       recurrent_dropout=0.1)))
+
+
+# model.add(tf.keras.layers.Conv1D(64, kernel_size=3, padding="valid", kernel_initializer="glorot_uniform"))     
+
+# model.add(tf.keras.layers.GlobalAveragePooling1D())
+# model.add(tf.keras.layers.GlobalMaxPooling1D())
+
 # model.add(tf.keras.layers.Dropout(0.2))
 
 # model.add(tf.keras.layers.Conv1D(filters,
@@ -107,7 +121,7 @@ model.add(embedding_layer)
 # model.add(tf.keras.layers.LSTM(128))
 
 model.add(tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(128)))
-model.add(tf.keras.layers.Dense(128, activation='relu'))
+# model.add(tf.keras.layers.Dense(256, activation='relu'))
 model.add(tf.keras.layers.Dense(8, activation='softmax'))
 
 
@@ -166,13 +180,15 @@ plot_graphs(history, 'recall')
 
 # Test F1: 0.27393938058777995
 # Test F1: 0.2880794737881986
+# Test F1: 0.3110465132665278
+model.save(path.join('tensorflow_models', 'aspect_category_detection_model')) 
 
 # model.save('aspect_category_model') 
 
 
 # # {'LAPTOP#GENERAL': 0, 'LAPTOP#OPERATION_PERFORMANCE': 1, 'LAPTOP#DESIGN_FEATURES': 2, 'LAPTOP#QUALITY': 3, 'LAPTOP#MISCELLANEOUS': 4, 'LAPTOP#USABILITY': 5, 'SUPPORT#QUALITY': 6, 'LAPTOP#PRICE': 7}
 
-# model = tf.keras.models.load_model('aspect_category_model')
+# model = tf.keras.models.load_model(path.join('tensorflow_models', 'aspect_category_model')) 
 
 # sentence = []
 # text = "the price is very high"
