@@ -8,9 +8,10 @@ from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_sc
 from sklearn.feature_extraction.text import CountVectorizer
 import pandas as pd
 import numpy as np 
+import os.path as path 
 
-train_df = pd.read_pickle('aspect_category_detection_train_10_classes.pkl')
-test_df = pd.read_pickle('aspect_category_detection_test_10_classes.pkl')
+train_df = pd.read_pickle(path.join('pandas_data', 'aspect_category_detection_train.pkl'))
+test_df = pd.read_pickle(path.join('pandas_data','aspect_category_detection_test.pkl'))
 
 x_train, y_train = train_df.text, train_df.matrix
 x_test, y_test = test_df.text, test_df.matrix
@@ -34,3 +35,6 @@ print('---------------')
 print('Test F1: {}'.format(f1_score(y_test, predicted, average="macro")))
 
 # print(confusion_matrix(y_test, predicted))
+
+# Test Precision: 0.6985707077355097
+# Test F1: 0.7122212245492272

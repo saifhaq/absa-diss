@@ -83,7 +83,7 @@ pool_size = 4
 # # {'LAPTOP#GENERAL': 0, 'LAPTOP#OPERATION_PERFORMANCE': 1, 'LAPTOP#DESIGN_FEATURES': 2, 'LAPTOP#QUALITY': 3, 'LAPTOP#MISCELLANEOUS': 4, 'LAPTOP#USABILITY': 5, 'SUPPORT#QUALITY': 6, 'LAPTOP#PRICE': 7}
 
 
-model = tf.keras.models.load_model(path.join('tensorflow_models', 'aspect_category_model')) 
+model = tf.keras.models.load_model(path.join('tensorflow_models', 'aspect_category_detection_model')) 
 
 sentence = []
 text = "laptop battery is great but screen is trash"
@@ -94,17 +94,19 @@ sentence.append(text_processed)
 sentence_seq = tokenizer.texts_to_sequences(sentence)
 sentence_vector = tf.keras.preprocessing.sequence.pad_sequences(sentence_seq, padding='post', maxlen=73)
 
+
+
+
 predicted = model.predict([x_test])
-actual = y_test
+y_actual = y_test
 x = 10
 
-y_pred = (predicted > 0.3)*1
-y_actual = (actual > 0.3)*1
+y_pred = (predicted > 0.5)*1
+print(y_pred)
 
 mean = np.mean(predicted == y_test)
 
-# print(y_pred[0]*1)
-# print(y_actual[0]*1)
+print(y_pred[0]*1)
 
 print('Test Mean: {}'.format(mean))
 print('---------------')
