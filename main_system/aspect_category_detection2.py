@@ -102,18 +102,20 @@ y_actual = y_test
 x = 10
 
 y_pred = (predicted > 0.5)*1
-print(y_pred)
+print(len(y_pred))
+print(len(y_actual))
 
-mean = np.mean(predicted == y_test)
 
-print(y_pred[0]*1)
+# mean = np.mean(predicted == y_test)
 
-print('Test Mean: {}'.format(mean))
-print('---------------')
-print('Test Precision: {}'.format(precision_score(y_actual, y_pred, average="macro")))
-print('Test Recall: {}'.format(recall_score(y_actual, y_pred, average="macro")))
-print('---------------')
-print('Test F1: {}'.format(f1_score(y_actual, y_pred, average="macro")))
+# print(y_pred[0]*1)
 
-# # print(model.predict([[sentence_vector[0]]]))
+# print('Test Mean: {}'.format(mean))
+# print('---------------')
+# print('Test Precision: {}'.format(precision_score(y_actual, y_pred, average="macro")))
+# print('Test Recall: {}'.format(recall_score(y_actual, y_pred, average="macro")))
+# print('---------------')
+# print('Test F1: {}'.format(f1_score(y_actual, y_pred, average="macro")))
+
+# # # print(model.predict([[sentence_vector[0]]]))
  

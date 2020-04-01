@@ -326,6 +326,7 @@ def df_categories(xml_path, n, category_dict, empty_matrix_wanted = True):
                 if (z!=0):
                     sentences_list.append([sentence_id, sentence_text, categories, category_matrix])
             else:
+                # if category_matrix[0] == 1:
                 sentences_list.append([sentence_id, sentence_text, categories, category_matrix])
 
         except:
@@ -367,10 +368,10 @@ category_dict = {'LAPTOP#GENERAL': 0, 'LAPTOP#OPERATION_PERFORMANCE': 1, 'LAPTOP
 
 # print(test_df)
 
-# [('LAPTOP#GENERAL', 634), ('LAPTOP#OPERATION_PERFORMANCE', 278), ('LAPTOP#DESIGN_FEATURES', 253), ('LAPTOP#QUALITY', 224), ('LAPTOP#MISCELLANEOUS', 142), ('LAPTOP#USABILITY', 141), ('SUPPORT#QUALITY', 138), ('LAPTOP#PRICE', 136), ('COMPANY#GENERAL', 90), ('BATTERY#OPERATION_PERFORMANCE', 86)]
+# [('LAPTOP#GENERAL', 634), ('LAPTOP#OPERATION_PERFORMANCE', 278), ('LAPTOP#DESIGN_FEATURES', 253), ('LAPTOP#QUALITY', 224), ('LAPTOP#MISCELLANEOUS', 142), ('LAPTOP#USABILITY', 141), ('SUPPORT#QUALITY', 138), ('LAPTOP#PRICE', 136), ('COMPANY#1', 90), ('BATTERY#OPERATION_PERFORMANCE', 86)]
 
-train_df = df_categories(TRAIN_XML_PATH, 8, category_dict, True)
-test_df = df_categories(TEST_XML_PATH, 8, category_dict, True)
+train_df = df_categories(TRAIN_XML_PATH, 6, category_dict, True)
+test_df = df_categories(TEST_XML_PATH, 6, category_dict, True)
 
 train_df.to_pickle(path.join('pandas_data', 'aspect_category_detection_train.pkl'))
 test_df.to_pickle(path.join('pandas_data', 'aspect_category_detection_test.pkl'))

@@ -35,22 +35,22 @@ def gloveEmbedding(d):
   return embedding_matrix
 
 
-def evaluateModel(m, x_test, y_test):
-      """
-        Prints out loss, accuracy, precision, recall and F-1 measure of a model
+# def evaluateModel(m, x_test, y_test):
+#       """
+#         Prints out loss, accuracy, precision, recall and F-1 measure of a model
 
-        :param m: tensorflow model 
-      """
-      test_loss, test_acc, test_precision, test_recall = model.evaluate(x_test, y_test)
-      F1 = 2 * (test_precision * test_recall) / (test_precision + test_recall)
+#         :param m: tensorflow model 
+#       """
+#       test_loss, test_acc, test_precision, test_recall = model.evaluate(x_test, y_test)
+#       F1 = 2 * (test_precision * test_recall) / (test_precision + test_recall)
 
-      print('---------------')
-      print('Test Loss: {}'.format(test_loss))
-      print('Test Accuracy: {}'.format(test_acc))
-      print('Test Precision: {}'.format(test_precision))
-      print('Test Recall: {}'.format(test_recall))
-      print('---------------')
-      print('Test F1: {}'.format(F1))
+#       print('---------------')
+#       print('Test Loss: {}'.format(test_loss))
+#       print('Test Accuracy: {}'.format(test_acc))
+#       print('Test Precision: {}'.format(test_precision))
+#       print('Test Recall: {}'.format(test_recall))
+#       print('---------------')
+#       print('Test F1: {}'.format(F1))
 
 
 
@@ -135,26 +135,30 @@ METRICS = [
       tf.keras.metrics.Recall(name='recall'),
 ]
 
-model.compile(loss='mean_squared_error',
-              optimizer=adam,
-              metrics=METRICS)
+model.summary()
+
+# model.compile(loss='mean_squared_error',
+#               optimizer=adam,
+#               metrics=METRICS)
               
 
-history = model.fit(x_train, 
-                    y_train, 
-                    epochs=75,
-                    validation_data=(x_val, y_val),
-                    verbose = 1
+# history = model.fit(x_train, 
+#                     y_train, 
+#                     epochs=75,
+#                     validation_data=(x_val, y_val),
+#                     verbose = 1
                     
-                    )   
+                    # )   
 
 # Prints evaluation metrics of test data
-evaluateModel(model, x_test, y_test)
+# evaluateModel(model, x_test, y_test)
 
+model.summary()
 model.save(path.join('tensorflow_models', 'subjectivity_classification_model')) 
 
 
 # F1 Measure 0.808
+
 
 # model = tf.keras.models.load_model('polarity_classification_model')
 
