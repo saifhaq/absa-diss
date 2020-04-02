@@ -9,6 +9,20 @@ from sklearn.model_selection import train_test_split
 import os.path as path
 
 
+gpus = tf.config.experimental.list_physical_devices('GPU')
+if gpus:
+  # Restrict TensorFlow to only allocate 1GB of memory on the first GPU
+  try:
+    tf.config.experimental.set_virtual_device_configuration(
+        gpus[0],
+        [tf.config.experimental.VirtualDeviceConfiguration(memory_limit=1024)])
+    logical_gpus = tf.config.experimental.list_logical_devices('GPU')
+    print(len(gpus), "Physical GPUs,", len(logical_gpus), "Logical GPUs")
+  except RuntimeError as e:
+    # Virtual devices must be set before GPUs have been initialized
+    print(e)
+
+
 def gloveEmbedding(d):
   """
     Returns a d dimensional glove embedding 
@@ -35,22 +49,22 @@ def gloveEmbedding(d):
   return embedding_matrix
 
 
-# def evaluateModel(m, x_test, y_test):
-#       """
-#         Prints out loss, accuracy, precision, recall and F-1 measure of a model
+def evaluateModel(m, x_test, y_test):
+      """
+        Prints out loss, accuracy, precision, recall and F-1 measure of a model
 
-#         :param m: tensorflow model 
-#       """
-#       test_loss, test_acc, test_precision, test_recall = model.evaluate(x_test, y_test)
-#       F1 = 2 * (test_precision * test_recall) / (test_precision + test_recall)
+        :param m: tensorflow model 
+      """
+      test_loss, test_acc, test_precision, test_recall = model.evaluate(x_test, y_test)
+      F1 = 2 * (test_precision * test_recall) / (test_precision + test_recall)
 
-#       print('---------------')
-#       print('Test Loss: {}'.format(test_loss))
-#       print('Test Accuracy: {}'.format(test_acc))
-#       print('Test Precision: {}'.format(test_precision))
-#       print('Test Recall: {}'.format(test_recall))
-#       print('---------------')
-#       print('Test F1: {}'.format(F1))
+      print('---------------')
+      print('Test Loss: {}'.format(test_loss))
+      print('Test Accuracy: {}'.format(test_acc))
+      print('Test Precision: {}'.format(test_precision))
+      print('Test Recall: {}'.format(test_recall))
+      print('---------------')
+      print('Test F1: {}'.format(F1))
 
 
 
@@ -137,23 +151,26 @@ METRICS = [
 
 model.summary()
 
-# model.compile(loss='mean_squared_error',
-#               optimizer=adam,
-#               metrics=METRICS)
+
+
+
+model.compile(loss='mean_squared_error',
+              optimizer=adam,
+              metrics=METRICS)
               
 
-# history = model.fit(x_train, 
-#                     y_train, 
-#                     epochs=75,
-#                     validation_data=(x_val, y_val),
-#                     verbose = 1
+history = model.fit(x_train, 
+                    y_train, 
+                    epochs=75,
+                    validation_data=(x_val, y_val),
+                    verbose = 1
                     
-                    # )   
+                    )   
 
 # Prints evaluation metrics of test data
-# evaluateModel(model, x_test, y_test)
+evaluateModel(model, x_test, y_test)
 
-model.summary()
+# model.summary()
 model.save(path.join('tensorflow_models', 'subjectivity_classification_model')) 
 
 

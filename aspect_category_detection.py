@@ -11,6 +11,8 @@ from sklearn.metrics import f1_score
 import matplotlib.pyplot as plt
 import os.path as path
 
+
+
 train_df = pd.read_pickle(path.join('pandas_data', 'aspect_category_detection_train.pkl'))
 test_df = pd.read_pickle(path.join('pandas_data','aspect_category_detection_test.pkl'))
 
@@ -120,7 +122,7 @@ model.add(embedding_layer)
 
 # model.add(tf.keras.layers.LSTM(128))
 
-model.add(tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(128)))
+model.add(tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(512)))
 # model.add(tf.keras.layers.Dense(256, activation='relu'))
 model.add(tf.keras.layers.Dense(6, activation='sigmoid'))
 
@@ -137,14 +139,14 @@ METRICS = [
 ]
 
 model.compile(loss='binary_crossentropy',
-              optimizer=adam,
+              optimizer=sgd,
               metrics=METRICS)
               
 
 
 history = model.fit(x_train, 
                     y_train, 
-                    epochs=50,
+                    epochs=500,
                     validation_data=(x_val, y_val),
                     verbose = 1,                     
                     )   
@@ -180,6 +182,15 @@ plot_graphs(history, 'recall')
 
 """
 GloVe, 128-layer bidirectional LSTM, category matrix length output with softmax & categorical_crossentropy & 50 epochs
+
+
+Both
+Test Loss: 0.5534250736236572
+Test Accuracy: 0.8814352750778198
+Test Precision: 0.4126637578010559
+Test Recall: 0.5026595592498779
+---------------
+Test F1: 0.45323740529847023
 
 Train excluding, test including  
 2 Classes
