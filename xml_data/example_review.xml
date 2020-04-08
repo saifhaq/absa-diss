@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Reviews>
+   <Review rid="10">
+        <sentences>
+            <sentence id="10:0">
+                <text>the laptop was really good and it goes really fast just the way i thought it would of run.</text>
+                <Opinions>
+                    <Opinion category="LAPTOP#GENERAL" polarity="positive"/>
+                    <Opinion category="LAPTOP#OPERATION_PERFORMANCE" polarity="positive"/>
+                </Opinions>
+            </sentence>
+            <sentence id="10:1">
+                <text>i would really recommend to any person out there to get this laptop cause its really worth it.</text>
+                <Opinions>
+                    <Opinion category="LAPTOP#GENERAL" polarity="positive"/>
+                </Opinions>
+            </sentence>
+            <sentence id="10:2">
+                <text>and its really cheap and you wont regret buying it.</text>
+                <Opinions>
+                    <Opinion category="LAPTOP#PRICE" polarity="positive"/>
+                    <Opinion category="LAPTOP#GENERAL" polarity="positive"/>
+                </Opinions>
+            </sentence>
+        </sentences>
+    </Review>
+</Reviews>

@@ -7,7 +7,8 @@ from sklearn import svm
 import numpy as np 
 import os.path as path
 import re
-
+from nltk.corpus import stopwords
+import nltk
 
 
 def sentence_categories(xml_path):
@@ -335,102 +336,24 @@ def df_categories(xml_path, n, category_dict, empty_matrix_wanted = True):
     return pd.DataFrame(sentences_list, columns = ["id", "text", "category", "matrix"])
 
 
-TRAIN_XML_PATH = "ABSA16_Laptops_Train_SB1_v2.xml"
-TEST_XML_PATH = "ABSA16_Laptops_Test_GOLD_SB1.xml"
+TRAIN_XML_PATH = "ABSA16_Restaurants_Train_SB1_v2.xml"
+TEST_XML_PATH = "EN_REST_SB1_TEST.xml.gold"
 
-
-# train_df = df_polarity(TRAIN_XML_PATH)
-# test_df = df_polarity(TEST_XML_PATH)
-# train_df.to_pickle(path.join('pandas_data', 'polarity_train.pkl'))
-# test_df.to_pickle(path.join('pandas_data', 'polarity_test.pkl'))
-
-# train_df = df_subjectivity(TRAIN_XML_PATH)
-# test_df = df_subjectivity(TEST_XML_PATH)
-# train_df.to_pickle(path.join('pandas_data', 'subjectivity_train.pkl'))
-# test_df.to_pickle(path.join('pandas_data', 'subjectivity_test.pkl'))
-
-category_dict = {'LAPTOP#GENERAL': 0, 'LAPTOP#OPERATION_PERFORMANCE': 1, 'LAPTOP#DESIGN_FEATURES': 2, 'LAPTOP#QUALITY': 3, 'LAPTOP#MISCELLANEOUS': 4, 'LAPTOP#USABILITY': 5, 'SUPPORT#QUALITY': 6, 'LAPTOP#PRICE': 7, 'COMPANY#GENERAL': 8, 'BATTERY#OPERATION_PERFORMANCE': 9, 'LAPTOP#CONNECTIVITY': 10, 'DISPLAY#QUALITY': 11, 'LAPTOP#PORTABILITY': 12, 'OS#GENERAL': 13, 'SOFTWARE#GENERAL': 14, 'KEYBOARD#DESIGN_FEATURES': 15}
-
-
-
-# TRAIN_XML_PATH = (path.join('xml_data', "example_review.xml"))
-# # train_df = df_subjectivity(TRAIN_XML_PATH, 10, category_dict, False)
-# train_df = df_subjectivity(TRAIN_XML_PATH)
-
-# print(train_df.head(10))
-
-# train_df.to_pickle(path.join('pandas_data', 'example_review_subjectivity.pkl'))
-
-
+# category_dict = {'LAPTOP#GENERAL': 0, 'LAPTOP#OPERATION_PERFORMANCE': 1, 'LAPTOP#DESIGN_FEATURES': 2, 'LAPTOP#QUALITY': 3, 'LAPTOP#MISCELLANEOUS': 4, 'LAPTOP#USABILITY': 5, 'SUPPORT#QUALITY': 6, 'LAPTOP#PRICE': 7, 'COMPANY#GENERAL': 8, 'BATTERY#OPERATION_PERFORMANCE': 9, 'LAPTOP#CONNECTIVITY': 10, 'DISPLAY#QUALITY': 11, 'LAPTOP#PORTABILITY': 12, 'OS#GENERAL': 13, 'SOFTWARE#GENERAL': 14, 'KEYBOARD#DESIGN_FEATURES': 15}
+category_dict = {'FOOD#QUALITY': 0, 'SERVICE#GENERAL': 1, 'RESTAURANT#GENERAL': 2, 'AMBIENCE#GENERAL': 3, 'FOOD#STYLE_OPTIONS': 4, 'RESTAURANT#MISCELLANEOUS': 5, 'FOOD#PRICES': 6, 'RESTAURANT#PRICES': 7}
 
 train_df = df_categories(TRAIN_XML_PATH, 8, category_dict, True)
+
+# cats = assign_category(TRAIN_XML_PATH, 8)
+# print(cats)
+print(train_df)
 test_df = df_categories(TEST_XML_PATH, 8, category_dict, True)
 
+stop = stopwords.words('english')
 
-train_df.to_pickle(path.join('pandas_data', 'aspect_category_detection_train.pkl'))
-test_df.to_pickle(path.join('pandas_data', 'aspect_category_detection_test.pkl'))
+# train_df['text'] = train_df['text'].apply(lambda x: ' '.join([word for word in x.split() if word not in (stop)]))
+# test_df['text'] = test_df['text'].apply(lambda x: ' '.join([word for word in x.split() if word not in (stop)]))
 
-# print(len(train_df))
-# print(len(test_df))
-# assigned = assign_category(TRAIN_XML_PATH, 10)
-# sentences = df_aspect_category(TEST_XML_PATH)
-# categories = Counter(sentences.category).most_common(10)
+train_df.to_pickle(path.join('pandas_data', 'restaurants_aspect_category_detection_train.pkl'))
+test_df.to_pickle(path.join('pandas_data', 'restaurants_aspect_category_detection_test.pkl'))
 
-# print(categories)
-
-# print(test_df)
-
-# [('LAPTOP#GENERAL', 634), ('LAPTOP#OPERATION_PERFORMANCE', 278), ('LAPTOP#DESIGN_FEATURES', 253), ('LAPTOP#QUALITY', 224), ('LAPTOP#MISCELLANEOUS', 142), ('LAPTOP#USABILITY', 141), ('SUPPORT#QUALITY', 138), ('LAPTOP#PRICE', 136), ('COMPANY#1', 90), ('BATTERY#OPERATION_PERFORMANCE', 86)]
-
-# train_df = df_categories(TRAIN_XML_PATH, 6, category_dict, True)
-# test_df = df_categories(TEST_XML_PATH, 6, category_dict, True)
-
-# train_df.to_pickle(path.join('pandas_data', 'aspect_category_detection_train.pkl'))
-# test_df.to_pickle(path.join('pandas_data', 'aspect_category_detection_test.pkl'))
-
-# print(len(train_df))
-# print(train_df)
-
-# pos =  train_df.loc[(train_df["matrix"] == 1)]
-# print(pos.tail(30))
-
-# df = df_categories(XML_PATH, n=8)
-# print(len(df))
-# df.to_pickle('aspect_category_detection_train_10_classes.pkl')
-
-
-# df = df_categories(XML_SB1_TEST_GOLD_PATH, n=8)
-# print(df)
-# df.to_pickle('aspect_category_detection_test_10_classes.pkl')
-
-
-# from sklearn.metrics import confusion_matrix
-# from sklearn.pipeline import Pipeline
-# from sklearn.linear_model import SGDClassifier
-# from sklearn.feature_extraction.text import TfidfTransformer
-# from sklearn.metrics import confusion_matrix
-# from sklearn.model_selection import train_test_split
-# from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score, classification_report, confusion_matrix
-
-# train_df = df_categories(XML_PATH)
-# test_df = df_categories(XML_SB1_TEST_GOLD_PATH)
-
-# x_train, y_train = train_df.text, train_df.matrix
-# x_test, y_test = test_df.text, test_df.matrix
-
-# text_clf = Pipeline([
-#     ('vect', CountVectorizer()),
-#     ('tfidf', TfidfTransformer()),
-#      ('clf', SGDClassifier()),    
-#      ])
-
-# text_clf.fit(x_train, y_train)
-
-# predicted = text_clf.predict(x_test)
-# mean = np.mean(predicted == y_test)
-# print(mean)
-
-# print(f1_score(y_test, predicted, average="macro"))
-# print(precision_score(y_test, predicted, average="macro"))
-# print(recall_score(y_test, predicted, average="macro"))   
-# # print(confusion_matrix(y_test, predicted))

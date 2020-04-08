@@ -10,11 +10,36 @@ import os
 from sklearn.metrics import f1_score
 import matplotlib.pyplot as plt
 import os.path as path
+from nltk.corpus import stopwords
+import nltk
 
 
+
+
+
+
+gpus = tf.config.experimental.list_physical_devices('GPU')
+if gpus:
+  # Restrict TensorFlow to only allocate 1GB of memory on the first GPU
+  try:
+    tf.config.experimental.set_virtual_device_configuration(
+        gpus[0],
+        [tf.config.experimental.VirtualDeviceConfiguration(memory_limit=1024)])
+    logical_gpus = tf.config.experimental.list_logical_devices('GPU')
+    print(len(gpus), "Physical GPUs,", len(logical_gpus), "Logical GPUs")
+  except RuntimeError as e:
+    # Virtual devices must be set before GPUs have been initialized
+    print(e)
+
+
+
+# train_df = pd.read_pickle(path.join('pandas_data', 'restaurants_aspect_category_detection_train.pkl'))
+# test_df = pd.read_pickle(path.join('pandas_data','restaurants_aspect_category_detection_test.pkl'))
 
 train_df = pd.read_pickle(path.join('pandas_data', 'aspect_category_detection_train.pkl'))
 test_df = pd.read_pickle(path.join('pandas_data','aspect_category_detection_test.pkl'))
+
+
 
 
 top_k = 5000
@@ -29,6 +54,7 @@ tokenizer.index_word[0] = '<pad>'
 
 tokenizer.word_index['<unk>'] = 1
 tokenizer.index_word[1] = '<unk>'
+
 
 
 train_seqs = tokenizer.texts_to_sequences(train_df.text)
@@ -89,45 +115,87 @@ embedding_layer = tf.keras.layers.Embedding(len(word_index) + 1,
                             trainable=False)
 
 
+
+
+
+# model = tf.keras.Sequential()
+# # model.add(tf.keras.layers.Embedding(vocab_size+1, 16))
+# model.add(embedding_layer)
+
+# # model.add(tf.keras.layers.Bidirectional(tf.keras.layers.GRU(128, return_sequences=True, dropout=0.1,
+# #                                                       recurrent_dropout=0.1)))
+
+
+# # model.add(tf.keras.layers.Conv1D(64, kernel_size=3, padding="valid", kernel_initializer="glorot_uniform"))     
+
+# # model.add(tf.keras.layers.GlobalAveragePooling1D())
+# # model.add(tf.keras.layers.GlobalMaxPooling1D())
+
+# # model.add(tf.keras.layers.Dropout(0.2))
+
+# # model.add(tf.keras.layers.Conv1D(filters,
+# #                  kernel_size,
+# #                  padding='valid',
+# #                  activation='relu',
+# #                  strides=1))
+# # model.add(tf.keras.layers.MaxPooling1D(pool_size=pool_size))
+
+
+
+# # model.add(tf.keras.layers.Conv1D(filters,
+# #                  kernel_size,
+# #                  padding='valid',
+# #                  activation='relu',
+# #                  strides=1))
+# # model.add(tf.keras.layers.MaxPooling1D(pool_size=pool_size))
+
+# model.add(tf.keras.layers.GRU(128))
+# # model.add(tf.keras.layers.GRU(units=128, return_sequences=True))
+# # model.add(tf.keras.layers.TimeDistributed(tf.keras.layers.Dense(512, activation='sigmoid')))
+# # model.add(tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(512)))
+# model.add(tf.keras.layers.Dense(256, activation='relu'))
+# model.add(tf.keras.layers.Dense(6, activation='sigmoid'))
+
+
+
+embedding_layer = tf.keras.layers.Embedding(len(word_index) + 1,
+                            100,
+                            weights=[glove_matrix],
+                            trainable=False)
+
+
+
 model = tf.keras.Sequential()
-# model.add(tf.keras.layers.Embedding(vocab_size+1, 16))
 model.add(embedding_layer)
 
-# model.add(tf.keras.layers.Bidirectional(tf.keras.layers.GRU(128, return_sequences=True, dropout=0.1,
-#                                                       recurrent_dropout=0.1)))
-
-
-# model.add(tf.keras.layers.Conv1D(64, kernel_size=3, padding="valid", kernel_initializer="glorot_uniform"))     
-
-# model.add(tf.keras.layers.GlobalAveragePooling1D())
-# model.add(tf.keras.layers.GlobalMaxPooling1D())
-
-# model.add(tf.keras.layers.Dropout(0.2))
-
-# model.add(tf.keras.layers.Conv1D(filters,
-#                  kernel_size,
-#                  padding='valid',
-#                  activation='relu',
-#                  strides=1))
-# model.add(tf.keras.layers.MaxPooling1D(pool_size=pool_size))
 
 
 
-# model.add(tf.keras.layers.Conv1D(filters,
-#                  kernel_size,
-#                  padding='valid',
-#                  activation='relu',
-#                  strides=1))
-# model.add(tf.keras.layers.MaxPooling1D(pool_size=pool_size))
 
-# model.add(tf.keras.layers.LSTM(128))
-
-model.add(tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(512)))
-# model.add(tf.keras.layers.Dense(256, activation='relu'))
-model.add(tf.keras.layers.Dense(6, activation='sigmoid'))
+model.add(tf.keras.layers.Conv1D(filters,
+                 kernel_size,
+                 padding='valid',
+                 activation='relu',
+                 strides=1))
+model.add(tf.keras.layers.MaxPooling1D(pool_size=pool_size))
 
 
-sgd = tf.keras.optimizers.SGD(lr=0.005, decay=1e-6, momentum=0.9, nesterov=True)
+model.add(tf.keras.layers.Conv1D(filters,
+                 kernel_size,
+                 padding='valid',
+                 activation='relu',
+                 strides=1))
+model.add(tf.keras.layers.MaxPooling1D(pool_size=pool_size))
+
+
+
+model.add(tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(128)))
+
+model.add(tf.keras.layers.Dense(8, activation='sigmoid'))
+
+
+
+sgd = tf.keras.optimizers.SGD(lr=0.001, decay=1e-6, momentum=0.9, nesterov=True)
 adam = tf.keras.optimizers.Adam(1e-4)
 
 model.summary()
@@ -139,14 +207,14 @@ METRICS = [
 ]
 
 model.compile(loss='binary_crossentropy',
-              optimizer=sgd,
+              optimizer=adam,
               metrics=METRICS)
               
 
 
 history = model.fit(x_train, 
                     y_train, 
-                    epochs=500,
+                    epochs=75,
                     validation_data=(x_val, y_val),
                     verbose = 1,                     
                     )   
