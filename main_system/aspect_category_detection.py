@@ -13,9 +13,14 @@ import os.path as path
 from nltk.corpus import stopwords
 import nltk
 
-
-
-
+def stoplist(file_name = "stopwords.txt"):
+  stopwords_txt = open(path.join('preprocessing', file_name))
+  stoplist = []
+  for line in stopwords_txt:
+      values = line.split()
+      stoplist.append(values[0])
+  stopwords_txt.close()
+  return stoplist
 
 
 gpus = tf.config.experimental.list_physical_devices('GPU')
@@ -39,7 +44,14 @@ if gpus:
 train_df = pd.read_pickle(path.join('pandas_data', 'aspect_category_detection_train.pkl'))
 test_df = pd.read_pickle(path.join('pandas_data','aspect_category_detection_test.pkl'))
 
+stoplist = stoplist()
 
+train_df['text'] = train_df['text'].apply(lambda x: ' '.join([item for item in x.split() if item not in stoplist]))
+test_df['text'] = test_df['text'].apply(lambda x: ' '.join([item for item in x.split() if item not in stoplist]))
+
+print(train_df.text)
+train_df.dropna(axis=0, how='any', thresh=None, subset=None, inplace=False)
+test_df.dropna(axis=0, how='any', thresh=None, subset=None, inplace=False)
 
 
 top_k = 5000
@@ -74,6 +86,7 @@ y_test = np.stack(test_df.matrix, axis=0)
 
 word_index = tokenizer.word_index
 vocab_size = len(Counter(" ".join(train_df.text).split(" ")))
+
 
 
 def gloveEmbedding(d):
@@ -116,48 +129,6 @@ embedding_layer = tf.keras.layers.Embedding(len(word_index) + 1,
 
 
 
-
-
-# model = tf.keras.Sequential()
-# # model.add(tf.keras.layers.Embedding(vocab_size+1, 16))
-# model.add(embedding_layer)
-
-# # model.add(tf.keras.layers.Bidirectional(tf.keras.layers.GRU(128, return_sequences=True, dropout=0.1,
-# #                                                       recurrent_dropout=0.1)))
-
-
-# # model.add(tf.keras.layers.Conv1D(64, kernel_size=3, padding="valid", kernel_initializer="glorot_uniform"))     
-
-# # model.add(tf.keras.layers.GlobalAveragePooling1D())
-# # model.add(tf.keras.layers.GlobalMaxPooling1D())
-
-# # model.add(tf.keras.layers.Dropout(0.2))
-
-# # model.add(tf.keras.layers.Conv1D(filters,
-# #                  kernel_size,
-# #                  padding='valid',
-# #                  activation='relu',
-# #                  strides=1))
-# # model.add(tf.keras.layers.MaxPooling1D(pool_size=pool_size))
-
-
-
-# # model.add(tf.keras.layers.Conv1D(filters,
-# #                  kernel_size,
-# #                  padding='valid',
-# #                  activation='relu',
-# #                  strides=1))
-# # model.add(tf.keras.layers.MaxPooling1D(pool_size=pool_size))
-
-# model.add(tf.keras.layers.GRU(128))
-# # model.add(tf.keras.layers.GRU(units=128, return_sequences=True))
-# # model.add(tf.keras.layers.TimeDistributed(tf.keras.layers.Dense(512, activation='sigmoid')))
-# # model.add(tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(512)))
-# model.add(tf.keras.layers.Dense(256, activation='relu'))
-# model.add(tf.keras.layers.Dense(6, activation='sigmoid'))
-
-
-
 embedding_layer = tf.keras.layers.Embedding(len(word_index) + 1,
                             100,
                             weights=[glove_matrix],
@@ -172,20 +143,20 @@ model.add(embedding_layer)
 
 
 
-model.add(tf.keras.layers.Conv1D(filters,
-                 kernel_size,
-                 padding='valid',
-                 activation='relu',
-                 strides=1))
-model.add(tf.keras.layers.MaxPooling1D(pool_size=pool_size))
+# model.add(tf.keras.layers.Conv1D(filters,
+#                  kernel_size,
+#                  padding='valid',
+#                  activation='relu',
+#                  strides=1))
+# model.add(tf.keras.layers.MaxPooling1D(pool_size=pool_size))
 
 
-model.add(tf.keras.layers.Conv1D(filters,
-                 kernel_size,
-                 padding='valid',
-                 activation='relu',
-                 strides=1))
-model.add(tf.keras.layers.MaxPooling1D(pool_size=pool_size))
+# model.add(tf.keras.layers.Conv1D(filters,
+#                  kernel_size,
+#                  padding='valid',
+#                  activation='relu',
+#                  strides=1))
+# model.add(tf.keras.layers.MaxPooling1D(pool_size=pool_size))
 
 
 
@@ -310,7 +281,7 @@ Train included, test including
 
 # Test F1: 0.41776 8 classes
 
-model.save(path.join('tensorflow_models', 'aspect_category_detection_model')) 
+# model.save(path.join('tensorflow_models', 'aspect_category_detection_model')) 
 
 # model.save('aspect_category_model') 
 
