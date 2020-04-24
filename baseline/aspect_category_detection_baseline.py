@@ -1,6 +1,7 @@
 from sklearn.metrics import confusion_matrix
 from sklearn.pipeline import Pipeline
 from sklearn.linear_model import SGDClassifier
+import sklearn
 from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.metrics import confusion_matrix
 from sklearn.model_selection import train_test_split
@@ -15,18 +16,23 @@ DESIRED_CATEGORY = 'LAPTOP#GENERAL'
 train_df_name = 'TRAIN.'+DESIRED_CATEGORY + '.pkl'
 test_df_name = 'TEST.'+DESIRED_CATEGORY + '.pkl'
 
-train_df = pd.read_pickle(path.join('pandas_data', path.join('aspect_baseline', train_df_name)))
-test_df = pd.read_pickle(path.join('pandas_data', path.join('aspect_baseline', test_df_name)))
+# train_df = pd.read_pickle(path.join('pandas_data', path.join('aspect_baseline', train_df_name)))
+# test_df = pd.read_pickle(path.join('pandas_data', path.join('aspect_baseline', test_df_name)))
 
-x_train, y_train = train_df.text, train_df.desired_category
-x_test, y_test = test_df.text, test_df.desired_category
+train_df = pd.read_pickle(path.join('pandas_data', 'aspect_category_detection_train.pkl'))
+test_df = pd.read_pickle(path.join('pandas_data', 'aspect_category_detection_test.pkl'))
 
+x_train, y_train = train_df.text, train_df.matrix
+x_test, y_test = test_df.text, test_df.matrix
+
+
+print(y_test)
 text_clf = Pipeline([
     ('vect', CountVectorizer()),
     ('tfidf', TfidfTransformer()),
      ('svc', SGDClassifier()),    
      ])
-
+ 
 text_clf.fit(x_train, y_train)
 
 predicted = text_clf.predict(x_test)

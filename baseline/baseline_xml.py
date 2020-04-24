@@ -18,6 +18,7 @@ import pandas as pd
 import numpy as np 
 import os.path as path 
 
+
 def df_aspect_category(xml_path):
     """
         Takes *xml_path* and returns dataframe of each sentence and corresponding category. 
@@ -84,6 +85,34 @@ def df_single_category(xml_path, desired_category):
     return pd.DataFrame(sentences_list, columns = ["id", "text", "desired_category"])
 
 
+def df_predicted_category(xml_path):
+    """
+        Takes *xml_path* and returns labels of data corresponding to whether data is in *desired_category* or not
+
+    """
+
+    tree = et.parse(xml_path)
+    reviews = tree.getroot()
+    sentences = reviews.findall('**/sentence')
+
+    sentences_list = []
+    
+    for sentence in sentences:
+
+        sentence_id = sentence.attrib['id']                
+        sentence_text = sentence.find('text').text
+        label = 0
+        sentence_text =  re.sub(r'[^\w\s]','',sentence_text.lower())
+
+        try: 
+            opinions = list(sentence)[1]
+            matrix = np.zeros((16,), dtype=int)
+            sentences_list.append([sentence_id, sentence_text, matrix])
+
+        except:
+            pass
+
+    return pd.DataFrame(sentences_list, columns = ["id", "text", "predicted_matrix"])
 
 
 TRAIN_XML_PATH = "ABSA16_Laptops_Train_SB1_v2.xml"
@@ -97,13 +126,31 @@ sentences_test = df_aspect_category(TRAIN_XML_PATH)
 categories_test = Counter(sentences.category).most_common(16)
 
 data_df = pd.DataFrame(columns = ["desired_category", "train_count"])
+# predicted_category_matrix =
+# df = sentences.append({'predicted': predicted_category_matrix}, ignore_index=True)
+# print(df)
+
+
+pred_df = df_predicted_category(TEST_XML_PATH)
+
+DESIRED_CATEGORY = categories[0][0]
+
+
+# matrix = df['predicted_matrix'][2] 
+# matrix[0] = 1 
+
+# print(len(df))
+
+
+# sentences.assign(Name='predicted')
+# s = np.zeros((16), dtype=int)
+# sentences['predicted'] =  s
 
 for i in range(0,16):
     
     DESIRED_CATEGORY = categories[i][0]
     TRAIN_COUNT = categories[i][1]
 
-    print(DESIRED_CATEGORY)
     train_df = df_single_category(TRAIN_XML_PATH, DESIRED_CATEGORY)
     test_df = df_single_category(TEST_XML_PATH, DESIRED_CATEGORY)
 
@@ -126,11 +173,48 @@ for i in range(0,16):
     text_clf.fit(x_train, y_train)
 
     predicted = text_clf.predict(x_test)
+
+    for j in range(0, len(predicted)):
+        matrix = pred_df['predicted_matrix'][j] 
+        matrix[i] = predicted[j] 
+
     mean = np.mean(predicted == y_test)
     acc = roc_auc_score(y_test, predicted)
 
     data_df = data_df.append({'desired_category': DESIRED_CATEGORY, 'train_count': TRAIN_COUNT, 'acc': acc}, ignore_index=True)
 
-data_df.to_pickle(path.join('baseline', path.join('aspect', 'aspect_baseline_data')))
+predicted_matrix = pred_df.predicted_matrix
+actual_df = pd.read_pickle(path.join('pandas_data', 'aspect_category_detection_test_16_classes.pkl'))
+actual_matrix = actual_df.matrix
 
-print(data_df)
+pred= np.reshape(predicted_matrix.values, (predicted_matrix.shape[0]))
+# s = [a[0] for a in pred]
+
+# print(actual_matrix[0])
+#array([1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])]
+# print(len(actual_matrix))
+a  = []
+p = []
+for i in range(len(actual_matrix)):
+    a.append(actual_matrix[i].tolist())
+
+for i in range(len(predicted_matrix)):
+    p.append(predicted_matrix[i].tolist())
+
+f1 = f1_score(a, p, average="macro")
+print(f1)
+# print(a)
+# print(actual_matrix.head(5).array)
+# print(predicted_matrix.head(5).array)
+# df.as_matrix(columns=[df[1:]])
+
+# print(pred_df.text.head(5))
+# print(actual_df.text.head(5))
+# print(pred_df.at[430, 'text'])
+# print(pred_df.at[430, 'predicted_matrix'])
+
+# print(pred_df.head(1))
+
+# data_df.to_pickle(path.join('baseline', path.join('aspect', 'aspect_baseline_data')))
+
+# print(data_df)
