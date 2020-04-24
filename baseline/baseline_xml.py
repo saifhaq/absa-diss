@@ -266,7 +266,7 @@ for i in range(0,n):
     
     predicted_individual = text_clf.predict(test_single_df.text)
     actual_individual = test_single_df.desired_category
-    acc2 = accuracy_score(actual_individual, predicted_individual)
+    acc2 = f1_score(actual_individual, predicted_individual)
 
 
     data_df = data_df.append({'desired_category': DESIRED_CATEGORY, 'train_count': TRAIN_COUNT, 'acc': acc2}, ignore_index=True)
