@@ -12,6 +12,14 @@ import matplotlib.pyplot as plt
 import os.path as path
 from nltk.corpus import stopwords
 import nltk
+import random
+
+seed_value= 12321 
+random.seed(seed_value)
+np.random.seed(seed_value)
+tf.random.set_seed(seed_value)
+os.environ['PYTHONHASHSEED']=str(seed_value)
+
 
 def stoplist(file_name = "stopwords.txt"):
   stopwords_txt = open(path.join('preprocessing', file_name))
@@ -131,7 +139,7 @@ glove_matrix = gloveEmbedding(300)
 #                             weights=[glove_matrix],
 #                             trainable=False)
 
-
+#0.4736355187379454
 
 embedding_layer = tf.keras.layers.Embedding(len(word_index) + 1,
                             300,
@@ -165,8 +173,9 @@ model.add(embedding_layer)
 
 
 # model.add(tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(256)))
-# model.add(tf.keras.layers.Conv1D(filters=32, kernel_size=3, padding='same', activation='relu'))
-# model.add(tf.keras.layers.MaxPooling1D(pool_size=2))
+model.add(tf.keras.layers.Conv1D(filters=32, kernel_size=3, padding='same', activation='relu'))
+model.add(tf.keras.layers.MaxPooling1D(pool_size=2))
+
 # model.add(tf.keras.layers.LSTM(100))
 # model.add(tf.keras.layers.Flatten())
 # model.add(tf.keras.layers.Dense(128))
@@ -178,7 +187,7 @@ model.add(embedding_layer)
 #                  strides=1))
 # model.add(tf.keras.layers.MaxPooling1D(pool_size=2))
 # model.add(tf.keras.layers.LSTM(64))
-model.add(tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(128)))
+model.add(tf.keras.layers.Bidirectional(tf.keras.layers.GRU(128)))
 # model.add(tf.keras.layers.Dense(64, activation='relu'))
 
 model.add(tf.keras.layers.Dense(8, activation='sigmoid'))
