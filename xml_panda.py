@@ -338,8 +338,6 @@ def df_something(xml_path, n, category_dict, empty_matrix_wanted = True):
 
     sentences_list = []
     
-    # category_dict = assign_category(xml_path, n)
-
     for sentence in sentences:
 
         sentence_id = sentence.attrib['id']                
@@ -380,12 +378,13 @@ TEST_XML_PATH = "ABSA16_Laptops_Test_GOLD_SB1.xml"
 # test_df = df_subjectivity(TEST_XML_PATH)
 # train_df.to_pickle(path.join('pandas_data', 'subjectivity_train.pkl'))
 # test_df.to_pickle(path.join('pandas_data', 'subjectivity_test.pkl'))
-
+n = 16
 category_dict = {'LAPTOP#GENERAL': 0, 'LAPTOP#OPERATION_PERFORMANCE': 1, 'LAPTOP#DESIGN_FEATURES': 2, 'LAPTOP#QUALITY': 3, 'LAPTOP#MISCELLANEOUS': 4, 'LAPTOP#USABILITY': 5, 'SUPPORT#QUALITY': 6, 'LAPTOP#PRICE': 7, 'COMPANY#GENERAL': 8, 'BATTERY#OPERATION_PERFORMANCE': 9, 'LAPTOP#CONNECTIVITY': 10, 'DISPLAY#QUALITY': 11, 'LAPTOP#PORTABILITY': 12, 'OS#GENERAL': 13, 'SOFTWARE#GENERAL': 14, 'KEYBOARD#DESIGN_FEATURES': 15}
-train_df = df_something(TRAIN_XML_PATH, 8, category_dict, True)
-test_df = df_something(TEST_XML_PATH, 8, category_dict, True)
-train_df.to_pickle(path.join('pandas_data', 'aspect_category_detection_train_8_classes.pkl'))
-test_df.to_pickle(path.join('pandas_data', 'aspect_category_detection_test_8_classes.pkl'))
+train_df = df_something(TRAIN_XML_PATH, n, category_dict, True)
+test_df = df_something(TEST_XML_PATH, n, category_dict, True)
+print(test_df)
+# train_df.to_pickle(path.join('pandas_data', 'aspect_category_detection_train_'+str(n)+'_classes.pkl'))
+# test_df.to_pickle(path.join('pandas_data', 'aspect_category_detection_test_'+str(n)+'_classes.pkl'))
 
 print(len(test_df))
 # print(test_df)

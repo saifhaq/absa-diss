@@ -12,7 +12,7 @@ from sklearn.linear_model import SGDClassifier
 from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.metrics import confusion_matrix
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score, classification_report, confusion_matrix, roc_auc_score
+from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score, classification_report, confusion_matrix, roc_auc_score, multilabel_confusion_matrix
 from sklearn.feature_extraction.text import CountVectorizer
 import pandas as pd
 import numpy as np 
@@ -93,8 +93,7 @@ def df_single_category(xml_path, desired_category):
 
     return pd.DataFrame(sentences_list, columns = ["id", "text", "desired_category"])
 
-
-def df_predicted_category(xml_path, n):
+def df_only_single_category(xml_path, desired_category):
     """
         Takes *xml_path* and returns labels of data corresponding to whether data is in *desired_category* or not
 
@@ -115,6 +114,33 @@ def df_predicted_category(xml_path, n):
 
         try: 
             opinions = list(sentence)[1]
+            for opinion in opinions:
+                if(opinion.attrib['category'] == desired_category):
+                    label = 1
+                    sentences_list.append([sentence_id, sentence_text, label])
+
+        except:
+            pass
+
+    return pd.DataFrame(sentences_list, columns = ["id", "text", "desired_category"])
+
+def df_predicted_category(xml_path, n):
+    """
+
+    """
+    tree = et.parse(xml_path)
+    reviews = tree.getroot()
+    sentences = reviews.findall('**/sentence')
+
+    sentences_list = []
+    
+    for sentence in sentences:
+
+        sentence_id = sentence.attrib['id']                
+        sentence_text = sentence.find('text').text
+        sentence_text =  re.sub(r'[^\w\s]','',sentence_text.lower())
+
+        try: 
             matrix = np.zeros((n,), dtype=int)
             sentences_list.append([sentence_id, sentence_text, matrix])
 
@@ -124,10 +150,64 @@ def df_predicted_category(xml_path, n):
     return pd.DataFrame(sentences_list, columns = ["id", "text", "predicted_matrix"])
 
 
+def df_something(xml_path, n, category_dict, empty_matrix_wanted = True):
+    """
+        Takes XML Training data and returns a pandas dataframe of sentences;
+    """
+
+    tree = et.parse(xml_path)
+    reviews = tree.getroot()
+    sentences = reviews.findall('**/sentence')
+
+    sentences_list = []
+    
+    for sentence in sentences:
+
+        sentence_id = sentence.attrib['id']                
+        sentence_text = sentence.find('text').text
+        category_matrix = np.zeros((n, ), dtype=int)
+        sentence_text =  re.sub(r'[^\w\s]','',sentence_text.lower())
+
+        try: 
+            opinions = list(sentence)[1]
+            categories = []
+            for opinion in opinions:
+            
+                categories.append(opinion.attrib['category'])
+                try:
+                    location = category_dict[opinion.attrib['category']]
+                    category_matrix[location] = 1
+                except:
+                    continue
+
+                # category_matrix[i] = assigned(category_dict[opinion.attrib['category']])
+            sentences_list.append([sentence_id, sentence_text, categories, category_matrix])
+
+        except:
+            pass
+
+    return pd.DataFrame(sentences_list, columns = ["id", "text", "category", "matrix"])
+
+def assign_category(xml_path, n):
+    """
+        Returns dictionary of n most common categories 
+    """
+
+    sentences = df_aspect_category(xml_path)
+    categories = Counter(sentences.category).most_common(n)
+    common_categories = [category_tuple[0] for category_tuple in categories]
+    assigned = {}
+
+    for i in range(0, len(common_categories)):
+        assigned[common_categories[i]] = i 
+
+    return assigned
+
 TRAIN_XML_PATH = "ABSA16_Laptops_Train_SB1_v2.xml"
 TEST_XML_PATH = "ABSA16_Laptops_Test_GOLD_SB1.xml"
 
-n = 8
+n = 16
+
 sentences = df_aspect_category(TRAIN_XML_PATH)
 categories = Counter(sentences.category).most_common(n)
 
@@ -135,26 +215,12 @@ sentences_test = df_aspect_category(TRAIN_XML_PATH)
 categories_test = Counter(sentences.category).most_common(n)
 
 data_df = pd.DataFrame(columns = ["desired_category", "train_count"])
-# predicted_category_matrix =
-# df = sentences.append({'predicted': predicted_category_matrix}, ignore_index=True)
-# print(df)
-
 
 pred_df = df_predicted_category(TEST_XML_PATH, n)
 
-
+print(categories)
 DESIRED_CATEGORY = categories[0][0]
 
-
-# matrix = df['predicted_matrix'][2] 
-# matrix[0] = 1 
-
-# print(len(df))
-
-
-# sentences.assign(Name='predicted')
-# s = np.zeros((16), dtype=int)
-# sentences['predicted'] =  s
 stoplist = stoplist()
 for i in range(0,n):
     
@@ -163,6 +229,7 @@ for i in range(0,n):
 
     train_df = df_single_category(TRAIN_XML_PATH, DESIRED_CATEGORY)
     test_df = df_single_category(TEST_XML_PATH, DESIRED_CATEGORY)
+    test_single_df = df_only_single_category(TEST_XML_PATH, DESIRED_CATEGORY)
 
     
 
@@ -194,12 +261,23 @@ for i in range(0,n):
         matrix[i] = predicted[j] 
 
     mean = np.mean(predicted == y_test)
-    acc = roc_auc_score(y_test, predicted)
+    acc = accuracy_score(y_test, predicted)
 
-    data_df = data_df.append({'desired_category': DESIRED_CATEGORY, 'train_count': TRAIN_COUNT, 'acc': acc}, ignore_index=True)
+    
+    predicted_individual = text_clf.predict(test_single_df.text)
+    actual_individual = test_single_df.desired_category
+    acc2 = accuracy_score(actual_individual, predicted_individual)
+
+
+    data_df = data_df.append({'desired_category': DESIRED_CATEGORY, 'train_count': TRAIN_COUNT, 'acc': acc2}, ignore_index=True)
 
 predicted_matrix = pred_df.predicted_matrix
-actual_df = pd.read_pickle(path.join('pandas_data', 'aspect_category_detection_test_8_classes.pkl'))
+# actual_df = pd.read_pickle(path.join('pandas_data', 'aspect_category_detection_test_'+str(n)+'_classes.pkl'))
+# actual_df = df_actual(TEST_XML_PATH, n, categories_test)
+# category_dict = {'LAPTOP#GENERAL': 0, 'LAPTOP#OPERATION_PERFORMANCE': 1, 'LAPTOP#DESIGN_FEATURES': 2, 'LAPTOP#QUALITY': 3, 'LAPTOP#MISCELLANEOUS': 4, 'LAPTOP#USABILITY': 5, 'SUPPORT#QUALITY': 6, 'LAPTOP#PRICE': 7, 'COMPANY#GENERAL': 8, 'BATTERY#OPERATION_PERFORMANCE': 9, 'LAPTOP#CONNECTIVITY': 10, 'DISPLAY#QUALITY': 11, 'LAPTOP#PORTABILITY': 12, 'OS#GENERAL': 13, 'SOFTWARE#GENERAL': 14, 'KEYBOARD#DESIGN_FEATURES': 15}
+category_dict = assign_category(TRAIN_XML_PATH, n)
+actual_df = df_something(TEST_XML_PATH, n, category_dict, True)
+
 print(actual_df)
 actual_matrix = actual_df.matrix
 
@@ -218,6 +296,9 @@ for i in range(len(actual_matrix)):
 for i in range(len(predicted_matrix)):
     p.append(predicted_matrix[i].tolist())
 
+# print(a)
+# print(np.asarray(p).argmax(axis=1))
+print(multilabel_confusion_matrix(a, p))
 
 print('---------------')
 print('Test Precision: {}'.format(precision_score(a, p, average="macro")))
@@ -251,4 +332,4 @@ print('Test F1: {}'.format(f1_score(a, p, average="macro")))
 
 # data_df.to_pickle(path.join('baseline', path.join('aspect', 'aspect_baseline_data')))
 
-# print(data_df)
+print(data_df)
