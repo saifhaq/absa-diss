@@ -49,9 +49,9 @@ stoplist = stoplist()
 train_df['text'] = train_df['text'].apply(lambda x: ' '.join([item for item in x.split() if item not in stoplist]))
 test_df['text'] = test_df['text'].apply(lambda x: ' '.join([item for item in x.split() if item not in stoplist]))
 
-print(train_df.text)
-train_df.dropna(axis=0, how='any', thresh=None, subset=None, inplace=False)
-test_df.dropna(axis=0, how='any', thresh=None, subset=None, inplace=False)
+# print(train_df.text)
+# train_df.dropna(axis=0, how='any', thresh=None, subset=None, inplace=False)
+# test_df.dropna(axis=0, how='any', thresh=None, subset=None, inplace=False)
 
 
 top_k = 5000
@@ -160,7 +160,7 @@ model.add(embedding_layer)
 
 
 
-model.add(tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(128)))
+model.add(tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(256)))
 
 model.add(tf.keras.layers.Dense(8, activation='sigmoid'))
 

@@ -243,7 +243,7 @@ def assign_category(xml_path, n):
 
 
     
-def df_categories_baseline(xml_path, n, category_dict, empty_matrix_wanted = True):
+def df_single_category(xml_path, desired_category):
     """
         Takes XML Training data and returns a pandas dataframe of sentences;
     """
@@ -260,32 +260,23 @@ def df_categories_baseline(xml_path, n, category_dict, empty_matrix_wanted = Tru
 
         sentence_id = sentence.attrib['id']                
         sentence_text = sentence.find('text').text
-        category_matrix = np.zeros((n, ), dtype=int)
+        label = 0
         sentence_text =  re.sub(r'[^\w\s]','',sentence_text.lower())
 
         try: 
             opinions = list(sentence)[1]
             categories = []
             for opinion in opinions:
-            
-                categories.append(opinion.attrib['category'])
-                location = category_dict[opinion.attrib['category']]
-                try:
-                    category_matrix[location] = 1
-                except: 
-                    pass
+                if(opinion.attrib['category'] == desired_category):
+                    label = 1
                 # category_matrix[i] = assigned(category_dict[opinion.attrib['category']])
-            z = np.count_nonzero(category_matrix)
-            if (not empty_matrix_wanted):
-                if (z!=0):
-                    sentences_list.append([sentence_id, sentence_text, categories, category_matrix[0]])
-            else:
-                sentences_list.append([sentence_id, sentence_text, categories, category_matrix[0]])
+            
+            sentences_list.append([sentence_id, sentence_text, label])
 
         except:
             pass
 
-    return pd.DataFrame(sentences_list, columns = ["id", "text", "category", "matrix"])
+    return pd.DataFrame(sentences_list, columns = ["id", "text", "desired_category"])
 
 
 
@@ -351,8 +342,14 @@ TEST_XML_PATH = "ABSA16_Laptops_Test_GOLD_SB1.xml"
 
 category_dict = {'LAPTOP#GENERAL': 0, 'LAPTOP#OPERATION_PERFORMANCE': 1, 'LAPTOP#DESIGN_FEATURES': 2, 'LAPTOP#QUALITY': 3, 'LAPTOP#MISCELLANEOUS': 4, 'LAPTOP#USABILITY': 5, 'SUPPORT#QUALITY': 6, 'LAPTOP#PRICE': 7, 'COMPANY#GENERAL': 8, 'BATTERY#OPERATION_PERFORMANCE': 9, 'LAPTOP#CONNECTIVITY': 10, 'DISPLAY#QUALITY': 11, 'LAPTOP#PORTABILITY': 12, 'OS#GENERAL': 13, 'SOFTWARE#GENERAL': 14, 'KEYBOARD#DESIGN_FEATURES': 15}
 
+# train_df = df_polarity(TRAIN_XML_PATH)
 
 
+train_df = df_single_category(TRAIN_XML_PATH, 'LAPTOP#OPERATION_PERFORMANCE')
+df2 = train_df.loc[train_df['desired_category'] == 1]
+
+
+print(train_df)
 # TRAIN_XML_PATH = (path.join('xml_data', "example_review.xml"))
 # # train_df = df_subjectivity(TRAIN_XML_PATH, 10, category_dict, False)
 # train_df = df_subjectivity(TRAIN_XML_PATH)
@@ -363,12 +360,12 @@ category_dict = {'LAPTOP#GENERAL': 0, 'LAPTOP#OPERATION_PERFORMANCE': 1, 'LAPTOP
 
 
 
-train_df = df_categories(TRAIN_XML_PATH, 8, category_dict, True)
-test_df = df_categories(TEST_XML_PATH, 8, category_dict, True)
+# train_df = df_categories(TRAIN_XML_PATH, 8, category_dict, True)
+# test_df = df_categories(TEST_XML_PATH, 8, category_dict, True)
 
 
-train_df.to_pickle(path.join('pandas_data', 'aspect_category_detection_train.pkl'))
-test_df.to_pickle(path.join('pandas_data', 'aspect_category_detection_test.pkl'))
+# train_df.to_pickle(path.join('pandas_data', 'aspect_category_detection_train.pkl'))
+# test_df.to_pickle(path.join('pandas_data', 'aspect_category_detection_test.pkl'))
 
 # print(len(train_df))
 # print(len(test_df))

@@ -10,11 +10,18 @@ import pandas as pd
 import numpy as np 
 import os.path as path 
 
+DESIRED_CATEGORY = 'LAPTOP#GENERAL'
 train_df = pd.read_pickle(path.join('pandas_data', 'aspect_category_detection_train.pkl'))
 test_df = pd.read_pickle(path.join('pandas_data','aspect_category_detection_test.pkl'))
 
-x_train, y_train = train_df.text, train_df.matrix
-x_test, y_test = test_df.text, test_df.matrix
+train_df_name = 'TRAIN.'+DESIRED_CATEGORY + '.pkl'
+test_df_name = 'TEST.'+DESIRED_CATEGORY + '.pkl'
+
+train_df = pd.read_pickle(path.join('pandas_data', path.join('aspect', train_df_name)))
+test_df = pd.read_pickle(path.join('pandas_data', path.join('aspect', test_df_name)))
+
+x_train, y_train = train_df.text, train_df.desired_category
+x_test, y_test = test_df.text, test_df.desired_category
 
 text_clf = Pipeline([
     ('vect', CountVectorizer()),

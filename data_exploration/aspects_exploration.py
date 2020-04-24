@@ -112,8 +112,11 @@ category_dict = {'LAPTOP#GENERAL': 0, 'LAPTOP#OPERATION_PERFORMANCE': 1, 'LAPTOP
 TRAIN_XML_PATH = "ABSA16_Laptops_Train_SB1_v2.xml"
 TEST_XML_PATH = "ABSA16_Laptops_Test_GOLD_SB1.xml"
 
-train_df = df_categories(TRAIN_XML_PATH, 8, category_dict, True)
-test_df = df_categories(TEST_XML_PATH, 8, category_dict, True)
+category_dict = assign_category(TRAIN_XML_PATH, 100)
+
+
+train_df = df_categories(TRAIN_XML_PATH, 100, category_dict, True)
+test_df = df_categories(TEST_XML_PATH, 100, category_dict, True)
 
 print(train_df)
 # category_dict = df_categories 
