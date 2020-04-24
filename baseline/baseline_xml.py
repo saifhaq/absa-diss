@@ -19,6 +19,15 @@ import numpy as np
 import os.path as path 
 
 
+def stoplist(file_name = "stopwords.txt"):
+  stopwords_txt = open(path.join('preprocessing', file_name))
+  stoplist = []
+  for line in stopwords_txt:
+      values = line.split()
+      stoplist.append(values[0])
+  stopwords_txt.close()
+  return stoplist
+
 def df_aspect_category(xml_path):
     """
         Takes *xml_path* and returns dataframe of each sentence and corresponding category. 
@@ -85,7 +94,7 @@ def df_single_category(xml_path, desired_category):
     return pd.DataFrame(sentences_list, columns = ["id", "text", "desired_category"])
 
 
-def df_predicted_category(xml_path):
+def df_predicted_category(xml_path, n):
     """
         Takes *xml_path* and returns labels of data corresponding to whether data is in *desired_category* or not
 
@@ -106,7 +115,7 @@ def df_predicted_category(xml_path):
 
         try: 
             opinions = list(sentence)[1]
-            matrix = np.zeros((16,), dtype=int)
+            matrix = np.zeros((n,), dtype=int)
             sentences_list.append([sentence_id, sentence_text, matrix])
 
         except:
@@ -118,12 +127,12 @@ def df_predicted_category(xml_path):
 TRAIN_XML_PATH = "ABSA16_Laptops_Train_SB1_v2.xml"
 TEST_XML_PATH = "ABSA16_Laptops_Test_GOLD_SB1.xml"
 
-
+n = 8
 sentences = df_aspect_category(TRAIN_XML_PATH)
-categories = Counter(sentences.category).most_common(16)
+categories = Counter(sentences.category).most_common(n)
 
 sentences_test = df_aspect_category(TRAIN_XML_PATH)
-categories_test = Counter(sentences.category).most_common(16)
+categories_test = Counter(sentences.category).most_common(n)
 
 data_df = pd.DataFrame(columns = ["desired_category", "train_count"])
 # predicted_category_matrix =
@@ -131,7 +140,8 @@ data_df = pd.DataFrame(columns = ["desired_category", "train_count"])
 # print(df)
 
 
-pred_df = df_predicted_category(TEST_XML_PATH)
+pred_df = df_predicted_category(TEST_XML_PATH, n)
+
 
 DESIRED_CATEGORY = categories[0][0]
 
@@ -145,14 +155,19 @@ DESIRED_CATEGORY = categories[0][0]
 # sentences.assign(Name='predicted')
 # s = np.zeros((16), dtype=int)
 # sentences['predicted'] =  s
-
-for i in range(0,16):
+stoplist = stoplist()
+for i in range(0,n):
     
     DESIRED_CATEGORY = categories[i][0]
     TRAIN_COUNT = categories[i][1]
 
     train_df = df_single_category(TRAIN_XML_PATH, DESIRED_CATEGORY)
     test_df = df_single_category(TEST_XML_PATH, DESIRED_CATEGORY)
+
+    
+
+    train_df['text'] = train_df['text'].apply(lambda x: ' '.join([item for item in x.split() if item not in stoplist]))
+    test_df['text'] = test_df['text'].apply(lambda x: ' '.join([item for item in x.split() if item not in stoplist]))
 
     train_df_name = 'TRAIN.'+DESIRED_CATEGORY + '.pkl'
     test_df_name = 'TEST.'+DESIRED_CATEGORY + '.pkl'
@@ -184,8 +199,10 @@ for i in range(0,16):
     data_df = data_df.append({'desired_category': DESIRED_CATEGORY, 'train_count': TRAIN_COUNT, 'acc': acc}, ignore_index=True)
 
 predicted_matrix = pred_df.predicted_matrix
-actual_df = pd.read_pickle(path.join('pandas_data', 'aspect_category_detection_test_16_classes.pkl'))
+actual_df = pd.read_pickle(path.join('pandas_data', 'aspect_category_detection_test_8_classes.pkl'))
+print(actual_df)
 actual_matrix = actual_df.matrix
+
 
 pred= np.reshape(predicted_matrix.values, (predicted_matrix.shape[0]))
 # s = [a[0] for a in pred]
@@ -201,8 +218,25 @@ for i in range(len(actual_matrix)):
 for i in range(len(predicted_matrix)):
     p.append(predicted_matrix[i].tolist())
 
-f1 = f1_score(a, p, average="macro")
-print(f1)
+
+print('---------------')
+print('Test Precision: {}'.format(precision_score(a, p, average="macro")))
+print('Test Recall: {}'.format(recall_score(a, p, average="macro")))
+print('Test Accuracy: {}'.format(accuracy_score(a, p)))
+print('---------------')
+print('Test F1: {}'.format(f1_score(a, p, average="macro")))
+
+
+
+# ---------------
+# Test Precision: 0.47925956844421036
+# Test Recall: 0.46860217414676975
+# Test Accuracy: 0.5160891089108911
+# ---------------
+# Test F1: 0.46868394423516574
+
+# f1 = f1_score(a, p, average="macro")
+# print(f1)
 # print(a)
 # print(actual_matrix.head(5).array)
 # print(predicted_matrix.head(5).array)

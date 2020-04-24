@@ -41,8 +41,12 @@ if gpus:
 # train_df = pd.read_pickle(path.join('pandas_data', 'restaurants_aspect_category_detection_train.pkl'))
 # test_df = pd.read_pickle(path.join('pandas_data','restaurants_aspect_category_detection_test.pkl'))
 
-train_df = pd.read_pickle(path.join('pandas_data', 'aspect_category_detection_train.pkl'))
-test_df = pd.read_pickle(path.join('pandas_data','aspect_category_detection_test.pkl'))
+
+train_df = pd.read_pickle(path.join('pandas_data', 'aspect_category_detection_train_8_classes.pkl'))
+test_df = pd.read_pickle(path.join('pandas_data','aspect_category_detection_test_8_classes.pkl'))
+
+# train_df = pd.read_pickle(path.join('pandas_data', 'aspect_category_detection_train.pkl'))
+# test_df = pd.read_pickle(path.join('pandas_data','aspect_category_detection_test.pkl'))
 
 stoplist = stoplist()
 
@@ -75,7 +79,7 @@ train_labels = np.stack(train_df.matrix, axis=0)
 
 test_seqs = tokenizer.texts_to_sequences(test_df.text)
 
-x_train, x_val, y_train, y_val = train_test_split(train_vector, train_labels, test_size = 0.2, random_state = 0)
+x_train, x_val, y_train, y_val = train_test_split(train_vector, train_labels, test_size = 0.01, random_state = 0)
 
 # x, x_val, y, y_val = train_test_split(train_vector, train_labels, test_size = 0.2, random_state = 0)
 # x_train, x_test, y_train, y_test = train_test_split(x, y, test_size = 0.2, random_state = 0)
@@ -106,7 +110,7 @@ def gloveEmbedding(d):
       embeddings_word_weight_dict[word] = weight
   glove_txt.close()
 
-  embedding_matrix = np.zeros((len(word_index) + 1, 100))
+  embedding_matrix = np.zeros((len(word_index) + 1, d))
   for word, i in word_index.items():
       embedding_vector = embeddings_word_weight_dict.get(word)
       if embedding_vector is not None:
@@ -121,18 +125,18 @@ filters = 64
 pool_size = 4
 
 
-glove_matrix = gloveEmbedding(100)
-embedding_layer = tf.keras.layers.Embedding(len(word_index) + 1,
-                            100,
-                            weights=[glove_matrix],
-                            trainable=False)
+glove_matrix = gloveEmbedding(300)
+# embedding_layer = tf.keras.layers.Embedding(len(word_index) + 1,
+#                             100,
+#                             weights=[glove_matrix],
+#                             trainable=False)
 
 
 
 embedding_layer = tf.keras.layers.Embedding(len(word_index) + 1,
-                            100,
+                            300,
                             weights=[glove_matrix],
-                            trainable=False)
+                            trainable=True)
 
 
 
@@ -160,13 +164,31 @@ model.add(embedding_layer)
 
 
 
-model.add(tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(256)))
+# model.add(tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(256)))
+# model.add(tf.keras.layers.Conv1D(filters=32, kernel_size=3, padding='same', activation='relu'))
+# model.add(tf.keras.layers.MaxPooling1D(pool_size=2))
+# model.add(tf.keras.layers.LSTM(100))
+# model.add(tf.keras.layers.Flatten())
+# model.add(tf.keras.layers.Dense(128))
+# model.add(tf.keras.layers.SpatialDropout1D(0.2))
+# model.add(tf.keras.layers.Conv1D(32,
+#                  3,
+#                  padding='valid',
+#                  activation='relu',
+#                  strides=1))
+# model.add(tf.keras.layers.MaxPooling1D(pool_size=2))
+# model.add(tf.keras.layers.LSTM(64))
+model.add(tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(128)))
+# model.add(tf.keras.layers.Dense(64, activation='relu'))
 
 model.add(tf.keras.layers.Dense(8, activation='sigmoid'))
 
 
 
-sgd = tf.keras.optimizers.SGD(lr=0.001, decay=1e-6, momentum=0.9, nesterov=True)
+# sgd = tf.keras.optimizers.SGD(lr=0.001, decay=1e-6, momentum=0.9, nesterov=True)
+# sgd = tf.keras.optimizers.SGD(lr=0.0001, decay=1e-6, momentum=0.9, nesterov=True)
+sgd = tf.keras.optimizers.SGD(lr=0.005, decay=1e-6, momentum=0.9, nesterov=True)
+
 adam = tf.keras.optimizers.Adam(1e-4)
 
 model.summary()
@@ -186,7 +208,7 @@ model.compile(loss='binary_crossentropy',
 history = model.fit(x_train, 
                     y_train, 
                     epochs=75,
-                    validation_data=(x_val, y_val),
+                    validation_data=(x_test, y_test),
                     verbose = 1,                     
                     )   
 
