@@ -12,7 +12,7 @@ from sklearn.linear_model import SGDClassifier
 from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.metrics import confusion_matrix
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score, classification_report, confusion_matrix
+from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score, classification_report, confusion_matrix, roc_auc_score
 from sklearn.feature_extraction.text import CountVectorizer
 import pandas as pd
 import numpy as np 
@@ -93,6 +93,8 @@ TEST_XML_PATH = "ABSA16_Laptops_Test_GOLD_SB1.xml"
 sentences = df_aspect_category(TRAIN_XML_PATH)
 categories = Counter(sentences.category).most_common(16)
 
+sentences_test = df_aspect_category(TRAIN_XML_PATH)
+categories_test = Counter(sentences.category).most_common(16)
 
 data_df = pd.DataFrame(columns = ["desired_category", "train_count"])
 
@@ -103,14 +105,31 @@ for i in range(0,16):
 
     print(DESIRED_CATEGORY)
     train_df = df_single_category(TRAIN_XML_PATH, DESIRED_CATEGORY)
-    test_df = df_single_category(TRAIN_XML_PATH, DESIRED_CATEGORY)
+    test_df = df_single_category(TEST_XML_PATH, DESIRED_CATEGORY)
 
     train_df_name = 'TRAIN.'+DESIRED_CATEGORY + '.pkl'
     test_df_name = 'TEST.'+DESIRED_CATEGORY + '.pkl'
 
     train_df.to_pickle(path.join('pandas_data', path.join('aspect_baseline', train_df_name)))
     test_df.to_pickle(path.join('pandas_data', path.join('aspect_baseline', test_df_name)))
-    data_df = data_df.append({'desired_category': DESIRED_CATEGORY, 'train_count': TRAIN_COUNT}, ignore_index=True)
+
+
+    x_train, y_train = train_df.text, train_df.desired_category
+    x_test, y_test = test_df.text, test_df.desired_category
+
+    text_clf = Pipeline([
+        ('vect', CountVectorizer()),
+        ('tfidf', TfidfTransformer()),
+        ('svc', SGDClassifier()),    
+        ])
+
+    text_clf.fit(x_train, y_train)
+
+    predicted = text_clf.predict(x_test)
+    mean = np.mean(predicted == y_test)
+    acc = roc_auc_score(y_test, predicted)
+
+    data_df = data_df.append({'desired_category': DESIRED_CATEGORY, 'train_count': TRAIN_COUNT, 'acc': acc}, ignore_index=True)
 
 data_df.to_pickle(path.join('baseline', path.join('aspect', 'aspect_baseline_data')))
 
