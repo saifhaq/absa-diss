@@ -125,14 +125,6 @@ def build_model(hp):
     
     model.add(tf.keras.layers.MaxPooling1D(pool_size=2))
 
-    model.add(layers.Dropout(rate=hp.Float(
-        'dropout_2',
-        min_value=0.0,
-        max_value=0.2,
-        default=0.1,
-        step=0.025))
-    )
-    
     model.add(layers.Bidirectional(layers.LSTM(
         units=hp.Int('lstm_units',
         min_value=32,
@@ -141,7 +133,7 @@ def build_model(hp):
         activation='relu')))
 
     model.add(layers.Dropout(rate=hp.Float(
-        'dropout_3',
+        'dropout_2',
         min_value=0.0,
         max_value=0.2,
         default=0.1,
@@ -184,7 +176,12 @@ tuner.search(x_train, y_train,
              validation_data=(x_val, y_val),
              callbacks=[earlystop_callback])
 
-models = tuner.get_best_models(num_models=2)
+models = tuner.get_best_models(num_models=10)
+
+for i in range(0, 10):
+    models[i].save('aspects_tuner_'+i)
+    # model.save('polarity_classification_model') 
+
 tuner.results_summary()
 
 print(models[0])

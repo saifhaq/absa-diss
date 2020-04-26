@@ -218,7 +218,7 @@ data_df = pd.DataFrame(columns = ["desired_category", "train_count"])
 
 pred_df = df_predicted_category(TEST_XML_PATH, n)
 
-print(categories)
+# print(categories)
 DESIRED_CATEGORY = categories[0][0]
 
 stoplist = stoplist()

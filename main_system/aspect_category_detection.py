@@ -13,6 +13,7 @@ import os.path as path
 from nltk.corpus import stopwords
 import nltk
 import random
+from tensorflow.keras import layers
 
 seed_value= 12321 
 random.seed(seed_value)
@@ -55,7 +56,7 @@ train_df['text'] = train_df['text'].apply(lambda x: ' '.join([item for item in x
 test_df['text'] = test_df['text'].apply(lambda x: ' '.join([item for item in x.split() if item not in stoplist]))
 
 
-top_k = 5000
+top_k = 1750
 tokenizer = tf.keras.preprocessing.text.Tokenizer(num_words=top_k,
                                                   oov_token="<unk>",
                                                   filters='!"#$%&()*+.,-/:;=?@[\]^_`{|}~ ')
@@ -75,7 +76,7 @@ train_labels = np.stack(train_df.matrix, axis=0)
 
 test_seqs = tokenizer.texts_to_sequences(test_df.text)
 
-x_train, x_val, y_train, y_val = train_test_split(train_vector, train_labels, test_size = 0.01, random_state = 0)
+x_train, x_val, y_train, y_val = train_test_split(train_vector, train_labels, test_size = 0.2, random_state = 0)
 
 # x, x_val, y, y_val = train_test_split(train_vector, train_labels, test_size = 0.2, random_state = 0)
 # x_train, x_test, y_train, y_test = train_test_split(x, y, test_size = 0.2, random_state = 0)
@@ -115,66 +116,37 @@ def gloveEmbedding(d):
   return embedding_matrix
 
 
-# CNN
-kernel_size = 5
-filters = 64
-pool_size = 4
 
 
 glove_matrix = gloveEmbedding(300)
+
 
 embedding_layer = tf.keras.layers.Embedding(len(word_index) + 1,
                             300,
                             weights=[glove_matrix],
                             trainable=False)
 
-
-
+embedding_layer = tf.keras.layers.Embedding(len(word_index)+1, 300)
 model = tf.keras.Sequential()
 model.add(embedding_layer)
-
-
-
-
-
-# model.add(tf.keras.layers.Conv1D(filters,
-#                  kernel_size,
-#                  padding='valid',
-#                  activation='relu',
-#                  strides=1))
-# model.add(tf.keras.layers.MaxPooling1D(pool_size=pool_size))
-
-
-# model.add(tf.keras.layers.Conv1D(filters,
-#                  kernel_size,
-#                  padding='valid',
-#                  activation='relu',
-#                  strides=1))
-# model.add(tf.keras.layers.MaxPooling1D(pool_size=pool_size))
-
-
-
-# model.add(tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(256)))
-model.add(tf.keras.layers.Conv1D(filters=32, kernel_size=3, padding='same', activation='relu'))
-model.add(tf.keras.layers.MaxPooling1D(pool_size=2))
-
-# model.add(tf.keras.layers.LSTM(100))
-# model.add(tf.keras.layers.Flatten())
-# model.add(tf.keras.layers.Dense(128))
-# model.add(tf.keras.layers.SpatialDropout1D(0.2))
-# model.add(tf.keras.layers.Conv1D(32,
-#                  3,
-#                  padding='valid',
-#                  activation='relu',
-#                  strides=1))
+# model.add(tf.keras.layers.Conv1D(filters=64, kernel_size=3, padding='same', activation='relu'))
 # model.add(tf.keras.layers.MaxPooling1D(pool_size=2))
-# model.add(tf.keras.layers.LSTM(64))
-model.add(tf.keras.layers.Bidirectional(tf.keras.layers.GRU(128)))
-# model.add(tf.keras.layers.Dense(64, activation='relu'))
+
+
+model.add(tf.keras.layers.GlobalMaxPooling1D())
+model.add(tf.keras.layers.Dense(256, activation='relu'))
+# model.add(layers.Bidirectional(layers.LSTM(64, activation='relu')))
+
+# model.add(tf.keras.layers.Conv1D(filters=64, kernel_size=3, padding='same', activation='relu'))
+# model.add(tf.keras.layers.MaxPooling1D(pool_size=2))
+
+
+# model.add(tf.keras.layers.Flatten())
+
+# model.add(tf.keras.layers.LSTM(64, activation='relu'))
 
 model.add(tf.keras.layers.Dense(n, activation='sigmoid'))
 
-sgd = tf.keras.optimizers.SGD(lr=0.005, decay=1e-6, momentum=0.9, nesterov=True)
 adam = tf.keras.optimizers.Adam(1e-4)
 
 model.summary()
@@ -191,8 +163,8 @@ model.compile(loss='binary_crossentropy',
               
 history = model.fit(x_train, 
                     y_train, 
-                    epochs=75,
-                    validation_data=(x_test, y_test),
+                    epochs=150,
+                    validation_data=(x_val, y_val),
                     verbose = 1,                     
                     )   
 
