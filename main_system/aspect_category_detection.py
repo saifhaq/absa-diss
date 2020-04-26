@@ -69,7 +69,6 @@ tokenizer.word_index['<unk>'] = 1
 tokenizer.index_word[1] = '<unk>'
 
 
-
 train_seqs = tokenizer.texts_to_sequences(train_df.text)
 train_vector = tf.keras.preprocessing.sequence.pad_sequences(train_seqs, padding='post')
 train_labels = np.stack(train_df.matrix, axis=0)
