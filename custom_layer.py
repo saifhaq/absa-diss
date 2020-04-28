@@ -119,7 +119,7 @@ def load_data(n_classes, n_words, stop_words = True):
 # define the model
 
 
-def build_model(input_length, n_input_layers, kernel_array):
+def build_model(input_length, n_channels, kernel_array):
 
     glove_matrix = gloveEmbedding(300, word_index)
     embedding_layer = layers.Embedding(len(word_index) + 1,
@@ -127,62 +127,30 @@ def build_model(input_length, n_input_layers, kernel_array):
         weights=[glove_matrix],
         trainable=True)
 
-    inputs = []
-    embeddings = []
     convs = []
-    convs2 = []
-    convs3 = []
-    convs4 = []
-
-    drop = []
-    pool = []
-    pool2 = []
-    pool3 = []
-
-    flat = []
-
-    input_matrix = []
 
     input_layer = layers.Input(shape=(input_length,))
     embedding = embedding_layer(input_layer)
     bilstm = layers.Bidirectional(layers.LSTM(128, return_sequences=True))(embedding)
     conc = tf.keras.layers.concatenate([embedding, bilstm])
 
-    for i in range(n_input_layers):
-
-        convs.append(layers.Conv1D(filters=16, kernel_size=kernel_array[i], activation='relu')(conc))
-        pool.append(layers.MaxPooling1D(pool_size=2)(convs[i]))
-
-        convs2.append(layers.Conv1D(filters=32, kernel_size=kernel_array[i], activation='relu')(pool[i]))
-        pool2.append(layers.MaxPooling1D(pool_size=2)(convs2[i]))
-
-        convs3.append(layers.Conv1D(filters=64, kernel_size=kernel_array[i], activation='relu')(pool2[i]))
-        pool3.append(layers.MaxPooling1D(pool_size=2)(convs3[i]))
-
-        convs4.append(layers.Conv1D(filters=128, kernel_size=kernel_array[i], activation='relu')(pool3[i]))
+    if (n_channels == 1):
+        dropout = layers.Dropout(0.5)(conc)
+        conv = layers.Conv1D(filters=128, kernel_size=kernel_array[0], activation='relu')(dropout)
 
 
-        # input_matrix.append(layers.Flatten()(pool[i]))
-        # input_matrix.append(flat[i])
-        # input_matrix.append(layers.GlobalMaxPooling1D()(pool[i]))
-    
-    poolings = [layers.GlobalMaxPooling1D()(conv) for conv in convs3]
-    # x = self.concatenate(poolings)
+        channels_output = layers.GlobalMaxPooling1D()(conv) 
 
+    else:
+        for i in range(n_channels):
+            # dropout = layers.Dropout(0.5)(conc)
+            convs.append(layers.Conv1D(filters=64, kernel_size=kernel_array[i], activation='relu')(conc))
 
-    conc2 = tf.keras.layers.concatenate(poolings)
-    # max_pooling2 = layers.GlobalMaxPooling1D()(conc2)
+        poolings = [layers.GlobalMaxPooling1D()(conv) for conv in convs]
+        channels_output = tf.keras.layers.concatenate(poolings)
 
-    # if n_input_layers == 1:
-    #     merged_dense = tf.keras.layers.LSTM(128, activation='relu')(input_matrix)
-    # else: 
-    #     # merged_inputs = tf.keras.layers.concatenate(input_matrix)
-    #     global_pooling = layers.GlobalMaxPooling1D()
-    #     merged_dense = tf.keras.layers.LSTM(128, activation='relu')(global_pooling)
-
-    
-    outputs = tf.keras.layers.Dense(16, activation='sigmoid')(conc2)
-
+        
+    outputs = tf.keras.layers.Dense(16, activation='sigmoid')(channels_output)
     model = tf.keras.Model(inputs=input_layer, outputs = outputs)
     # model = tf.keras.Sequential()
 
@@ -213,7 +181,8 @@ def build_model(input_length, n_input_layers, kernel_array):
 
 initalize_tensorflow_gpu(1024)
 
-earlystop_callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=50, restore_best_weights=True)  
+patience = 20
+earlystop_callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=patience, restore_best_weights=True)  
 glove_embedding_array = [50, 100, 200, 300]
 
 # data_df = pd.read_pickle(path.join('main_system', path.join('aspect', 'aspect_embedding_layer.pkl')))
@@ -225,7 +194,7 @@ x_train, y_train, x_val, y_val, x_test, y_test, word_index = load_data(16, 1750)
 # print(x_train[0])
 input_length = x_train.shape[1]
 
-chanels = 2
+chanels = 3
 
 import itertools
 
@@ -249,7 +218,7 @@ model = build_model(input_length, chanels, kernel_array)
 history = model.fit([x_train, x_train], 
     y_train, 
     epochs=250,
-    validation_data=([x_val,x_val], y_val),
+    validation_data=(x_val, y_val),
     callbacks=[earlystop_callback],
     verbose = 1)     
 test_loss, test_acc, test_precision, test_recall = model.evaluate(x_test, y_test)
