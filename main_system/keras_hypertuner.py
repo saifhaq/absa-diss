@@ -65,7 +65,7 @@ def load_data(n_classes):
     test_df['text'] = test_df['text'].apply(lambda x: ' '.join([item for item in x.split() if item not in stopwords]))
 
     tokenizer = tf.keras.preprocessing.text.Tokenizer(
-        num_words=1250,
+        num_words=1750,
         oov_token="<unk>",
         filters='!"#$%&()*+.,-/:;=?@[\]^_`{|}~ ')
 
@@ -99,7 +99,7 @@ def build_model(hp):
     embedding_layer = layers.Embedding(len(word_index) + 1,
         300,
         weights=[glove_matrix],
-        trainable=False)
+        trainable=True)
 
     model = tf.keras.Sequential()
     model.add(embedding_layer)
@@ -123,7 +123,7 @@ def build_model(hp):
         activation='relu')
         )
     
-    model.add(tf.keras.layers.MaxPooling1D(pool_size=2))
+    model.add(layers.MaxPooling1D(pool_size=2))
 
     model.add(layers.Bidirectional(layers.LSTM(
         units=hp.Int('lstm_units',
@@ -140,7 +140,7 @@ def build_model(hp):
         step=0.025))
     )
 
-    model.add(tf.keras.layers.Dense(8, activation='sigmoid'))
+    model.add(layers.Dense(16, activation='sigmoid'))
 
     METRICS = [
         tf.keras.metrics.BinaryAccuracy(name='accuracy'),
@@ -157,34 +157,40 @@ def build_model(hp):
 
 
 initalize_tensorflow_gpu(1024)
-x_train, y_train, x_val, y_val, x_test, y_test, word_index = load_data(8)
+x_train, y_train, x_val, y_val, x_test, y_test, word_index = load_data(16)
 
+print(x_train.shape)
+print(y_train.shape)
+print(x_val.shape)
+print(y_val.shape)
+print(x_test.shape)
+print(y_test.shape)
 tuner = RandomSearch(
     build_model,
     objective='val_accuracy',
     max_trials=50,
     executions_per_trial=3,
-    directory='keras_tuner_dir',
+    directory='keras_tuner_dir2',
     project_name='aspects')
 
 tuner.search_space_summary()
 
-earlystop_callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=5, restore_best_weights=True) 
+earlystop_callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=20, restore_best_weights=True) 
 
 tuner.search(x_train, y_train,
-             epochs=75,
+             epochs=250,
              validation_data=(x_val, y_val),
              callbacks=[earlystop_callback])
 
 models = tuner.get_best_models(num_models=10)
 
 for i in range(0, 10):
-    models[i].save('aspects_tuner_'+i)
-    # model.save('polarity_classification_model') 
+    models[i].save('aspects_tuner_'+str(i))
+    # models[i].save('keras_tuner_something_'+i) 
 
 tuner.results_summary()
 
-print(models[0])
+# print(models[0])
 
 test_loss, test_acc, test_precision, test_recall = models[0].evaluate(x_test, y_test)
 

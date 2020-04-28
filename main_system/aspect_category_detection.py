@@ -124,7 +124,7 @@ glove_matrix = gloveEmbedding(300)
 embedding_layer = tf.keras.layers.Embedding(len(word_index) + 1,
                             300,
                             weights=[glove_matrix],
-                            trainable=False)
+                            trainable=True)
 
 embedding_layer = tf.keras.layers.Embedding(len(word_index)+1, 300)
 model = tf.keras.Sequential()
@@ -135,7 +135,7 @@ model.add(embedding_layer)
 
 model.add(tf.keras.layers.GlobalMaxPooling1D())
 model.add(tf.keras.layers.Dense(256, activation='relu'))
-# model.add(layers.Bidirectional(layers.LSTM(64, activation='relu')))
+# model.add(layers.Bidirectional(layers.LSTM(128, activation='relu')))
 
 # model.add(tf.keras.layers.Conv1D(filters=64, kernel_size=3, padding='same', activation='relu'))
 # model.add(tf.keras.layers.MaxPooling1D(pool_size=2))
@@ -160,12 +160,16 @@ METRICS = [
 model.compile(loss='binary_crossentropy',
               optimizer=adam,
               metrics=METRICS)
-              
+
+earlystop_callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=20, restore_best_weights=True) 
+
+
 history = model.fit(x_train, 
                     y_train, 
-                    epochs=150,
+                    epochs=250,
                     validation_data=(x_val, y_val),
-                    verbose = 1,                     
+                    verbose = 1,
+                    callbacks=[earlystop_callback]                     
                     )   
 
 test_loss, test_acc, test_precision, test_recall = model.evaluate(x_test, y_test)

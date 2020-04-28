@@ -139,7 +139,8 @@ initalize_tensorflow_gpu(1024)
 earlystop_callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=20, restore_best_weights=True)  
 glove_embedding_array = [50, 100, 200, 300]
 
-data_df = pd.read_pickle(path.join('main_system', path.join('aspect', 'aspect_embedding_layer.pkl')))
+# data_df = pd.read_pickle(path.join('main_system', path.join('aspect', 'aspect_embedding_layer.pkl')))
+data_df = pd.DataFrame(columns = ['type', 'dimension', 'f1'])
 
 ea = glove_embedding_array 
 
@@ -168,16 +169,16 @@ for i in range(0, len(ea)):
 for i in range(len(ea), 2 * len(ea)):
 
     embedding_type = 'GloVe layer'
-    data_df = data_df.append({'type': embedding_type, 'dimension': int(ea[i]), 'f1': 0}, ignore_index=True)
+    data_df = data_df.append({'type': embedding_type, 'dimension': int(ea[i-len(ea)]), 'f1': 0}, ignore_index=True)
 
     for k in range(1,6):
 
         x_train, y_train, x_val, y_val, x_test, y_test, word_index = load_data(16, 1750)
 
-        model = build_model(ea[i], False)
+        model = build_model(ea[i-len(ea)], False)
         history = model.fit(x_train, 
             y_train, 
-            epochs=150,
+            epochs=250,
             validation_data=(x_val, y_val),
             callbacks=[earlystop_callback],
             verbose = 1)     
@@ -186,11 +187,11 @@ for i in range(len(ea), 2 * len(ea)):
         test_loss, test_acc, test_precision, test_recall = model.evaluate(x_test, y_test)
         test_f1 = print_stats(test_loss, test_acc, test_precision, test_recall)
         
-        if test_f1 > data_df.at[i+len(ea),'f1']:
-             data_df.at[i+len(ea),'f1'] = test_f1
+        if test_f1 > data_df.at[i,'f1']:
+             data_df.at[i,'f1'] = test_f1
              
 print(data_df)
-data_df.to_pickle(path.join('main_system', path.join('aspect', 'aspects_glove.pkl')))
+# data_df.to_pickle(path.join('main_system', path.join('aspect', 'aspects_glove.pkl')))
 
 # df = pd.read_pickle(path.join('main_system', path.join('aspect', 'aspect_baselinenn_data')))
 # print(df)
