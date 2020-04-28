@@ -129,33 +129,46 @@ def build_model(input_length, n_input_layers, kernel_array):
 
     inputs = []
     embeddings = []
-    conv = []
+    convs = []
     drop = []
     pool = []
     flat = []
 
     input_matrix = []
 
-    for i in range(n_input_layers):
-        inputs.append(layers.Input(shape=(input_length,)))
-        embeddings.append(embedding_layer(inputs[i]))
-        conv.append(layers.Conv1D(filters=32, kernel_size=kernel_array[i], activation='relu')(embeddings[i]))
-        drop.append(layers.Dropout(0.5)(conv[i]))
-        pool.append(layers.MaxPooling1D(pool_size=2)(drop[i]))
-        flat.append(layers.Flatten()(pool[i]))
-        input_matrix.append(flat[i])
+    input_layer = layers.Input(shape=(input_length,))
+    embedding = embedding_layer(input_layer)
+    bilstm = layers.Bidirectional(layers.LSTM(128, return_sequences=True))(embedding)
+    conc = tf.keras.layers.concatenate([embedding, bilstm])
 
-    if n_input_layers == 1:
-        merged_dense = tf.keras.layers.Dense(128, activation='relu')(input_matrix[0])
-    else: 
-        merged_inputs = tf.keras.layers.concatenate(input_matrix)
-        merged_dense = tf.keras.layers.Dense(128, activation='relu')(merged_inputs)
+    for i in range(n_input_layers):
+
+        convs.append(layers.Conv1D(filters=128, kernel_size=kernel_array[i], activation='relu')(conc))
+        # pool.append(layers.MaxPooling1D(pool_size=2)(convs[i]))
+
+        # input_matrix.append(layers.Flatten()(pool[i]))
+        # input_matrix.append(flat[i])
+        # input_matrix.append(layers.GlobalMaxPooling1D()(pool[i]))
+    
+    poolings = [layers.GlobalAveragePooling1D()(conv) for conv in convs] + [layers.GlobalMaxPooling1D()(conv) for conv in convs]
+    # x = self.concatenate(poolings)
+
+
+    conc2 = tf.keras.layers.concatenate(poolings)
+    # max_pooling2 = layers.GlobalMaxPooling1D()(conc2)
+
+    # if n_input_layers == 1:
+    #     merged_dense = tf.keras.layers.LSTM(128, activation='relu')(input_matrix)
+    # else: 
+    #     # merged_inputs = tf.keras.layers.concatenate(input_matrix)
+    #     global_pooling = layers.GlobalMaxPooling1D()
+    #     merged_dense = tf.keras.layers.LSTM(128, activation='relu')(global_pooling)
 
     
+    st = layers.Dense(100, activation='relu')(conc2)
+    outputs = tf.keras.layers.Dense(16, activation='sigmoid')(st)
 
-    outputs = tf.keras.layers.Dense(16, activation='sigmoid')(merged_dense)
-
-    model = tf.keras.Model(inputs=inputs, outputs = outputs)
+    model = tf.keras.Model(inputs=input_layer, outputs = outputs)
     # model = tf.keras.Sequential()
 
     # model.add(embedding_layer)
@@ -185,7 +198,7 @@ def build_model(input_length, n_input_layers, kernel_array):
 
 initalize_tensorflow_gpu(1024)
 
-earlystop_callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=5, restore_best_weights=True)  
+earlystop_callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=20, restore_best_weights=True)  
 glove_embedding_array = [50, 100, 200, 300]
 
 # data_df = pd.read_pickle(path.join('main_system', path.join('aspect', 'aspect_embedding_layer.pkl')))
@@ -197,7 +210,7 @@ x_train, y_train, x_val, y_val, x_test, y_test, word_index = load_data(16, 1750)
 # print(x_train[0])
 input_length = x_train.shape[1]
 
-chanels = 4
+chanels = 3
 
 import itertools
 
@@ -217,14 +230,14 @@ for i in range(0, chanels):
     x_test_arr.append(x_test)
     kernel_array.append(len(kernel_array)+3)
 
-model = build_model(input_length, chanels, [2,4,6,8])
-history = model.fit([x_train_arr, x_train], 
+model = build_model(input_length, chanels, [3,4,5])
+history = model.fit([x_train, x_train], 
     y_train, 
     epochs=250,
-    validation_data=([x_val_arr,x_val], y_val),
+    validation_data=([x_val,x_val], y_val),
     callbacks=[earlystop_callback],
     verbose = 1)     
-test_loss, test_acc, test_precision, test_recall = model.evaluate(x_test_arr, y_test)
+test_loss, test_acc, test_precision, test_recall = model.evaluate(x_test, y_test)
 test_f1 = print_stats(test_loss, test_acc, test_precision, test_recall)
 
 
