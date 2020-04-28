@@ -130,8 +130,15 @@ def build_model(input_length, n_input_layers, kernel_array):
     inputs = []
     embeddings = []
     convs = []
+    convs2 = []
+    convs3 = []
+    convs4 = []
+
     drop = []
     pool = []
+    pool2 = []
+    pool3 = []
+
     flat = []
 
     input_matrix = []
@@ -143,14 +150,23 @@ def build_model(input_length, n_input_layers, kernel_array):
 
     for i in range(n_input_layers):
 
-        convs.append(layers.Conv1D(filters=128, kernel_size=kernel_array[i], activation='relu')(conc))
-        # pool.append(layers.MaxPooling1D(pool_size=2)(convs[i]))
+        convs.append(layers.Conv1D(filters=16, kernel_size=kernel_array[i], activation='relu')(conc))
+        pool.append(layers.MaxPooling1D(pool_size=2)(convs[i]))
+
+        convs2.append(layers.Conv1D(filters=32, kernel_size=kernel_array[i], activation='relu')(pool[i]))
+        pool2.append(layers.MaxPooling1D(pool_size=2)(convs2[i]))
+
+        convs3.append(layers.Conv1D(filters=64, kernel_size=kernel_array[i], activation='relu')(pool2[i]))
+        pool3.append(layers.MaxPooling1D(pool_size=2)(convs3[i]))
+
+        convs4.append(layers.Conv1D(filters=128, kernel_size=kernel_array[i], activation='relu')(pool3[i]))
+
 
         # input_matrix.append(layers.Flatten()(pool[i]))
         # input_matrix.append(flat[i])
         # input_matrix.append(layers.GlobalMaxPooling1D()(pool[i]))
     
-    poolings = [layers.GlobalAveragePooling1D()(conv) for conv in convs] + [layers.GlobalMaxPooling1D()(conv) for conv in convs]
+    poolings = [layers.GlobalMaxPooling1D()(conv) for conv in convs3]
     # x = self.concatenate(poolings)
 
 
@@ -165,8 +181,7 @@ def build_model(input_length, n_input_layers, kernel_array):
     #     merged_dense = tf.keras.layers.LSTM(128, activation='relu')(global_pooling)
 
     
-    st = layers.Dense(100, activation='relu')(conc2)
-    outputs = tf.keras.layers.Dense(16, activation='sigmoid')(st)
+    outputs = tf.keras.layers.Dense(16, activation='sigmoid')(conc2)
 
     model = tf.keras.Model(inputs=input_layer, outputs = outputs)
     # model = tf.keras.Sequential()
@@ -198,7 +213,7 @@ def build_model(input_length, n_input_layers, kernel_array):
 
 initalize_tensorflow_gpu(1024)
 
-earlystop_callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=20, restore_best_weights=True)  
+earlystop_callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=50, restore_best_weights=True)  
 glove_embedding_array = [50, 100, 200, 300]
 
 # data_df = pd.read_pickle(path.join('main_system', path.join('aspect', 'aspect_embedding_layer.pkl')))
@@ -210,7 +225,7 @@ x_train, y_train, x_val, y_val, x_test, y_test, word_index = load_data(16, 1750)
 # print(x_train[0])
 input_length = x_train.shape[1]
 
-chanels = 3
+chanels = 2
 
 import itertools
 
@@ -228,9 +243,9 @@ for i in range(0, chanels):
     x_train_arr.append(x_train)
     x_val_arr.append(x_val)
     x_test_arr.append(x_test)
-    kernel_array.append(len(kernel_array)+3)
+    kernel_array.append(len(kernel_array)+1)
 
-model = build_model(input_length, chanels, [3,4,5])
+model = build_model(input_length, chanels, kernel_array)
 history = model.fit([x_train, x_train], 
     y_train, 
     epochs=250,
