@@ -128,15 +128,16 @@ def build_model(input_length, n_channels, kernel_array):
         trainable=True)
 
     convs = []
+    poolings = []
 
     input_layer = layers.Input(shape=(input_length,))
     embedding = embedding_layer(input_layer)
     bilstm = layers.Bidirectional(layers.LSTM(128, return_sequences=True))(embedding)
     conc = tf.keras.layers.concatenate([embedding, bilstm])
 
+
     if (n_channels == 1):
-        dropout = layers.Dropout(0.5)(conc)
-        conv = layers.Conv1D(filters=128, kernel_size=kernel_array[0], activation='relu')(dropout)
+        conv = layers.Conv1D(filters=128, kernel_size=kernel_array[0], activation='relu')(conc)
 
 
         channels_output = layers.GlobalMaxPooling1D()(conv) 
@@ -144,13 +145,19 @@ def build_model(input_length, n_channels, kernel_array):
     else:
         for i in range(n_channels):
             # dropout = layers.Dropout(0.5)(conc)
-            convs.append(layers.Conv1D(filters=64, kernel_size=kernel_array[i], activation='relu')(conc))
+            conv1 = layers.Conv1D(filters=256, kernel_size=kernel_array[i], activation='relu')(conc)
+            # pl = layers.MaxPool1D(strides=2)(conv1)
+            # conv2 = layers.Conv1D(filters=256, kernel_size=kernel_array[i], activation='relu')(pl)
 
-        poolings = [layers.GlobalMaxPooling1D()(conv) for conv in convs]
+            convs.append(conv1)
+            poolings.append(layers.GlobalMaxPooling1D()(convs[i]))
+
+        # poolings = [layers.GlobalMaxPooling1D()(conv) for conv in convs]
         channels_output = tf.keras.layers.concatenate(poolings)
 
-        
-    outputs = tf.keras.layers.Dense(16, activation='sigmoid')(channels_output)
+    dropout = layers.Dropout(0.2)(channels_output)
+
+    outputs = tf.keras.layers.Dense(16, activation='sigmoid')(dropout)
     model = tf.keras.Model(inputs=input_layer, outputs = outputs)
     # model = tf.keras.Sequential()
 
@@ -192,8 +199,8 @@ data_df = pd.DataFrame(columns = ['type', 'dimension', 'f1'])
 x_train, y_train, x_val, y_val, x_test, y_test, word_index = load_data(16, 1750)
 
 # print(x_train[0])
-input_length = x_train.shape[1]
-
+input_length = x_train.shape[0]
+print(x_train.shape[1])
 chanels = 3
 
 import itertools
@@ -225,16 +232,16 @@ test_loss, test_acc, test_precision, test_recall = model.evaluate(x_test, y_test
 test_f1 = print_stats(test_loss, test_acc, test_precision, test_recall)
 
 
-def plot_graphs(history, metric):
-  plt.plot(history.history[metric])
-  plt.plot(history.history['val_'+metric], '')
-  plt.xlabel("Epochs")
-  plt.ylabel(metric)
-  plt.legend([metric, 'val_'+metric])
-  plt.show()
+# def plot_graphs(history, metric):
+#   plt.plot(history.history[metric])
+#   plt.plot(history.history['val_'+metric], '')
+#   plt.xlabel("Epochs")
+#   plt.ylabel(metric)
+#   plt.legend([metric, 'val_'+metric])
+#   plt.show()
 
 
-plot_graphs(history, 'accuracy')
-plot_graphs(history, 'precision')
-plot_graphs(history, 'recall')
+# plot_graphs(history, 'accuracy')
+# plot_graphs(history, 'precision')
+# plot_graphs(history, 'recall')
 

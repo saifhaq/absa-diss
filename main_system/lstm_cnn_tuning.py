@@ -108,38 +108,36 @@ def build_model(hp):
     bilstm = layers.Bidirectional(layers.LSTM(128, return_sequences=True))(embedding)
     conc = tf.keras.layers.concatenate([embedding, bilstm])
 
-    n_channels = hp.Int('n_channels', min_value=2, 
-            max_value=5,
-            step=1)
-            
-    kernel_array = [2,3,4,5,6]
+    # n_channels = hp.Int('n_channels', min_value=2, 
+    #         max_value=5,
+    #         step=1)
+    n_channels = 2
+    kernel_array = [1,2,3]
 
     for i in range(n_channels):
-        dropout = layers.Dropout(rate=hp.Float(
-            'dropout_1',
-            min_value=0.0,
-            max_value=0.5,
-            default=0.25,
-            step=0.05)
-            )(conc)
+        # dropout = layers.Dropout(rate=hp.Float(
+        #     'dropout_'+str(i),
+        #     min_value=0.0,
+        #     max_value=0.5,
+        #     default=0.25,
+        #     step=0.05)
+        #     )(conc)
         
-        convs.append(layers.Conv1D(filters=64, kernel_size=kernel_array[i], activation='relu')(dropout))
-
-        # convs.append(layers.Conv1D(
-        #     64,
-        #     kernel_size=kernel_array[i], 
-        #     padding = 'same',
-        #     activation='relu')
-        #     )(dropout)
+        convs.append(layers.Conv1D(filters=
+        hp.Int('conv_'+str(i),
+            min_value=32,
+            max_value=256,
+            step=32),
+        kernel_size=kernel_array[i], 
+        activation='relu')(conc))
 
         # convs.append(layers.Conv1D(
         #     filters=hp.Choice(
         #         'conv_filters',
-        #         values=[16, 32, 64],
-        #         default=32,
+        #         values=[32, 64, 128, 256],
+        #         default=128,
         #     ),
         #     kernel_size=kernel_array[i], 
-        #     padding = 'same',
         #     activation='relu')
         #     )(dropout)
 
@@ -169,16 +167,14 @@ x_train, y_train, x_val, y_val, x_test, y_test, word_index = load_data(16)
 
 input_length = x_train.shape[1]
 
-n_channels = 2
-kernel_array = [2,3,4,5,6]
 
 tuner = RandomSearch(
     build_model,
     objective='val_accuracy',
     max_trials=50,
-    executions_per_trial=3,
-    directory='keras_tuner_dir3',
-    project_name='aspects2')
+    executions_per_trial=2,
+    directory='keras_tuner_dir7',
+    project_name='aspects3')
 
 tuner.search_space_summary()
 
@@ -191,7 +187,7 @@ tuner.search(x_train, y_train,
 
 models = tuner.get_best_models(num_models=5)
 
-for i in range(0, 5):
+for i in range(0, 3):
     models[i].save('aspects_tuner_'+str(i))
     # models[i].save('keras_tuner_something_'+i) 
 
