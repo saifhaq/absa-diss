@@ -11,8 +11,6 @@ from kerastuner.tuners import RandomSearch
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import f1_score
 from collections import Counter 
-from kerastuner import HyperModel
-from kerastuner.tuners import RandomSearch
 
 def initalize_tensorflow_gpu(memory_limit):
     gpus = tf.config.experimental.list_physical_devices('GPU')
@@ -118,8 +116,10 @@ def load_data(n_classes, n_words, stop_words = True):
     return x_train, y_train, x_val, y_val, x_test, y_test, word_index
 
 
-def build_model(hp):
+# define the model
 
+
+def build_model(input_length, n_channels, kernel_array):
 
     glove_matrix = gloveEmbedding(300, word_index)
     embedding_layer = layers.Embedding(len(word_index) + 1,
@@ -132,42 +132,46 @@ def build_model(hp):
 
     input_layer = layers.Input(shape=(input_length,))
     embedding = embedding_layer(input_layer)
-    bilstm = layers.Bidirectional(layers.LSTM(128, return_sequences=True))(embedding)
-    conc = tf.keras.layers.concatenate([embedding, bilstm])
 
 
-    # n_channels = 3
-    kernel_array = [1,2,3,4,5,6]
-
-    n_channels = hp.Int(
-                'n_channels',
-                min_value=1,
-                max_value=5,
-                )
 
     if (n_channels == 1):
-        conv = layers.Conv1D(filters=256, kernel_size=kernel_array[0], activation='relu')(conc)
+        conv = layers.Conv1D(filters=128, kernel_size=kernel_array[0], activation='relu')(embedding)
+
+
         channels_output = layers.GlobalMaxPooling1D()(conv) 
 
     else:
         for i in range(n_channels):
-            conv1 = layers.Conv1D(filters=256, kernel_size=kernel_array[i], activation='relu')(conc)
+            # dropout = layers.Dropout(0.5)(conc)
+            conv1 = layers.Conv1D(filters=256, kernel_size=kernel_array[i], activation='relu')(embedding)
+            # pl = layers.MaxPool1D(strides=2)(conv1)
+            # conv2 = layers.Conv1D(filters=256, kernel_size=kernel_array[i], activation='relu')(pl)
 
             convs.append(conv1)
-            poolings.append(layers.GlobalMaxPooling1D()(convs[i]))
+            poolings.append(layers.MaxPooling1D()(convs[i]))
 
-        channels_output = tf.keras.layers.concatenate(poolings)
+        # poolings = [layers.GlobalMaxPooling1D()(conv) for conv in convs]
+        # channels_output = tf.keras.layers.concatenate(poolings)
 
-    dropout = layers.Dropout(rate=hp.Float(
-            'dropout1',
-            min_value=0.0,
-            max_value=0.5,
-            default=0.25,
-            step=0.05)
-            )(channels_output)
+    bilstm = layers.Bidirectional(layers.LSTM(128, return_sequences=True))(poolings)
+    # conc = tf.keras.layers.concatenate([embedding, bilstm])
+
+    dropout = layers.Dropout(0.2)(bilstm)
 
     outputs = tf.keras.layers.Dense(16, activation='sigmoid')(dropout)
     model = tf.keras.Model(inputs=input_layer, outputs = outputs)
+    # model = tf.keras.Sequential()
+
+    # model.add(embedding_layer)
+
+    # # model.add(tf.keras.layers.GlobalMaxPooling1D())
+    # # model.add(tf.keras.layers.LSTM(256, activation='relu'))
+
+    # model.add(tf.keras.layers.Dense(256, activation='relu'))
+    # model.add(tf.keras.layers.Dense(16, activation='sigmoid'))
+
+	# model = Model(inputs=[inputs1, inputs2, inputs3], outputs=outputs)
 
     METRICS = [
         tf.keras.metrics.BinaryAccuracy(name='accuracy'),
@@ -179,6 +183,8 @@ def build_model(hp):
         optimizer=tf.keras.optimizers.Adam(1e-4),
         loss='binary_crossentropy',
         metrics=[METRICS])
+
+    # tf.keras.utils.plot_model(model, show_shapes=True, to_file='multichannel.png')
 
     return model
 
@@ -196,9 +202,16 @@ x_train, y_train, x_val, y_val, x_test, y_test, word_index = load_data(16, 1750)
 
 # print(x_train[0])
 input_length = x_train.shape[0]
-# print(x_train.shape[1])
+print(x_train.shape[1])
 chanels = 3
 
+import itertools
+
+# x_train = list(itertools.chain.from_iterable(itertools.repeat(x, chanels) for x in x_train))
+# x_test = list(itertools.chain.from_iterable(itertools.repeat(x, chanels) for x in x_test))
+
+# x_train = np.repeat(x_train,chanels)
+# x_test = np.repeat(x_test,chanels)
 x_train_arr = []
 x_val_arr = []
 x_test_arr = []
@@ -210,66 +223,15 @@ for i in range(0, chanels):
     x_test_arr.append(x_test)
     kernel_array.append(len(kernel_array)+1)
 
-
-input_length = x_train.shape[1]
-
-
-tuner = RandomSearch(
-    build_model,
-    objective='val_accuracy',
-    max_trials=125,
-    executions_per_trial=2,
-    directory='cnn_lstm_randomsearch',
-    project_name='aspects')
-
-tuner.search_space_summary()
-
-earlystop_callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=20, restore_best_weights=True) 
-
-tuner.search(x_train, y_train,
-             epochs=250,
-             validation_data=(x_val, y_val),
-             callbacks=[earlystop_callback])
-
-models = tuner.get_best_models(num_models=10)
-
-data_df = pd.DataFrame(columns = ["n_channels", "dropout", "test_acc", "test_f1"])
-
-for i in range(0, 10):
-    models[i].save('cnn_lstm_model2_'+str(i))
-
-    layer_names=[layer.name for layer in models[i].layers]
-    matching = [s for s in layer_names if "conv1d" in s]
-    n_channels = len(matching)
-    dropout = models[i].layers[-2].get_config()['rate']
-
-    test_loss, test_acc, test_precision, test_recall = models[i].evaluate(x_test, y_test)
-    test_f1 = 2 * (test_precision * test_recall) / (test_precision + test_recall)
-
-    data_df = data_df.append({'n_channels': n_channels, 'dropout': dropout, 'test_acc': test_acc, 'test_f1': test_f1}, ignore_index=True)
-
-tuner.results_summary()
-print(data_df)
-data_df.to_pickle(path.join('main_system', path.join('aspect', 'cnn_lstm_data.pkl')))
-
-
-# model = tf.keras.models.load_model('cnn_lstm_model_'+str(4))
-# model.summary()
-
-
-
-
-
-
-
-# print('---------------')
-# print('Test Loss: {}'.format(test_loss))
-# print('Test Accuracy: {}'.format(test_acc))
-# print('Test Precision: {}'.format(test_precision))
-# print('Test Recall: {}'.format(test_recall))
-# print('---------------')
-# print('Test F1: {}'.format(F1))
-
+model = build_model(input_length, chanels, kernel_array)
+history = model.fit([x_train, x_train], 
+    y_train, 
+    epochs=250,
+    validation_data=(x_val, y_val),
+    callbacks=[earlystop_callback],
+    verbose = 1)     
+test_loss, test_acc, test_precision, test_recall = model.evaluate(x_test, y_test)
+test_f1 = print_stats(test_loss, test_acc, test_precision, test_recall)
 
 
 # def plot_graphs(history, metric):
