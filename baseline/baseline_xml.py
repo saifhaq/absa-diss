@@ -262,8 +262,12 @@ for i in range(0,n):
 
     mean = np.mean(predicted == y_test)
     acc = accuracy_score(y_test, predicted)
+    CM = confusion_matrix(y_test, predicted)
 
-    
+    print("----------")
+    print(CM)
+    print("----------")
+
     predicted_individual = text_clf.predict(test_single_df.text)
     actual_individual = test_single_df.desired_category
     acc2 = f1_score(actual_individual, predicted_individual)
