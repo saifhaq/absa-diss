@@ -247,12 +247,14 @@ data_df = pd.DataFrame(columns = ["desired_category", "train_count"])
 
 # print(categories)
 DESIRED_CATEGORY = categories[0][0]
+category_dict = assign_category(TRAIN_XML_PATH, n)
+desired_category_index = category_dict[DESIRED_CATEGORY]
 
 print(categories)
-stoplist = stoplist()
+stopwords = stoplist()
 
 
-category_dict = assign_category(TRAIN_XML_PATH, n)
+
 
 pred_df = df_predicted_category(TEST_XML_PATH, n, DESIRED_CATEGORY)
 
@@ -296,13 +298,16 @@ initalize_tensorflow_gpu(1024)
 
 
 
+model = tf.keras.models.load_model(path.join('acd', 'dnn_model'))
 model = tf.keras.models.load_model(path.join('acd', 'cnn_lstm_model'))
 
-
+# 26/26 [==============================] - 0s 2ms/step - loss: 0.1378 - accuracy: 0.9555 - precision: 0.5361 - recall: 0.3449
 
 
 test_only_single_matrix_df = df_only_single_category(TEST_XML_PATH, category_dict, DESIRED_CATEGORY, 16)
 train_only_single_matrix_df = df_only_single_category(TRAIN_XML_PATH, category_dict, DESIRED_CATEGORY, 16)
+test_only_single_matrix_df['text'] = test_only_single_matrix_df['text'].apply(lambda x: ' '.join([item for item in x.split() if item not in stopwords]))
+train_only_single_matrix_df['text'] = train_only_single_matrix_df['text'].apply(lambda x: ' '.join([item for item in x.split() if item not in stopwords]))
 
 tokenizer = tf.keras.preprocessing.text.Tokenizer(num_words=1750,
                                                   oov_token="<unk>",
@@ -320,7 +325,7 @@ test_seqs = tokenizer.texts_to_sequences(test_only_single_matrix_df.text)
 x_test = tf.keras.preprocessing.sequence.pad_sequences(test_seqs, padding='post')
 
 predicted = np.array(model.predict(x_test))
-pred_labels = (predicted > 0.5).astype(np.int)
+pred_labels = (predicted > 0.25).astype(np.int)
 
  
 
@@ -332,18 +337,68 @@ a  = []
 p = []
 
 for i in range(len(pred_labels)):
-    a.append(pred_labels[i].tolist())
+    p.append(pred_labels[i].tolist())
 
 for i in range(len(test_only_single_matrix_df)):
-    p.append(test_only_single_matrix_df.matrix[i].tolist())
+    a.append(test_only_single_matrix_df.matrix[i].tolist())
 
-a = np.asarray(a)
-p = np.asarray(p)
+# a = np.asarray(a)
+# p = np.asarray(p)
+y_test = np.stack(test_only_single_matrix_df.matrix, axis=0)
 
-# print(a)
+
+
+total_test_samples = len(test_only_single_matrix_df)
+TP = 0 
+for i in range(total_test_samples):
+    if p[i][desired_category_index] == 1:
+        TP +=1
+print(TP) 
+print(total_test_samples)
+
+print("------")
+print(TP/total_test_samples)
+
+
+
+
+
+
+n_classes = 16 
+train_df = pd.read_pickle(path.join('pandas_data', 'aspect_category_detection_train_'+str(n_classes)+'_classes.pkl'))
+test_df = pd.read_pickle(path.join('pandas_data','aspect_category_detection_test_'+str(n_classes)+'_classes.pkl'))
+
+train_df['text'] = train_df['text'].apply(lambda x: ' '.join([item for item in x.split() if item not in stopwords]))
+test_df['text'] = test_df['text'].apply(lambda x: ' '.join([item for item in x.split() if item not in stopwords]))
+
+tokenizer = tf.keras.preprocessing.text.Tokenizer(num_words=1750,
+                                                  oov_token="<unk>",
+                                                  filters='!"#$%&()*+.,-/:;=?@[\]^_`{|}~ ')
+tokenizer.fit_on_texts(train_df.text)
+tokenizer.word_index['<pad>'] = 0
+tokenizer.index_word[0] = '<pad>'
+tokenizer.word_index['<unk>'] = 1
+tokenizer.index_word[1] = '<unk>'
+
+train_seqs = tokenizer.texts_to_sequences(train_df.text)
+train_vector = tf.keras.preprocessing.sequence.pad_sequences(train_seqs, padding='post')
+
+test_seqs = tokenizer.texts_to_sequences(test_df.text)
+x_test = tf.keras.preprocessing.sequence.pad_sequences(test_seqs, padding='post')
+y_test = np.stack(test_df.matrix, axis=0)
+
+
+# model.evaluate(x_test, y_test)
+
+
+
+
+# print(desired_category_index)
+# # print(a)
 # print(p)
-print(confusion_matrix(a.argmax(axis=1), p.argmax(axis=1)))
+# print(confusion_matrix(a.argmax(axis=1), p.argmax(axis=1)))
 
+# print(len(a[1]))
 
 # # print(confusion_matrix(a, p))
 

@@ -184,16 +184,17 @@ print('Test Recall: {}'.format(test_recall))
 print('---------------')
 print('Test F1: {}'.format(F1))
 
+model.save(path.join('acd','dnn_moodel'))
 
-def plot_graphs(history, metric):
-  plt.plot(history.history[metric])
-  plt.plot(history.history['val_'+metric], '')
-  plt.xlabel("Epochs")
-  plt.ylabel(metric)
-  plt.legend([metric, 'val_'+metric])
-  plt.show()
+# def plot_graphs(history, metric):
+#   plt.plot(history.history[metric])
+#   plt.plot(history.history['val_'+metric], '')
+#   plt.xlabel("Epochs")
+#   plt.ylabel(metric)
+#   plt.legend([metric, 'val_'+metric])
+#   plt.show()
 
 
-plot_graphs(history, 'accuracy')
-plot_graphs(history, 'precision')
-plot_graphs(history, 'recall')
+# plot_graphs(history, 'accuracy')
+# plot_graphs(history, 'precision')
+# plot_graphs(history, 'recall')
