@@ -260,6 +260,17 @@ for i in range(0,n):
         matrix = pred_df['predicted_matrix'][j] 
         matrix[i] = predicted[j] 
 
+    total_test_samples = len(x_test)
+    category_dict = assign_category(TRAIN_XML_PATH, 16)
+    desired_category_index = category_dict[DESIRED_CATEGORY]
+
+    TP = 0 
+    for i in range(total_test_samples):
+        if pred_df.predicted_matrix[i][desired_category_index] == 1:
+            TP +=1
+
+
+
     mean = np.mean(predicted == y_test)
     acc = accuracy_score(y_test, predicted)
     CM = confusion_matrix(y_test, predicted)
@@ -272,8 +283,9 @@ for i in range(0,n):
     actual_individual = test_single_df.desired_category
     acc2 = f1_score(actual_individual, predicted_individual)
 
+    acc = TP/total_test_samples
 
-    data_df = data_df.append({'desired_category': DESIRED_CATEGORY, 'train_count': TRAIN_COUNT, 'acc': acc2}, ignore_index=True)
+    data_df = data_df.append({'desired_category': DESIRED_CATEGORY, 'train_count': TRAIN_COUNT, 'acc': acc}, ignore_index=True)
 
 predicted_matrix = pred_df.predicted_matrix
 # actual_df = pd.read_pickle(path.join('pandas_data', 'aspect_category_detection_test_'+str(n)+'_classes.pkl'))
@@ -302,7 +314,7 @@ for i in range(len(predicted_matrix)):
 
 # print(a)
 # print(np.asarray(p).argmax(axis=1))
-print(multilabel_confusion_matrix(a, p))
+# print(multilabel_confusion_matrix(a, p))
 
 print('---------------')
 print('Test Precision: {}'.format(precision_score(a, p, average="macro")))
