@@ -17,7 +17,19 @@ from sklearn.feature_extraction.text import CountVectorizer
 import pandas as pd
 import numpy as np 
 import os.path as path 
+import tensorflow as tf 
 
+
+def initalize_tensorflow_gpu(memory_limit):
+    gpus = tf.config.experimental.list_physical_devices('GPU')
+    try:
+        tf.config.experimental.set_virtual_device_configuration(
+            gpus[0],
+            [tf.config.experimental.VirtualDeviceConfiguration(memory_limit=memory_limit)])
+        logical_gpus = tf.config.experimental.list_logical_devices('GPU')
+        print(len(gpus), "Physical GPUs,", len(logical_gpus), "Logical GPUs")
+    except RuntimeError as e:
+        print(e)
 
 def stoplist(file_name = "stopwords.txt"):
   stopwords_txt = open(path.join('preprocessing', file_name))
@@ -158,7 +170,6 @@ def df_predicted_category(xml_path, n, desired_category):
             for opinion in opinions:
 
                 if(opinion.attrib['category'] == desired_category):      
-                    print("yh")
                     sentences_list.append([sentence_id, sentence_text, matrix])
 
         except:
@@ -246,12 +257,9 @@ category_dict = assign_category(TRAIN_XML_PATH, n)
 pred_df = df_predicted_category(TEST_XML_PATH, n, DESIRED_CATEGORY)
 
 
-test_only_single_matrix_df = df_only_single_category(TEST_XML_PATH, category_dict, DESIRED_CATEGORY, 16)
-train_only_single_matrix_df = df_only_single_category(TRAIN_XML_PATH, category_dict, DESIRED_CATEGORY, 16)
 
 actual_df = df_something(TEST_XML_PATH, n, category_dict, True)
 
-print(test_only_single_matrix_df)
 
 
 predicted_matrix = pred_df.predicted_matrix
@@ -284,7 +292,57 @@ for i in range(len(predicted_matrix)):
 a = np.asarray(a)
 p = np.asarray(p)
 
-# print(confusion_matrix(a.argmax(axis=1), p.argmax(axis=1)))
+initalize_tensorflow_gpu(1024)
+
+
+
+model = tf.keras.models.load_model(path.join('acd', 'cnn_lstm_model'))
+
+
+
+
+test_only_single_matrix_df = df_only_single_category(TEST_XML_PATH, category_dict, DESIRED_CATEGORY, 16)
+train_only_single_matrix_df = df_only_single_category(TRAIN_XML_PATH, category_dict, DESIRED_CATEGORY, 16)
+
+tokenizer = tf.keras.preprocessing.text.Tokenizer(num_words=1750,
+                                                  oov_token="<unk>",
+                                                  filters='!"#$%&()*+.,-/:;=?@[\]^_`{|}~ ')
+tokenizer.fit_on_texts(train_only_single_matrix_df.text)
+tokenizer.word_index['<pad>'] = 0
+tokenizer.index_word[0] = '<pad>'
+tokenizer.word_index['<unk>'] = 1
+tokenizer.index_word[1] = '<unk>'
+
+train_seqs = tokenizer.texts_to_sequences(train_only_single_matrix_df.text)
+train_vector = tf.keras.preprocessing.sequence.pad_sequences(train_seqs, padding='post')
+
+test_seqs = tokenizer.texts_to_sequences(test_only_single_matrix_df.text)
+x_test = tf.keras.preprocessing.sequence.pad_sequences(test_seqs, padding='post')
+
+predicted = np.array(model.predict(x_test))
+pred_labels = (predicted > 0.5).astype(np.int)
+
+ 
+
+print(len(pred_labels))
+print(len(test_only_single_matrix_df.matrix))
+# print(predicted.argmax(axis=-1))
+
+a  = []
+p = []
+
+for i in range(len(pred_labels)):
+    a.append(pred_labels[i].tolist())
+
+for i in range(len(test_only_single_matrix_df)):
+    p.append(test_only_single_matrix_df.matrix[i].tolist())
+
+a = np.asarray(a)
+p = np.asarray(p)
+
+# print(a)
+# print(p)
+print(confusion_matrix(a.argmax(axis=1), p.argmax(axis=1)))
 
 
 # # print(confusion_matrix(a, p))

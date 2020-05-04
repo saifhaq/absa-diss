@@ -235,6 +235,7 @@ models = tuner.get_best_models(num_models=10)
 
 data_df = pd.DataFrame(columns = ["n_channels", "dropout", "test_acc", "test_f1"])
 
+
 for i in range(0, 10):
     models[i].save('cnn_lstm_model2_'+str(i))
 

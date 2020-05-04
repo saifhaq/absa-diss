@@ -264,7 +264,6 @@ for i in range(0,n):
 
 
     predicted = model.predict(x_test)
-    print(predicted)
 
     for j in range(0, len(predicted)):
         matrix = pred_df['predicted_matrix'][j] 
