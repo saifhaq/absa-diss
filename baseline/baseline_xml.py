@@ -285,7 +285,7 @@ for i in range(0,n):
 
     acc = TP/total_test_samples
 
-    data_df = data_df.append({'desired_category': DESIRED_CATEGORY, 'train_count': TRAIN_COUNT, 'acc': acc}, ignore_index=True)
+    data_df = data_df.append({'desired_category': DESIRED_CATEGORY, 'train_count': TRAIN_COUNT, 'baseline': acc}, ignore_index=True)
 
 predicted_matrix = pred_df.predicted_matrix
 # actual_df = pd.read_pickle(path.join('pandas_data', 'aspect_category_detection_test_'+str(n)+'_classes.pkl'))
@@ -346,6 +346,6 @@ print('Test F1: {}'.format(f1_score(a, p, average="macro")))
 
 # print(pred_df.head(1))
 
-# data_df.to_pickle(path.join('baseline', path.join('aspect', 'aspect_baseline_data')))
+data_df.to_pickle(path.join('acd', 'data_df.pkl'))
 
 print(data_df)

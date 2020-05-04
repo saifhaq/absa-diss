@@ -201,7 +201,7 @@ for i in range(0,n):
     x_train, y_train = train_df.text, train_df.desired_category
     x_test, y_test = test_df.text, test_df.desired_category
 
-    top_k = 5000
+    top_k = 1750
     tokenizer = tf.keras.preprocessing.text.Tokenizer(num_words=top_k,
                                                       oov_token="<unk>",
                                                       filters='!"#$%&()*+.,-/:;=?@[\]^_`{|}~ ')
