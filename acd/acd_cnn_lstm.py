@@ -300,8 +300,10 @@ initalize_tensorflow_gpu(1024)
 
 model = tf.keras.models.load_model(path.join('acd', 'dnn_model'))
 model = tf.keras.models.load_model(path.join('acd', 'cnn_lstm_model'))
+model = tf.keras.models.load_model(path.join('acd', 'dnn_eight'))
 
-# 26/26 [==============================] - 0s 2ms/step - loss: 0.1378 - accuracy: 0.9555 - precision: 0.5361 - recall: 0.3449
+
+
 
 
 test_only_single_matrix_df = df_only_single_category(TEST_XML_PATH, category_dict, DESIRED_CATEGORY, 16)

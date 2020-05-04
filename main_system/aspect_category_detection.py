@@ -46,7 +46,7 @@ if gpus:
     print(e)
 
 
-n = 16
+n = 8
 train_df = pd.read_pickle(path.join('pandas_data', 'aspect_category_detection_train_'+str(n)+'_classes.pkl'))
 test_df = pd.read_pickle(path.join('pandas_data','aspect_category_detection_test_'+str(n)+'_classes.pkl'))
 
@@ -124,7 +124,7 @@ glove_matrix = gloveEmbedding(300)
 embedding_layer = tf.keras.layers.Embedding(len(word_index) + 1,
                             300,
                             weights=[glove_matrix],
-                            trainable=True)
+                            trainable=False)
 
 embedding_layer = tf.keras.layers.Embedding(len(word_index)+1, 300)
 model = tf.keras.Sequential()
@@ -184,7 +184,7 @@ print('Test Recall: {}'.format(test_recall))
 print('---------------')
 print('Test F1: {}'.format(F1))
 
-model.save(path.join('acd','dnn_moodel'))
+model.save(path.join('acd','dnn_eight'))
 
 # def plot_graphs(history, metric):
 #   plt.plot(history.history[metric])
