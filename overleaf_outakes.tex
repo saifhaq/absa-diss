@@ -60,3 +60,30 @@ To be fed into the deep learning model, first the sentence needs to be tokenized
 \paragraph{1 2 3 4 5 6 7 8 9 10 11 1 12 13 14 7 15 16 17}
 
 \citep{te}
+
+
+
+
+
+\subsection{Word Embeddings}
+In NLP, the representation of words in a model still remains one of the predominant focuses of the field. \textcolor{cite}{\cite{mikolov}}'s word2vec library helped word embeddings become the predominant approach for vectorizing textual data, as it has proven that it significantly outperforms other methods of vectorization such as TF-IDF which indexes words on the basis of their frequencies in documents. Word embeddings work on the assumption that words with similar meanings appear in similar contexts, and capture this relation between words in their dense vector representation.
+\newline
+GloVe \textcolor{cite}{\cite{glove}} is a popular unsupervised learning algorithm packaged as a text file that provides vector representations of 400,000 words that were trained on a 2014 Wikipedia dump. The version referenced for this project contains embeddings in the dimensions: \{50, 100, 200, 300\}. \\
+\begin{center}
+    Text: \textit{Suffice it to say, my MacBook Pro keeps me going with its long battery life and blazing speed}.\\
+\end{center}
+The raw text above from the training dataset's sentence:292:2 first needs to be needs to be normalised, converting it all text to lower case. Next, the words need to be split from punctuation leaving the raw sentence text. Lastly, a stoplist is applied removing non-content words from the sentences. The example above will become:  
+
+\begin{center}
+    Text: \textit{suffice macbook pro long battery life blazing speed}
+\end{center}
+
+
+
+
+\subsubsection{Opinion Target Extraction}
+% \textcolor{cite}{\citet{opinionwordexpansion}}
+\textcolor{cite}{\citet{tohsu}} treated aspect target extraction as a sequence labelling problem, training sequence labeling classifiers with conditional random fields and using a bidirectional recurrent neural network. They achieved the best scoring system for Slot 2 for SemEval 2016 Task 5.  
+
+
+In industry, even minimal increases in accuracy of a model could leads to millions of pounds of change in revenue, especially with inordinate amounts of customer reviews on sites like Amazon. 

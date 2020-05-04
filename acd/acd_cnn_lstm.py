@@ -118,14 +118,20 @@ def df_only_single_category(xml_path, category_dict, desired_category, n):
 
         try: 
             opinions = list(sentence)[1]
+            found = False 
+
             for opinion in opinions:
+                
+                location = category_dict[opinion.attrib['category']]
+                category_matrix[location] = 1
+
                 if(opinion.attrib['category'] == desired_category):
-                    
-                    location = category_dict[opinion.attrib['category']]
-                    category_matrix[location] = 1
+                    found = True
 
-                    sentences_list.append([sentence_id, sentence_text, category_matrix])
+            if found == True:
+                sentences_list.append([sentence_id, sentence_text, category_matrix])
 
+                print("something")
         except:
             pass
 
@@ -234,8 +240,12 @@ stoplist = stoplist()
 
 category_dict = assign_category(TRAIN_XML_PATH, n)
 
+test_only_single_matrix_df = df_only_single_category(TEST_XML_PATH, category_dict, DESIRED_CATEGORY, 16)
+train_only_single_matrix_df = df_only_single_category(TRAIN_XML_PATH, category_dict, DESIRED_CATEGORY, 16)
 
-print(df_only_single_category(TEST_XML_PATH, category_dict, DESIRED_CATEGORY, 16))
+actual_df = df_something(TEST_XML_PATH, n, category_dict, True)
+
+print(train_only_single_matrix_df)
 
 
 # for i in range(0,n):
