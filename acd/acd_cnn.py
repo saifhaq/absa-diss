@@ -24,9 +24,11 @@ def initalize_tensorflow_gpu(memory_limit):
 
 def gloveEmbedding(d, word_index):
   """
-    Returns a d dimensional glove embedding 
+    Returns a *d* dimensional glove embedding matrix
+    mapping each word index to it's glove weights
 
     :param d: {50, 100, 200, 300} dimensional glove word embeddings
+    :param word_index: word to integer mapping created by tokenizer
   """
   embeddings_word_weight_dict = {}
   file_name = "glove.6B."+str(d)+"d.txt"
@@ -48,6 +50,10 @@ def gloveEmbedding(d, word_index):
   return embedding_matrix
 
 def stoplist(file_name = "stopwords.txt"):
+    """
+        Returns an array of stopwords, from each line of the 
+        *file_name* text file
+    """
   stopwords_txt = open(path.join('preprocessing', file_name))
   stoplist = []
   for line in stopwords_txt:
@@ -57,6 +63,10 @@ def stoplist(file_name = "stopwords.txt"):
   return stoplist
 
 def print_stats(test_loss, test_acc, test_precision, test_recall):
+    """
+        Helper function using data from Tensorflow's model evaluation
+        function to return the F1 and print model performance stats 
+    """
     F1 = 2 * (test_precision * test_recall) / (test_precision + test_recall)
 
     print('---------------')
@@ -70,7 +80,7 @@ def print_stats(test_loss, test_acc, test_precision, test_recall):
 
 
 def load_data(n_classes, n_words, stop_words = True):
-    
+
     train_df = pd.read_pickle(path.join('pandas_data', 'aspect_category_detection_train_'+str(n_classes)+'_classes.pkl'))
     test_df = pd.read_pickle(path.join('pandas_data','aspect_category_detection_test_'+str(n_classes)+'_classes.pkl'))
 

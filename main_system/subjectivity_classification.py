@@ -171,7 +171,7 @@ history = model.fit(x_train,
 evaluateModel(model, x_test, y_test)
 
 # model.summary()
-model.save(path.join('tensorflow_models', 'subjectivity_classification_model')) 
+# model.save(path.join('tensorflow_models', 'subjectivity_classification_model')) 
 
 
 # F1 Measure 0.808

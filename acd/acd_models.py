@@ -114,7 +114,8 @@ def df_only_single_category(xml_path, category_dict, desired_category, n):
 
 def assign_category(xml_path, n):
     """
-        Returns dictionary of n most common categories 
+        Returns dictionary of the *n* most common as the keys 
+        The values of each key is the index of the category  
     """
 
     sentences = df_aspect_category(xml_path)
@@ -137,12 +138,11 @@ n = 16
 sentences = df_aspect_category(TRAIN_XML_PATH)
 categories = Counter(sentences.category).most_common(n)
 
-# data_df = pd.DataFrame(columns = ["desired_category", "train_count"])
-data_df = pd.read_pickle(path.join('acd', 'data_df.pkl'))
+data_df = pd.read_pickle(path.join('acd', path.join('results', 'data_df.pkl')))
 
 
 for i in range(0,n):
-    model = tf.keras.models.load_model(path.join('acd', 'dnn_model'))
+    model = tf.keras.models.load_model(path.join('acd', path.join('tf_models', 'dnn_model')))
 
     DESIRED_CATEGORY = categories[i][0]
     TRAIN_COUNT = categories[i][1]
@@ -186,7 +186,7 @@ for i in range(0,n):
     data_df.at[i, 'dnn'] = acc
 
 for i in range(0,n):
-    model = tf.keras.models.load_model(path.join('acd', 'cnn_model'))
+    model = tf.keras.models.load_model(path.join('acd', path.join('tf_models', 'cnn_model')))
 
     DESIRED_CATEGORY = categories[i][0]
     TRAIN_COUNT = categories[i][1]
@@ -230,7 +230,7 @@ for i in range(0,n):
     data_df.at[i, 'cnn'] = acc
 
 for i in range(0,n):
-    model = tf.keras.models.load_model(path.join('acd', 'cnn_lstm_model'))
+    model = tf.keras.models.load_model(path.join('acd', path.join('tf_models', 'cnn_lstm_model')))
 
     DESIRED_CATEGORY = categories[i][0]
     TRAIN_COUNT = categories[i][1]
@@ -273,6 +273,6 @@ for i in range(0,n):
 
     data_df.at[i, 'lstm_cnn'] = acc
 
-data_df.to_pickle(path.join('acd', 'data_df_.pkl'))
+data_df.to_pickle(path.join('acd', path.join('results', 'data_df.pkl')))
 
 print(data_df)
