@@ -59,30 +59,45 @@ TRAIN_XML_PATH = "ABSA16_Laptops_Train_SB1_v2.xml"
 TEST_XML_PATH = "ABSA16_Laptops_Test_GOLD_SB1.xml"
 
 
+
+polarities_df = pd.DataFrame(columns = ["Polarity", "Train Count", "Test Count", "Train Percentage", "Test Percentage"])
+
+polarities_df = polarities_df.append({'Polarity': 'Neutral', 'Train Count': 0}, ignore_index=True)
+polarities_df = polarities_df.append({'Polarity': 'Positive', 'Train Count': 0}, ignore_index=True)
+polarities_df = polarities_df.append({'Polarity': 'Negative', 'Train Count': 0}, ignore_index=True)
+
+# Calculate counts and percentages for train dataset 
 train_df = df_categories(TRAIN_XML_PATH)
-test_df = df_categories(TEST_XML_PATH)
-
-
-polarities_df = pd.DataFrame(columns = ["Polarity", "Count", "Percentage"])
-
-polarities_df = polarities_df.append({'Polarity': 'Neutral', 'Count': 0}, ignore_index=True)
-polarities_df = polarities_df.append({'Polarity': 'Positive', 'Count': 0}, ignore_index=True)
-polarities_df = polarities_df.append({'Polarity': 'Negative', 'Count': 0}, ignore_index=True)
-
 flattened_polarities = [polarity for sentence in train_df.polarity for polarity in sentence]
 polarities_counter = Counter(flattened_polarities)
 n_polarites = sum(polarities_counter.values())
 
-polarities_df.loc[0,'Count'] = polarities_counter['neutral']
-polarities_df.loc[1,'Count'] = polarities_counter['positive']
-polarities_df.loc[2,'Count'] = polarities_counter['negative']
+polarities_df.loc[0,'Train Count'] = polarities_counter['neutral']
+polarities_df.loc[1,'Train Count'] = polarities_counter['positive']
+polarities_df.loc[2,'Train Count'] = polarities_counter['negative']
 
 for index, row in polarities_df.iterrows():
-    p = (row['Count'] / n_polarites) *100
+    p = (row['Train Count'] / n_polarites) *100
     
-    row['Percentage'] = str('{0:.2f}'.format(p)) + "%"
+    row['Test Percentage'] = str('{0:.2f}'.format(p)) + "%"
+
+# Calculate counts and percentages for test dataset 
+test_df = df_categories(TEST_XML_PATH)
+flattened_polarities = [polarity for sentence in test_df.polarity for polarity in sentence]
+polarities_counter = Counter(flattened_polarities)
+n_polarites = sum(polarities_counter.values())
+
+polarities_df.loc[0,'Test Count'] = polarities_counter['neutral']
+polarities_df.loc[1,'Test Count'] = polarities_counter['positive']
+polarities_df.loc[2,'Test Count'] = polarities_counter['negative']
+for index, row in polarities_df.iterrows():
+    p = (row['Test Count'] / n_polarites) *100
+    
+    row['Test Percentage'] = str('{0:.2f}'.format(p)) + "%"
 
 print(polarities_df)
+
+
 
 polarities_df.to_pickle(path.join('data_exploration', path.join('results', 'polarities_df.pkl')))
 

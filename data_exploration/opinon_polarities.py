@@ -1,89 +1,89 @@
-import xml.etree.ElementTree as et
-from collections import Counter
-from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.model_selection import train_test_split
-from sklearn import svm
-import numpy as np 
-import os.path as path
-import re
-from sklearn.metrics import confusion_matrix
-from sklearn.pipeline import Pipeline
-from sklearn.linear_model import SGDClassifier
-from sklearn.feature_extraction.text import TfidfTransformer
-from sklearn.metrics import confusion_matrix
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score, classification_report, confusion_matrix, roc_auc_score, multilabel_confusion_matrix
-from sklearn.feature_extraction.text import CountVectorizer
-import pandas as pd
-import numpy as np 
-import os.path as path 
+# import xml.etree.ElementTree as et
+# from collections import Counter
+# from sklearn.feature_extraction.text import CountVectorizer
+# from sklearn.model_selection import train_test_split
+# from sklearn import svm
+# import numpy as np 
+# import os.path as path
+# import re
+# from sklearn.metrics import confusion_matrix
+# from sklearn.pipeline import Pipeline
+# from sklearn.linear_model import SGDClassifier
+# from sklearn.feature_extraction.text import TfidfTransformer
+# from sklearn.metrics import confusion_matrix
+# from sklearn.model_selection import train_test_split
+# from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score, classification_report, confusion_matrix, roc_auc_score, multilabel_confusion_matrix
+# from sklearn.feature_extraction.text import CountVectorizer
+# import pandas as pd
+# import numpy as np 
+# import os.path as path 
 
 
-def df_categories(xml_path):
-    """
-        Takes *xml_path* and returns dataframe of each sentence and their categories. 
-        Each sentence is returned once.  
+# def df_categories(xml_path):
+#     """
+#         Takes *xml_path* and returns dataframe of each sentence and their categories. 
+#         Each sentence is returned once.  
         
-        Dataframe returned as: [id, text, category, polarity] 
-    """
+#         Dataframe returned as: [id, text, category, polarity] 
+#     """
 
-    tree = et.parse(xml_path)
-    reviews = tree.getroot()
-    sentences = reviews.findall('**/sentence')
+#     tree = et.parse(xml_path)
+#     reviews = tree.getroot()
+#     sentences = reviews.findall('**/sentence')
 
-    sentences_list = []
+#     sentences_list = []
     
-    for sentence in sentences:
+#     for sentence in sentences:
 
-        sentence_id = sentence.attrib['id']                
-        sentence_text = sentence.find('text').text
-        sentence_text =  re.sub(r'[^\w\s]','',sentence_text.lower())
-        categories = []
-        polarities = []
+#         sentence_id = sentence.attrib['id']                
+#         sentence_text = sentence.find('text').text
+#         sentence_text =  re.sub(r'[^\w\s]','',sentence_text.lower())
+#         categories = []
+#         polarities = []
 
-        try: 
-            opinions = list(sentence)[1]
-            for opinion in opinions:
-                categories.append(opinion.attrib['category'])
-                polarities.append(opinion.attrib['polarity'])
+#         try: 
+#             opinions = list(sentence)[1]
+#             for opinion in opinions:
+#                 categories.append(opinion.attrib['category'])
+#                 polarities.append(opinion.attrib['polarity'])
         
-        except:
-            pass
+#         except:
+#             pass
         
-        sentences_list.append([sentence_id, sentence_text, categories, polarities])
+#         sentences_list.append([sentence_id, sentence_text, categories, polarities])
 
 
-    return pd.DataFrame(sentences_list, columns = ["id", "text", "category", "polarity"])
+#     return pd.DataFrame(sentences_list, columns = ["id", "text", "category", "polarity"])
 
-TRAIN_XML_PATH = "ABSA16_Laptops_Train_SB1_v2.xml"
-TEST_XML_PATH = "ABSA16_Laptops_Test_GOLD_SB1.xml"
-
-
-train_df = df_categories(TRAIN_XML_PATH)
-test_df = df_categories(TEST_XML_PATH)
+# TRAIN_XML_PATH = "ABSA16_Laptops_Train_SB1_v2.xml"
+# TEST_XML_PATH = "ABSA16_Laptops_Test_GOLD_SB1.xml"
 
 
-polarities_df = pd.DataFrame(columns = ["Polarity", "Count", "Percentage"])
+# train_df = df_categories(TRAIN_XML_PATH)
+# test_df = df_categories(TEST_XML_PATH)
 
-polarities_df = polarities_df.append({'Polarity': 'Neutral', 'Count': 0}, ignore_index=True)
-polarities_df = polarities_df.append({'Polarity': 'Positive', 'Count': 0}, ignore_index=True)
-polarities_df = polarities_df.append({'Polarity': 'Negative', 'Count': 0}, ignore_index=True)
 
-flattened_polarities = [polarity for sentence in train_df.polarity for polarity in sentence]
-polarities_counter = Counter(flattened_polarities)
-n_polarites = sum(polarities_counter.values())
+# polarities_df = pd.DataFrame(columns = ["Polarity", "Count", "Percentage"])
 
-polarities_df.loc[0,'Count'] = polarities_counter['neutral']
-polarities_df.loc[1,'Count'] = polarities_counter['positive']
-polarities_df.loc[2,'Count'] = polarities_counter['negative']
+# polarities_df = polarities_df.append({'Polarity': 'Neutral', 'Count': 0}, ignore_index=True)
+# polarities_df = polarities_df.append({'Polarity': 'Positive', 'Count': 0}, ignore_index=True)
+# polarities_df = polarities_df.append({'Polarity': 'Negative', 'Count': 0}, ignore_index=True)
 
-for index, row in polarities_df.iterrows():
-    p = (row['Count'] / n_polarites) *100
+# flattened_polarities = [polarity for sentence in train_df.polarity for polarity in sentence]
+# polarities_counter = Counter(flattened_polarities)
+# n_polarites = sum(polarities_counter.values())
+
+# polarities_df.loc[0,'Count'] = polarities_counter['neutral']
+# polarities_df.loc[1,'Count'] = polarities_counter['positive']
+# polarities_df.loc[2,'Count'] = polarities_counter['negative']
+
+# for index, row in polarities_df.iterrows():
+#     p = (row['Count'] / n_polarites) *100
     
-    row['Percentage'] = str('{0:.2f}'.format(p)) + "%"
+#     row['Percentage'] = str('{0:.2f}'.format(p)) + "%"
 
-print(polarities_df)
+# print(polarities_df)
 
-polarities_df.to_pickle(path.join('data_exploration', path.join('results', 'polarities_df.pkl')))
+# polarities_df.to_pickle(path.join('data_exploration', path.join('results', 'polarities_df.pkl')))
 
-# polarities_df = pd.read_pickle(path.join('data_exploration', path.join('results', 'polarities_df.pkl')))
+# # polarities_df = pd.read_pickle(path.join('data_exploration', path.join('results', 'polarities_df.pkl')))

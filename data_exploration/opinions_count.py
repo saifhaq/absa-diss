@@ -17,6 +17,7 @@ from sklearn.feature_extraction.text import CountVectorizer
 import pandas as pd
 import numpy as np 
 import os.path as path 
+import matplotlib.pyplot as plt
 
 def df_categories(xml_path):
     """
@@ -56,33 +57,82 @@ TRAIN_XML_PATH = "ABSA16_Laptops_Train_SB1_v2.xml"
 TEST_XML_PATH = "ABSA16_Laptops_Test_GOLD_SB1.xml"
 
 
+opinions_df = pd.DataFrame(columns = ["Opinions", "Train Count", "Test Count", "Train Percentage", "Test Percentage"])
+
+opinions_df = opinions_df.append({'Opinions': 'No Opinions', 'Train Count': 0, 'Test Count': 0}, ignore_index=True)
+opinions_df = opinions_df.append({'Opinions': 'One Opinion', 'Train Count': 0, 'Test Count': 0}, ignore_index=True)
+opinions_df = opinions_df.append({'Opinions': 'Two Opinions', 'Train Count': 0, 'Test Count': 0}, ignore_index=True)
+opinions_df = opinions_df.append({'Opinions': 'Three Opinions', 'Train Count': 0, 'Test Count': 0}, ignore_index=True)
+opinions_df = opinions_df.append({'Opinions': 'Four or more opinions', 'Train Count': 0, 'Test Count': 0}, ignore_index=True)
+
+# Calculate Train counts and percentage
 train_df = df_categories(TRAIN_XML_PATH)
-test_df = df_categories(TEST_XML_PATH)
-
-opinions_df = pd.DataFrame(columns = ["Opinions", "Count", "Percentage"])
-
-opinions_df = opinions_df.append({'Opinions': 'No Opinions', 'Count': 0}, ignore_index=True)
-opinions_df = opinions_df.append({'Opinions': 'One Opinion', 'Count': 0}, ignore_index=True)
-opinions_df = opinions_df.append({'Opinions': 'Two Opinions', 'Count': 0}, ignore_index=True)
-opinions_df = opinions_df.append({'Opinions': 'Three Opinions', 'Count': 0}, ignore_index=True)
-opinions_df = opinions_df.append({'Opinions': 'Four or more opinions', 'Count': 0}, ignore_index=True)
-
 for i in range(len(train_df.category)):
     index = len(train_df.category[i])
     if index >=4:
         index = 4
     try:
-        opinions_df.loc[index,'Count'] +=1
+        opinions_df.loc[index,'Train Count'] +=1
     except:
-        opinions_df.loc[index,'Count'] = 1
+        opinions_df.loc[index,'Train Count'] = 1
 
 n_samples = len(train_df)
 
 for index, row in opinions_df.iterrows():
-    p = (row['Count'] / n_samples) *100
+    train_p = (row['Train Count'] / n_samples) *100
     
-    row['Percentage'] = str('{0:.2f}'.format(p)) + "%"
+    row['Train Percentage'] = str('{0:.2f}'.format(train_p)) + "%"
 
-print(opinions_df)
+
+# Calculate Test counts and percentage
+test_df = df_categories(TEST_XML_PATH)
+for i in range(len(test_df.category)):
+    index = len(test_df.category[i])
+    if index >=4:
+        index = 4
+    try:
+        opinions_df.loc[index,'Test Count'] +=1
+    except:
+        opinions_df.loc[index,'Test Count'] = 1
+
+n_samples = len(test_df)
+
+for index, row in opinions_df.iterrows():
+    test_p = (row['Test Count'] / n_samples) *100
+    
+    row['Test Percentage'] = str('{0:.2f}'.format(test_p)) + "%"
 
 opinions_df.to_pickle(path.join('data_exploration', path.join('results', 'opinions_df.pkl')))
+
+print(opinions_df)
+# print(opinions_df.to_latex())
+
+
+n_groups = 4
+means_frank = (90, 55, 40, 65)
+means_guido = (85, 62, 54, 20)
+
+# # create plot
+# fig, ax = plt.subplots()
+# index = np.arange(n_groups)
+# bar_width = 0.35
+# opacity = 0.8
+
+# rects1 = plt.bar(index, means_frank, bar_width,
+# alpha=opacity,
+# color='b',
+# label='Frank')
+
+# rects2 = plt.bar(index + bar_width, means_guido, bar_width,
+# alpha=opacity,
+# color='g',
+# label='Guido')
+
+# plt.xlabel('Person')
+# plt.ylabel('Aspect distribution percentages')
+# plt.title('Scores by person')
+# plt.xticks(index + bar_width, ('A', 'B', 'C', 'D'))
+# plt.legend()
+
+# plt.tight_layout()
+# plt.show()
