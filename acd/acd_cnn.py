@@ -54,20 +54,36 @@ def stoplist(file_name = "stopwords.txt"):
         Returns an array of stopwords, from each line of the 
         *file_name* text file
     """
-  stopwords_txt = open(path.join('preprocessing', file_name))
-  stoplist = []
-  for line in stopwords_txt:
-      values = line.split()
-      stoplist.append(values[0])
-  stopwords_txt.close()
-  return stoplist
+    stopwords_txt = open(path.join('preprocessing', file_name))
+    stoplist = []
+    for line in stopwords_txt:
+        values = line.split()
+        stoplist.append(values[0])
+    stopwords_txt.close()
+    return stoplist
 
-def print_stats(test_loss, test_acc, test_precision, test_recall):
+def print_stats(test_loss, test_acc, test_precision, test_recall, model_name):
     """
         Helper function using data from Tensorflow's model evaluation
-        function to return the F1 and print model performance stats 
+        function to return the F1 and print model performance stats. 
+        Also updates data_f1s df to contain model acc and f1
     """
-    F1 = 2 * (test_precision * test_recall) / (test_precision + test_recall)
+    test_f1 = 2 * (test_precision * test_recall) / (test_precision + test_recall)
+
+    data_f1s = pd.read_pickle(path.join('acd', path.join('results', 'data_f1s.pkl')))
+
+    try:
+        best_f1 = data_f1s[data_f1s['model']==model_name]['f1'].values[0]
+    except: 
+        best_f1 = 0 
+
+    if best_f1 > test_f1:
+        best_f1 = test_f1   
+        data_f1s = data_f1s[data_f1s.model == model_name]
+        data_f1s = data_f1s.append({'model': model_name, 'acc': test_acc, 'f1': test_f1}, ignore_index=True)
+        model.save(path.join('acd', path.join('tf_models', model_name)))
+        
+    data_f1s.to_pickle(path.join('acd', path.join('results', 'data_f1s.pkl')))
 
     print('---------------')
     print('Test Loss: {}'.format(test_loss))
@@ -75,14 +91,14 @@ def print_stats(test_loss, test_acc, test_precision, test_recall):
     print('Test Precision: {}'.format(test_precision))
     print('Test Recall: {}'.format(test_recall))
     print('---------------')
-    print('Test F1: {}'.format(F1))
-    return F1
+    print('Test F1: {}'.format(test_f1))
+    return test_f1
 
 
 def load_data(n_classes, n_words, stop_words = True):
 
-    train_df = pd.read_pickle(path.join('pandas_data', 'aspect_category_detection_train_'+str(n_classes)+'_classes.pkl'))
-    test_df = pd.read_pickle(path.join('pandas_data','aspect_category_detection_test_'+str(n_classes)+'_classes.pkl'))
+    train_df = pd.read_pickle(path.join('acd', path.join('pandas_data', 'MAIN_TRAIN_'+str(n_classes)+'_CLASSES.pkl')))
+    test_df = pd.read_pickle(path.join('acd', path.join('pandas_data', 'MAIN_TEST_'+str(n_classes)+'_CLASSES.pkl')))
 
     if stop_words:
         stopwords = stoplist()
@@ -166,10 +182,8 @@ initalize_tensorflow_gpu(1024)
 
 earlystop_callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=20, restore_best_weights=True)  
 
-
-
-best = 0
-for k in range(1,6):
+    
+for k in range(1,2):
     x_train, y_train, x_val, y_val, x_test, y_test, word_index = load_data(16, 1750)
     input_length = x_train.shape[0]
     model = build_model(word_index, 256, [1,2,3])
@@ -180,8 +194,7 @@ for k in range(1,6):
         callbacks=[earlystop_callback],
         verbose = 1)     
     test_loss, test_acc, test_precision, test_recall = model.evaluate(x_test, y_test)
-    test_f1 = print_stats(test_loss, test_acc, test_precision, test_recall)
+    test_f1 = print_stats(test_loss, test_acc, test_precision, test_recall, 'cnn')
     
-    if test_f1 > best:
-        best = test_f1   
-        model.save(path.join('acd','cnn_model'))
+
+print(pd.read_pickle(path.join('acd', path.join('results', 'data_f1s.pkl'))))
