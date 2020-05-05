@@ -9,6 +9,8 @@ import re
 from sklearn.metrics import confusion_matrix
 from sklearn.pipeline import Pipeline
 from sklearn.linear_model import SGDClassifier
+from sklearn.svm import SVC
+
 from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.metrics import confusion_matrix
 from sklearn.model_selection import train_test_split

@@ -17,6 +17,8 @@ from sklearn.feature_extraction.text import CountVectorizer
 import pandas as pd
 import numpy as np 
 import os.path as path 
+import matplotlib.pyplot as plt
+import matplotlib.ticker as mtick
 
 
 def df_categories(xml_path):
@@ -79,7 +81,7 @@ polarities_df.loc[2,'Train Count'] = polarities_counter['negative']
 for index, row in polarities_df.iterrows():
     p = (row['Train Count'] / n_polarites) *100
     
-    row['Test Percentage'] = str('{0:.2f}'.format(p)) + "%"
+    row['Train Percentage'] = str('{0:.2f}'.format(p))
 
 # Calculate counts and percentages for test dataset 
 test_df = df_categories(TEST_XML_PATH)
@@ -93,7 +95,7 @@ polarities_df.loc[2,'Test Count'] = polarities_counter['negative']
 for index, row in polarities_df.iterrows():
     p = (row['Test Count'] / n_polarites) *100
     
-    row['Test Percentage'] = str('{0:.2f}'.format(p)) + "%"
+    row['Test Percentage'] = str('{0:.2f}'.format(p)) 
 
 print(polarities_df)
 
@@ -102,3 +104,58 @@ print(polarities_df)
 polarities_df.to_pickle(path.join('data_exploration', path.join('results', 'polarities_df.pkl')))
 
 # polarities_df = pd.read_pickle(path.join('data_exploration', path.join('results', 'polarities_df.pkl')))
+train_percentages = [float(x) for x in polarities_df['Train Percentage']]
+test_percentages = [float(x) for x in polarities_df['Test Percentage']]
+
+# print(polarities_df['Train Percentage'].to_list())
+
+
+# create plot
+n_groups = 3
+
+fig, ax = plt.subplots()
+fig.set_size_inches(10, 10)
+
+ax.yaxis.set_major_formatter(mtick.PercentFormatter())
+
+index = np.arange(n_groups)
+
+bar_width = 0.35
+opacity = 0.8
+
+def autolabel(rects):
+    """
+        Attach a text label above each bar in *rects*, displaying its height.
+        https://matplotlib.org/3.1.1/gallery/lines_bars_and_markers/barchart.html#sphx-glr-gallery-lines-bars-and-markers-barchart-py
+    """
+    for rect in rects:
+        height = rect.get_height()
+        ax.annotate('{}'.format(height),
+                    xy=(rect.get_x() + rect.get_width() / 2, height),
+                    xytext=(0, 3),  # 3 points vertical offset
+                    textcoords="offset points",
+                    ha='center', va='bottom')
+
+
+
+
+train = plt.bar(index + bar_width, train_percentages, bar_width,
+alpha=opacity,
+color='g',
+label='Train')
+
+test = plt.bar(index, test_percentages, bar_width,
+alpha=opacity,
+color='b',
+label='Test')
+
+autolabel(train)
+autolabel(test)
+
+plt.xlabel('Polarity')
+plt.ylabel('% of aspects in data')
+plt.xticks(index + bar_width, ('Neural', 'Positive', 'Negative'))
+plt.legend()
+
+plt.tight_layout()
+plt.show()
