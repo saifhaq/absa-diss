@@ -77,11 +77,12 @@ def print_stats(test_loss, test_acc, test_precision, test_recall, model_name):
     except: 
         best_f1 = 0 
 
-    if best_f1 > test_f1:
+    if test_f1 > best_f1:
         best_f1 = test_f1   
-        data_f1s = data_f1s[data_f1s.model == model_name]
+        data_f1s = data_f1s[data_f1s.model != model_name]
         data_f1s = data_f1s.append({'model': model_name, 'acc': test_acc, 'f1': test_f1}, ignore_index=True)
         model.save(path.join('acd', path.join('tf_models', model_name+"_model")))
+        print("yes")
         
     data_f1s.to_pickle(path.join('acd', path.join('results', 'data_f1s.pkl')))
 
@@ -133,7 +134,7 @@ def load_data(n_classes, n_words, stop_words = True):
 
     return x_train, y_train, x_val, y_val, x_test, y_test, word_index
 
-def build_model(word_index, filters, kernel_array):
+def build_model(word_index):
 
     glove_matrix = gloveEmbedding(300, word_index)
     embedding_layer = layers.Embedding(len(word_index) + 1,
@@ -171,7 +172,7 @@ earlystop_callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patien
 for k in range(1,2):
     x_train, y_train, x_val, y_val, x_test, y_test, word_index = load_data(16, 1750)
     input_length = x_train.shape[0]
-    model = build_model(word_index, 256, [1,2,3])
+    model = build_model(word_index)
     history = model.fit(x_train, 
         y_train, 
         epochs=250,
@@ -182,4 +183,4 @@ for k in range(1,2):
     test_f1 = print_stats(test_loss, test_acc, test_precision, test_recall, 'dnn')
     
 
-# print(pd.read_pickle(path.join('acd', path.join('results', 'data_f1s.pkl'))))
+print(pd.read_pickle(path.join('acd', path.join('results', 'data_f1s.pkl'))))

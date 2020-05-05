@@ -77,11 +77,11 @@ def print_stats(test_loss, test_acc, test_precision, test_recall, model_name):
     except: 
         best_f1 = 0 
 
-    if best_f1 > test_f1:
+    if test_f1 > best_f1:
         best_f1 = test_f1   
-        data_f1s = data_f1s[data_f1s.model == model_name]
+        data_f1s = data_f1s[data_f1s.model != model_name]
         data_f1s = data_f1s.append({'model': model_name, 'acc': test_acc, 'f1': test_f1}, ignore_index=True)
-        model.save(path.join('acd', path.join('tf_models', model_name)))
+        model.save(path.join('acd', path.join('tf_models', model_name+"_model")))
         
     data_f1s.to_pickle(path.join('acd', path.join('results', 'data_f1s.pkl')))
 

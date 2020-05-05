@@ -132,7 +132,7 @@ def build_model(embedding_dimension, word_index):
 initalize_tensorflow_gpu(1024)
 
 earlystop_callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=20, restore_best_weights=True)  
-embedding_array = [50, 100, 200, 300, 500, 1000]
+embedding_array = [50, 100, 200, 300]
 
 data_df = pd.DataFrame(columns = ['type', 'dimension', 'f1'])
 
