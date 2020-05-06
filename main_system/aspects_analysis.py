@@ -96,13 +96,28 @@ def load_data(n_classes):
 
     return x_train, y_train, x_val, y_val, x_test, y_test
 
-
 x_train, y_train, x_val, y_val, x_test, y_test = load_data(16)
 
 input_length = x_train.shape[1]
 
+initalize_tensorflow_gpu(1024)
+
+model = tf.keras.models.load_model(path.join('acd', path.join('tf_models', 'cnn_lstm'+"_model")))
 
 
+layer_names=[layer.name for layer in model.layers]
+matching = [s for s in layer_names if "conv1d" in s]
+n_channels = len(matching)
+dropout = model.layers[-2].get_config()['rate']
+test_loss, test_acc, test_precision, test_recall = model.evaluate(x_test, y_test)
+test_f1 = 2 * (test_precision * test_recall) / (test_precision + test_recall)
+# data_df = data_df.append({'n_channels': n_channels, 'dropout': dropout, 'test_acc': test_acc, 'test_f1': test_f1}, ignore_index=True)
+
+print(dropout)
+print(n_channels)
+lstm_neurons = model.layers[2].get_config()['layer']['config']['units']
+
+# print(model.layers[4].get_config()['filters'])
 # print(x_train)
 # test_loss, test_acc, test_precision, test_recall = models[0].evaluate(x_test, y_test)
 

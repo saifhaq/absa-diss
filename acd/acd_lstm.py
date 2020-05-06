@@ -163,7 +163,7 @@ def build_model(word_index, filters, kernel_array):
 
         channels_output = tf.keras.layers.concatenate(poolings)
 
-    dropout = layers.Dropout(0.2)(channels_output)
+    dropout = layers.Dropout(0.5)(channels_output)
     outputs = tf.keras.layers.Dense(16, activation='sigmoid')(dropout)
     model = tf.keras.Model(inputs=input_layer, outputs = outputs)
 
@@ -191,9 +191,9 @@ for k in range(1,2):
     model = build_model(word_index, 256, [1,2,3])
     history = model.fit(x_train, 
         y_train, 
-        epochs=250,
+        epochs=40,
         validation_data=(x_val, y_val),
-        callbacks=[earlystop_callback],
+        callbacks=[],
         verbose = 1)     
     test_loss, test_acc, test_precision, test_recall = model.evaluate(x_test, y_test)
     test_f1 = print_stats(test_loss, test_acc, test_precision, test_recall, 'lstm')

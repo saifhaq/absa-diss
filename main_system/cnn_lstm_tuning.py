@@ -136,7 +136,6 @@ def build_model(hp):
     conc = tf.keras.layers.concatenate([embedding, bilstm])
 
 
-    # n_channels = 3
     kernel_array = [1,2,3,4,5,6]
 
     n_channels = hp.Int(
@@ -145,13 +144,19 @@ def build_model(hp):
                 max_value=5,
                 )
 
+    filters = hp.Choice('filters',
+        values=[64, 128, 256])
+
+
+
+
     if (n_channels == 1):
-        conv = layers.Conv1D(filters=256, kernel_size=kernel_array[0], activation='relu')(conc)
+        conv = layers.Conv1D(filters=filters, kernel_size=kernel_array[0], activation='relu')(conc)
         channels_output = layers.GlobalMaxPooling1D()(conv) 
 
     else:
         for i in range(n_channels):
-            conv1 = layers.Conv1D(filters=256, kernel_size=kernel_array[i], activation='relu')(conc)
+            conv1 = layers.Conv1D(filters=filters, kernel_size=kernel_array[i], activation='relu')(conc)
 
             convs.append(conv1)
             poolings.append(layers.GlobalMaxPooling1D()(convs[i]))
@@ -184,17 +189,9 @@ def build_model(hp):
 
 initalize_tensorflow_gpu(1024)
 
-patience = 20
-earlystop_callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=patience, restore_best_weights=True)  
-glove_embedding_array = [50, 100, 200, 300]
-
-# data_df = pd.read_pickle(path.join('main_system', path.join('aspect', 'aspect_embedding_layer.pkl')))
-data_df = pd.DataFrame(columns = ['type', 'dimension', 'f1'])
-
 
 x_train, y_train, x_val, y_val, x_test, y_test, word_index = load_data(16, 1750)
 
-# print(x_train[0])
 input_length = x_train.shape[0]
 # print(x_train.shape[1])
 chanels = 3
@@ -217,14 +214,14 @@ input_length = x_train.shape[1]
 tuner = RandomSearch(
     build_model,
     objective='val_accuracy',
-    max_trials=125,
-    executions_per_trial=2,
+    max_trials=75,
+    executions_per_trial=5,
     directory='cnn_lstm_randomsearch',
-    project_name='aspects')
+    project_name='model_tuning')
 
 tuner.search_space_summary()
 
-earlystop_callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=20, restore_best_weights=True) 
+earlystop_callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=50, restore_best_weights=False) 
 
 tuner.search(x_train, y_train,
              epochs=250,
@@ -233,7 +230,7 @@ tuner.search(x_train, y_train,
 
 models = tuner.get_best_models(num_models=10)
 
-data_df = pd.DataFrame(columns = ["n_channels", "dropout", "test_acc", "test_f1"])
+data_df = pd.DataFrame(columns = ["n_channels", "dropout", "filters", "test_acc", "test_f1"])
 
 
 for i in range(0, 10):
@@ -243,15 +240,15 @@ for i in range(0, 10):
     matching = [s for s in layer_names if "conv1d" in s]
     n_channels = len(matching)
     dropout = models[i].layers[-2].get_config()['rate']
-
+    filters = models[i].layers[4].get_config()['filters']
     test_loss, test_acc, test_precision, test_recall = models[i].evaluate(x_test, y_test)
     test_f1 = 2 * (test_precision * test_recall) / (test_precision + test_recall)
 
-    data_df = data_df.append({'n_channels': n_channels, 'dropout': dropout, 'test_acc': test_acc, 'test_f1': test_f1}, ignore_index=True)
+    data_df = data_df.append({'n_channels': n_channels, 'dropout': dropout, 'filters': filters, 'test_acc': test_acc, 'test_f1': test_f1}, ignore_index=True)
 
 tuner.results_summary()
 print(data_df)
-data_df.to_pickle(path.join('main_system', path.join('aspect', 'cnn_lstm_data.pkl')))
+data_df.to_pickle(path.join('acd', path.join('results', 'cnn_lstm_tuning_info.pkl')))
 
 
 # model = tf.keras.models.load_model('cnn_lstm_model_'+str(4))
