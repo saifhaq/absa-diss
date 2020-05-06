@@ -224,9 +224,9 @@ tuner.search_space_summary()
 earlystop_callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=50, restore_best_weights=False) 
 
 tuner.search(x_train, y_train,
-             epochs=250,
+             epochs=40,
              validation_data=(x_val, y_val),
-             callbacks=[earlystop_callback])
+             callbacks=[])
 
 models = tuner.get_best_models(num_models=10)
 
