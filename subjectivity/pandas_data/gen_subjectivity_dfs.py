@@ -35,6 +35,7 @@ def df_subjectivity(xml_path):
 
         sentence_id = sentence.attrib['id']                
         sentence_text = sentence.find('text').text
+        sentence_text =  re.sub(r'[^\w\s]','',sentence_text.lower())
 
 
         try: 
@@ -70,12 +71,10 @@ TEST_XML_PATH = "ABSA16_Laptops_Test_GOLD_SB1.xml"
 train_df = df_subjectivity(TRAIN_XML_PATH)
 test_df = df_subjectivity(TEST_XML_PATH)
 
-x = train_df.loc[train_df['subjectivity'] == 0]
-
-print(x)
-
 train_df_name = 'TRAIN_SUBJECTIVITY.pkl'
 test_df_name =  'TEST_SUBJECTIVITY.pkl'
+
+print(train_df)
 
 train_df.to_pickle(path.join('subjectivity', path.join('pandas_data', train_df_name)))
 test_df.to_pickle(path.join('subjectivity', path.join('pandas_data', test_df_name)))

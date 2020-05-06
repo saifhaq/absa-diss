@@ -10,7 +10,19 @@ import pandas as pd
 import numpy as np 
 import os.path as path
 
-
+def stoplist(file_name = "stopwords.txt"):
+    """
+        Returns an array of stopwords, from each line of the 
+        *file_name* text file
+    """
+    stopwords_txt = open(path.join('preprocessing', file_name))
+    stoplist = []
+    for line in stopwords_txt:
+        values = line.split()
+        stoplist.append(values[0])
+    stopwords_txt.close()
+    return stoplist
+    
 def print_stats(y_test, y_pred, model_name):
     """
         Helper function using data from Tensorflow's model evaluation
@@ -47,8 +59,14 @@ def print_stats(y_test, y_pred, model_name):
 train_df = pd.read_pickle(path.join('subjectivity', path.join('pandas_data', 'TRAIN_SUBJECTIVITY.pkl')))
 test_df = pd.read_pickle(path.join('subjectivity', path.join('pandas_data', 'TRAIN_SUBJECTIVITY.pkl')))
 
+stopwords = stoplist()
+train_df['text'] = train_df['text'].apply(lambda x: ' '.join([item for item in x.split() if item not in stopwords]))
+test_df['text'] = test_df['text'].apply(lambda x: ' '.join([item for item in x.split() if item not in stopwords]))
+
 x_train, y_train = train_df.text, train_df.subjectivity
 x_test, y_test = test_df.text, test_df.subjectivity
+
+
 
 text_clf = Pipeline([
     ('vect', CountVectorizer()),

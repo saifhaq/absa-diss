@@ -166,7 +166,7 @@ def build_model(word_index):
 
 initalize_tensorflow_gpu(1024)
 
-earlystop_callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=20, restore_best_weights=True)  
+# earlystop_callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=120, restore_best_weights=True)  
 
     
 for k in range(1,2):
@@ -175,9 +175,9 @@ for k in range(1,2):
     model = build_model(word_index)
     history = model.fit(x_train, 
         y_train, 
-        epochs=250,
+        epochs=75,
         validation_data=(x_val, y_val),
-        callbacks=[earlystop_callback],
+        callbacks=[],
         verbose = 1)     
     test_loss, test_acc, test_precision, test_recall = model.evaluate(x_test, y_test)
     test_f1 = print_stats(test_loss, test_acc, test_precision, test_recall, 'dnn')
