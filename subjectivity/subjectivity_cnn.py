@@ -198,3 +198,5 @@ for k in range(1,2):
     
 
 print(pd.read_pickle(path.join('subjectivity', path.join('results', 'data_df.pkl'))))
+
+print(pd.read_pickle(path.join('subjectivity', path.join('results', 'data_df.pkl'))).to_latex())
