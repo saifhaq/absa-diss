@@ -118,16 +118,17 @@ TEST_XML_PATH = "ABSA16_Laptops_Test_GOLD_SB1.xml"
 n = 16
 
 
+model_names = ['dnn', 'cnn', 'cnn_lstm']
+for i in range (0, len(model_names)):
+    data_df = pd.read_pickle(path.join('acd', path.join('results', 'data_df.pkl')))
 
-data_df = pd.read_pickle(path.join('acd', path.join('results', 'data_df.pkl')))
+    model_name = model_names[i]
+    model = tf.keras.models.load_model(path.join('acd', path.join('tf_models', model_name+"_model")))
 
-model_name = 'cnn_lstm'
-model = tf.keras.models.load_model(path.join('acd', path.join('tf_models', model_name+"_model")))
+    x_train, y_train, x_val, y_val, x_test, y_test, word_index = load_data(n, 1750)
+    input_length = x_train.shape[0]
 
-x_train, y_train, x_val, y_val, x_test, y_test, word_index = load_data(n, 1750)
-input_length = x_train.shape[0]
-
-test_loss, test_acc, test_precision, test_recall = model.evaluate(x_test, y_test)
-test_f1 = print_stats(test_loss, test_acc, test_precision, test_recall, model_name)
+    test_loss, test_acc, test_precision, test_recall = model.evaluate(x_test, y_test)
+    test_f1 = print_stats(test_loss, test_acc, test_precision, test_recall, model_name)
 
 print(pd.read_pickle(path.join('acd', path.join('results', 'data_f1s.pkl'))))
