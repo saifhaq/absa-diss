@@ -235,8 +235,7 @@ for i in range(0,n):
             TP +=1
 
     acc = TP/total_test_samples
-
-    data_df.at[i, 'baseline'] = acc
+    data_df.at[i, 'baseline'] = str('{0:.2f}'.format(acc*100)) + "%"
 
 predicted_matrix = pred_df.predicted_matrix
 category_dict = assign_category(TRAIN_XML_PATH, n)

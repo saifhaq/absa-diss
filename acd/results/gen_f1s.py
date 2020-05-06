@@ -118,6 +118,7 @@ TEST_XML_PATH = "ABSA16_Laptops_Test_GOLD_SB1.xml"
 n = 16
 
 
+
 data_df = pd.read_pickle(path.join('acd', path.join('results', 'data_df.pkl')))
 
 model_name = 'cnn_lstm'

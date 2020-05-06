@@ -106,9 +106,9 @@ for index, row in opinions_df.iterrows():
     
     row['Test Percentage'] = str('{0:.2f}'.format(test_p)) + "%"
 
-opinions_df.to_pickle(path.join('data_exploration', path.join('results', 'opinions_df.pkl')))
+# opinions_df.to_pickle(path.join('data_exploration', path.join('results', 'opinions_df.pkl')))
 
-print(opinions_df)
+print(len(opinions_df))
 # print(opinions_df.to_latex())
 
 

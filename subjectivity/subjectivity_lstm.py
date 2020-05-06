@@ -183,10 +183,10 @@ def build_model(word_index, filters, kernel_array):
 
 initalize_tensorflow_gpu(1024)
 
-earlystop_callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=80, restore_best_weights=True)  
+earlystop_callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=75, restore_best_weights=False)  
 
     
-for k in range(1,2):
+for k in range(1,4):
     x_train, y_train, x_val, y_val, x_test, y_test, word_index = load_data(16, 1750)
     input_length = x_train.shape[0]
     model = build_model(word_index, 256, [1,2,3])

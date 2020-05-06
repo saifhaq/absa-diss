@@ -180,7 +180,7 @@ def build_model(word_index, filters, kernel_array):
 
 initalize_tensorflow_gpu(1024)
 
-# earlystop_callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=20, restore_best_weights=True)  
+earlystop_callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=20, restore_best_weights=True)  
 
     
 for k in range(1,2):
@@ -189,7 +189,7 @@ for k in range(1,2):
     model = build_model(word_index, 256, [1,2,3])
     history = model.fit(x_train, 
         y_train, 
-        epochs=75,
+        epochs=250,
         validation_data=(x_val, y_val),
         callbacks=[],
         verbose = 1)     
@@ -199,4 +199,4 @@ for k in range(1,2):
 
 print(pd.read_pickle(path.join('subjectivity', path.join('results', 'data_df.pkl'))))
 
-print(pd.read_pickle(path.join('subjectivity', path.join('results', 'data_df.pkl'))).to_latex())
+# print(pd.read_pickle(path.join('subjectivity', path.join('results', 'data_df.pkl'))).to_latex())

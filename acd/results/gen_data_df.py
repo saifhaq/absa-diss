@@ -173,7 +173,7 @@ for i in range(0,n):
     x_test = tf.keras.preprocessing.sequence.pad_sequences(test_seqs, padding='post')
 
     predicted = np.array(model.predict(x_test))
-    pred_labels = (predicted > 0.5).astype(np.int)
+    pred_labels = (predicted > 0.2).astype(np.int)
 
     total_test_samples = len(test_only_single_matrix_df)
     TP = 0 
@@ -183,7 +183,7 @@ for i in range(0,n):
 
     acc = TP/total_test_samples
 
-    data_df.at[i, 'dnn'] = acc
+    data_df.at[i, 'dnn'] = str('{0:.2f}'.format(acc*100)) + "%"
 
 for i in range(0,n):
     model = tf.keras.models.load_model(path.join('acd', path.join('tf_models', 'cnn_model')))
@@ -217,7 +217,7 @@ for i in range(0,n):
     x_test = tf.keras.preprocessing.sequence.pad_sequences(test_seqs, padding='post')
 
     predicted = np.array(model.predict(x_test))
-    pred_labels = (predicted > 0.5).astype(np.int)
+    pred_labels = (predicted > 0.2).astype(np.int)
 
     total_test_samples = len(test_only_single_matrix_df)
     TP = 0 
@@ -227,7 +227,7 @@ for i in range(0,n):
 
     acc = TP/total_test_samples
 
-    data_df.at[i, 'cnn'] = acc
+    data_df.at[i, 'cnn'] = str('{0:.2f}'.format(acc*100)) + "%"
 
 for i in range(0,n):
     model = tf.keras.models.load_model(path.join('acd', path.join('tf_models', 'cnn_lstm_model')))
@@ -261,7 +261,7 @@ for i in range(0,n):
     x_test = tf.keras.preprocessing.sequence.pad_sequences(test_seqs, padding='post')
 
     predicted = np.array(model.predict(x_test))
-    pred_labels = (predicted > 0.5).astype(np.int)
+    pred_labels = (predicted > 0.2).astype(np.int)
 
     total_test_samples = len(test_only_single_matrix_df)
     TP = 0 
@@ -271,7 +271,7 @@ for i in range(0,n):
 
     acc = TP/total_test_samples
 
-    data_df.at[i, 'lstm_cnn'] = acc
+    data_df.at[i, 'lstm_cnn'] = str('{0:.2f}'.format(acc*100)) + "%"
 
 data_df.to_pickle(path.join('acd', path.join('results', 'data_df.pkl')))
 
