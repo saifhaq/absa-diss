@@ -22,7 +22,8 @@ import matplotlib.pyplot as plt
 def df_categories(xml_path):
     """
         Takes *xml_path* and returns dataframe of each sentence and their categories. 
-        Each sentence is returned once.  
+        Each sentence is returned once. 
+        If a category has a neutral opinion, it is not added to categories.
         
         Dataframe returned as: [id, text, category] 
     """
@@ -43,7 +44,9 @@ def df_categories(xml_path):
         try: 
             opinions = list(sentence)[1]
             for opinion in opinions:
-                categories.append(opinion.attrib['category'])
+                polarity = opinion.attrib['polarity']
+                if polarity!= 'neutral':
+                    categories.append(opinion.attrib['category'])
         
         except:
             pass
@@ -67,6 +70,7 @@ opinions_df = opinions_df.append({'Opinions': 'Four or more opinions', 'Train Co
 
 # Calculate Train counts and percentage
 train_df = df_categories(TRAIN_XML_PATH)
+print(train_df)
 for i in range(len(train_df.category)):
     index = len(train_df.category[i])
     if index >=4:
@@ -108,31 +112,3 @@ print(opinions_df)
 # print(opinions_df.to_latex())
 
 
-n_groups = 4
-means_frank = (90, 55, 40, 65)
-means_guido = (85, 62, 54, 20)
-
-# # create plot
-# fig, ax = plt.subplots()
-# index = np.arange(n_groups)
-# bar_width = 0.35
-# opacity = 0.8
-
-# rects1 = plt.bar(index, means_frank, bar_width,
-# alpha=opacity,
-# color='b',
-# label='Frank')
-
-# rects2 = plt.bar(index + bar_width, means_guido, bar_width,
-# alpha=opacity,
-# color='g',
-# label='Guido')
-
-# plt.xlabel('Person')
-# plt.ylabel('Aspect distribution percentages')
-# plt.title('Scores by person')
-# plt.xticks(index + bar_width, ('A', 'B', 'C', 'D'))
-# plt.legend()
-
-# plt.tight_layout()
-# plt.show()
