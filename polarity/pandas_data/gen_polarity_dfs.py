@@ -84,18 +84,17 @@ def df_polarity(xml_path, n, category_dict):
         sentence_id = sentence.attrib['id']                
         sentence_text = sentence.find('text').text
         sentence_text =  re.sub(r'[^\w\s]','',sentence_text.lower())
-        category_matrix = np.zeros((n, ), dtype=int)
-        polarity_matrix = np.zeros((n, ), dtype=int)
 
         try: 
             opinions = list(sentence)[1]
             for opinion in opinions:
+                category_matrix = np.zeros((16, ), dtype=int)
 
                 try:
+                    polarity = opinion.attrib['polarity']
+                    
                     location = category_dict[opinion.attrib['category']]
                     category_matrix[location] = 1
-
-                    polarity = opinion.attrib['polarity']
 
                     if(polarity == "positive"):
                         polarity_val = 1
@@ -104,17 +103,17 @@ def df_polarity(xml_path, n, category_dict):
                     else:
                         polarity_val = 0 
 
-                    polarity_matrix[location] = polarity_val
+                    sentences_list.append([sentence_id, sentence_text, category_matrix, polarity_val])
+
 
                 except:
                     continue
 
-            sentences_list.append([sentence_id, sentence_text, category_matrix, polarity_matrix])
         except:
             pass
 
 
-    return pd.DataFrame(sentences_list, columns = ["id", "text", "category_matrix", "polarity_matrix"])
+    return pd.DataFrame(sentences_list, columns = ["id", "text", "category", "polarity"])
 
 
 TRAIN_XML_PATH = "ABSA16_Laptops_Train_SB1_v2.xml"

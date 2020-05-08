@@ -121,15 +121,17 @@ def load_data(n_classes, n_words, stop_words = True):
 
     train_seqs = tokenizer.texts_to_sequences(train_df.text)
     train_vector = tf.keras.preprocessing.sequence.pad_sequences(train_seqs, padding='post')
-    train_categories = np.stack(train_df.category, axis=0)
-    train_labels = np.stack(train_df.polarity, axis=0)
 
-    x1_train, x1_val, x2_train, x2_val, y_train, y_val = train_test_split(train_vector, train_categories, train_labels, test_size = 0.2, random_state = 0)
+    train_category_matrix = np.stack(train_df.category_matrix, axis=0) 
+    train_labels = np.stack(train_df.polarity_matrix, axis=0)
+
+    x1_train, x1_val, x2_train, x2_val, y_train, y_val = train_test_split(train_vector, train_category_matrix, train_labels, test_size = 0.2, random_state = 0)
 
     test_seqs = tokenizer.texts_to_sequences(test_df.text)
     x1_test = tf.keras.preprocessing.sequence.pad_sequences(test_seqs, padding='post')
-    x2_test = np.stack(test_df.category, axis=0)
-    y_test = np.stack(test_df.polarity, axis=0)
+    x2_test = np.stack(test_df.category_matrix, axis=0) 
+
+    y_test = np.stack(test_df.polarity_matrix, axis=0)
 
     word_index = tokenizer.word_index
 
@@ -138,49 +140,29 @@ def load_data(n_classes, n_words, stop_words = True):
 def build_model(word_index, filters, kernel_array):
     
     input_layer = layers.Input(shape=(29,))
-    intput_layer_category = layers.Input(shape=(1,))
+    category_matrix_input = layers.Input(shape=(16,))
 
-
-    n_channels = len(kernel_array)
     glove_matrix = gloveEmbedding(300, word_index)
     embedding_layer = layers.Embedding(len(word_index) + 1,
         300,
         weights=[glove_matrix],
         trainable=True)
-    
-    convs = []
-    poolings = []
-    
-    flatten = layers.Flatten()(category_matrix_input)
-
 
     embedding = embedding_layer(input_layer)
-    bilstm = layers.Bidirectional(layers.LSTM(128, return_sequences=True))(embedding)
-    conc = tf.keras.layers.concatenate([embedding, bilstm])
 
-    if (n_channels == 1):
-        conv = layers.Conv1D(filters=filters, kernel_size=kernel_array[0], activation='relu')(conc)
-        channels_output = layers.GlobalMaxPooling1D()(conv) 
+    pooling = tf.keras.layers.GlobalMaxPooling1D()(embedding)
+    dense = tf.keras.layers.Dense(256, activation='tanh')(pooling)
 
-    else:
-        for i in range(n_channels):
-            conv1 = layers.Conv1D(filters=filters, kernel_size=kernel_array[i], activation='relu')(conc)
+    d2 = tf.keras.layers.Dense(16, activation='sigmoid')(dense)
 
-            convs.append(conv1)
-            poolings.append(layers.GlobalMaxPooling1D()(convs[i]))
+    flatten = tf.keras.layers.Dense(16, activation='sigmoid')(category_matrix_input)
 
-        channels_output = tf.keras.layers.concatenate(poolings)
-
-    dropout = layers.Dropout(0.3)(channels_output)
-    dense = layers.Dense(16)(dropout)
-
-    merged_inputs = layers.concatenate([dense, flatten])
-    dense2 = layers.Dense(128)(merged_inputs)
-
-    outputs = tf.keras.layers.Dense(1, activation='sigmoid')(dense2)
+    conc = tf.keras.layers.concatenate([d2, flatten])
 
 
-    model = tf.keras.Model(inputs=[input_layer, intput_layer_category], outputs = outputs)
+    outputs = tf.keras.layers.Dense(16, activation='sigmoid')(conc)
+
+    model = tf.keras.Model(inputs=[input_layer, category_matrix_input], outputs = outputs)
 
 
     METRICS = [
@@ -197,25 +179,20 @@ def build_model(word_index, filters, kernel_array):
 
 initalize_tensorflow_gpu(1024)
 
-earlystop_callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=50, restore_best_weights=False)  
+# earlystop_callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=50, restore_best_weights=False)  
 
     
 x_trains, y_train, x_vals, y_val, x_tests, y_test, word_index = load_data(16, 1750)
 input_length = x_trains[0].shape[0]
 
-
-print(x_trains[0][12])
-print(x_trains[1][12])
-print(y_train[12])
-
-# model = build_model(word_index, 256, [1,2,3])
-# print(model.summary())
-# history = model.fit(x_trains, 
-#     y_train, 
-#     epochs=250,
-#     validation_data=(x_vals, y_val),
-#     callbacks=[earlystop_callback],
-#     verbose = 1)     
+model = build_model(word_index, 256, [1,2,3])
+print(model.summary())
+history = model.fit(x_trains, 
+    y_train, 
+    epochs=75,
+    validation_data=(x_vals, y_val),
+    callbacks=[],
+    verbose = 1)     
 
 # test_loss, test_acc, test_precision, test_recall = model.evaluate(x_tests, y_test)
 # test_f1 = print_stats(test_loss, test_acc, test_precision, test_recall, 'lstm')
