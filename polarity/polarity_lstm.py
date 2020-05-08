@@ -138,7 +138,7 @@ def load_data(n_classes, n_words, stop_words = True):
 def build_model(word_index, filters, kernel_array):
     
     input_layer = layers.Input(shape=(29,))
-    intput_layer_category = layers.Input(shape=(1,))
+    intput_layer_category = layers.Input(shape=(16,))
 
 
     n_channels = len(kernel_array)
@@ -151,8 +151,6 @@ def build_model(word_index, filters, kernel_array):
     convs = []
     poolings = []
     
-    flatten = layers.Flatten()(category_matrix_input)
-
 
     embedding = embedding_layer(input_layer)
     bilstm = layers.Bidirectional(layers.LSTM(128, return_sequences=True))(embedding)
@@ -172,9 +170,14 @@ def build_model(word_index, filters, kernel_array):
         channels_output = tf.keras.layers.concatenate(poolings)
 
     dropout = layers.Dropout(0.3)(channels_output)
-    dense = layers.Dense(16)(dropout)
+    d2 = tf.keras.layers.Dense(16, activation='sigmoid')(dropout)
 
-    merged_inputs = layers.concatenate([dense, flatten])
+
+
+
+    category_dense = layers.Dense(16, activation='sigmoid')(intput_layer_category)
+    merged_inputs = layers.concatenate([d2, category_dense])
+
     dense2 = layers.Dense(128)(merged_inputs)
 
     outputs = tf.keras.layers.Dense(1, activation='sigmoid')(dense2)
@@ -204,21 +207,17 @@ x_trains, y_train, x_vals, y_val, x_tests, y_test, word_index = load_data(16, 17
 input_length = x_trains[0].shape[0]
 
 
-print(x_trains[0][12])
-print(x_trains[1][12])
-print(y_train[12])
+model = build_model(word_index, 256, [1,2,3])
+print(model.summary())
+history = model.fit(x_trains, 
+    y_train, 
+    epochs=250,
+    validation_data=(x_vals, y_val),
+    callbacks=[earlystop_callback],
+    verbose = 1)     
 
-# model = build_model(word_index, 256, [1,2,3])
-# print(model.summary())
-# history = model.fit(x_trains, 
-#     y_train, 
-#     epochs=250,
-#     validation_data=(x_vals, y_val),
-#     callbacks=[earlystop_callback],
-#     verbose = 1)     
-
-# test_loss, test_acc, test_precision, test_recall = model.evaluate(x_tests, y_test)
-# test_f1 = print_stats(test_loss, test_acc, test_precision, test_recall, 'lstm')
+test_loss, test_acc, test_precision, test_recall = model.evaluate(x_tests, y_test)
+test_f1 = print_stats(test_loss, test_acc, test_precision, test_recall, 'lstm')
     
 
 # print(pd.read_pickle(path.join('polarity', path.join('results', 'data_df.pkl'))))
