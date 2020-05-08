@@ -1,18 +1,10 @@
-from sklearn.metrics import confusion_matrix
-from sklearn.pipeline import Pipeline
-from sklearn.linear_model import SGDClassifier
-from sklearn.feature_extraction.text import TfidfTransformer
-from sklearn.metrics import confusion_matrix
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score, classification_report, confusion_matrix
-from sklearn.feature_extraction.text import CountVectorizer
 import pandas as pd
 import numpy as np 
 import os.path as path
-from sklearn.metrics import plot_confusion_matrix
-from sklearn.metrics import ConfusionMatrixDisplay
+from sklearn.metrics import confusion_matrix, plot_confusion_matrix, ConfusionMatrixDisplay
 import matplotlib.pyplot as plt 
-
+import itertools
+import tensorflow as tf 
 
 def plot_cm(cm,
             target_names,
@@ -51,9 +43,6 @@ def plot_cm(cm,
     http://scikit-learn.org/stable/auto_examples/model_selection/plot_confusion_matrix.html
 
     """
-    import matplotlib.pyplot as plt
-    import numpy as np
-    import itertools
 
     accuracy = np.trace(cm) / np.sum(cm).astype('float')
     misclass = 1 - accuracy
@@ -92,6 +81,17 @@ def plot_cm(cm,
     plt.xlabel('Predicted label\naccuracy={:0.4f}; misclass={:0.4f}'.format(accuracy, misclass))
     plt.show()
 
+def initalize_tensorflow_gpu(memory_limit):
+    gpus = tf.config.experimental.list_physical_devices('GPU')
+    try:
+        tf.config.experimental.set_virtual_device_configuration(
+            gpus[0],
+            [tf.config.experimental.VirtualDeviceConfiguration(memory_limit=memory_limit)])
+        logical_gpus = tf.config.experimental.list_logical_devices('GPU')
+        print(len(gpus), "Physical GPUs,", len(logical_gpus), "Logical GPUs")
+    except RuntimeError as e:
+        print(e)
+        
 def stoplist(file_name = "stopwords.txt"):
     """
         Returns an array of stopwords, from each line of the 
@@ -105,38 +105,6 @@ def stoplist(file_name = "stopwords.txt"):
     stopwords_txt.close()
     return stoplist
     
-def print_stats(y_test, y_pred, model_name):
-    """
-        Helper function using data from Tensorflow's model evaluation
-        function to return the F1 and print model performance stats. 
-        Also updates data_df df to contain model acc and f1
-    """
-
-    data_df = pd.read_pickle(path.join('subjectivity', path.join('results', 'data_df.pkl')))
-    test_f1 = f1_score(y_test, y_pred, average="macro")
-    mean = np.mean(y_pred == y_test)
-
-    try:
-        best_f1 = data_df[data_df['model']==model_name]['f1'].values[0]
-    except: 
-        best_f1 = 0 
-
-    if test_f1 > best_f1:
-        best_f1 = test_f1   
-        data_df = data_df[data_df.model != model_name]
-        data_df = data_df.append({'model': model_name, 'acc': mean, 'f1': test_f1}, ignore_index=True)
-        print("yes")
-        
-    data_df.to_pickle(path.join('subjectivity', path.join('results', 'data_df.pkl')))
-
-
-    print('Test Mean: {}'.format(mean))
-    print('---------------')
-    print('Test Precision: {}'.format(precision_score(y_test, y_pred, average="macro")))
-    print('Test Recall: {}'.format(recall_score(y_test, y_pred, average="macro")))
-    print('---------------')
-    print('Test F1: {}'.format(test_f1))
-    return test_f1
 
 train_df = pd.read_pickle(path.join('subjectivity', path.join('pandas_data', 'TRAIN_SUBJECTIVITY.pkl')))
 test_df = pd.read_pickle(path.join('subjectivity', path.join('pandas_data', 'TRAIN_SUBJECTIVITY.pkl')))
@@ -148,18 +116,34 @@ test_df['text'] = test_df['text'].apply(lambda x: ' '.join([item for item in x.s
 x_train, y_train = train_df.text, train_df.subjectivity
 x_test, y_test = test_df.text, test_df.subjectivity
 
-text_clf = Pipeline([
-    ('vect', CountVectorizer()),
-    ('tfidf', TfidfTransformer()),
-     ('clf', SGDClassifier()),    
-     ])
 
-text_clf.fit(x_train, y_train)
 
-predicted = text_clf.predict(x_test)
+initalize_tensorflow_gpu(1024)
 
-print_stats(y_test, predicted, 'svm')
-cm = confusion_matrix(y_test, predicted)
+tokenizer = tf.keras.preprocessing.text.Tokenizer(num_words=1750,
+                                                oov_token="<unk>",
+                                                filters='!"#$%&()*+.,-/:;=?@[\]^_`{|}~ ')
+tokenizer.fit_on_texts(train_df.text)
+tokenizer.word_index['<pad>'] = 0
+tokenizer.index_word[0] = '<pad>'
+tokenizer.word_index['<unk>'] = 1
+tokenizer.index_word[1] = '<unk>'
+
+train_seqs = tokenizer.texts_to_sequences(train_df.text)
+train_vector = tf.keras.preprocessing.sequence.pad_sequences(train_seqs, padding='post')
+
+test_seqs = tokenizer.texts_to_sequences(test_df.text)
+x_test = tf.keras.preprocessing.sequence.pad_sequences(test_seqs, padding='post')
+
+
+model_name = 'lstm'
+model = tf.keras.models.load_model(path.join('subjectivity', path.join('tf_models', model_name+"_model")))
+
+predicted = np.array(model.predict(x_test))
+pred_labels = (predicted > 0.5).astype(np.int)
+
+cm = confusion_matrix(y_test, pred_labels)
 
 class_names = ["Subjective", "Objective"]
-plot_cm(cm, class_names)
+title = model_name.upper() + " Model Normalized Confusion Matrix"
+plot_cm(cm, class_names, title=title)

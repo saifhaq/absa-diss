@@ -173,7 +173,7 @@ for i in range(0,n):
     x_test = tf.keras.preprocessing.sequence.pad_sequences(test_seqs, padding='post')
 
     predicted = np.array(model.predict(x_test))
-    pred_labels = (predicted > 0.2).astype(np.int)
+    pred_labels = (predicted > 0.5).astype(np.int)
 
     total_test_samples = len(test_only_single_matrix_df)
     TP = 0 
@@ -217,7 +217,7 @@ for i in range(0,n):
     x_test = tf.keras.preprocessing.sequence.pad_sequences(test_seqs, padding='post')
 
     predicted = np.array(model.predict(x_test))
-    pred_labels = (predicted > 0.2).astype(np.int)
+    pred_labels = (predicted > 0.5).astype(np.int)
 
     total_test_samples = len(test_only_single_matrix_df)
     TP = 0 
