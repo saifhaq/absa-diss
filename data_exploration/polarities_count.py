@@ -72,9 +72,9 @@ polarities_df = polarities_df.append({'Polarity': 'Negative', 'Train Count': 0},
 train_df = df_categories(TRAIN_XML_PATH)
 flattened_polarities = [polarity for sentence in train_df.polarity for polarity in sentence]
 
-
 polarities_counter = Counter(flattened_polarities)
 n_polarites = sum(polarities_counter.values())
+
 
 polarities_df.loc[0,'Train Count'] = polarities_counter['neutral']
 polarities_df.loc[1,'Train Count'] = polarities_counter['positive']
@@ -162,3 +162,5 @@ plt.legend()
 
 plt.tight_layout()
 plt.show()
+
+print(polarities_df)
