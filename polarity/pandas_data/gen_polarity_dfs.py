@@ -95,16 +95,12 @@ def df_polarity(xml_path, n, category_dict):
                     
                     location = category_dict[opinion.attrib['category']]
                     category_matrix[location] = 1
-
+    
                     if(polarity == "positive"):
-                        polarity_val = 1
+                        sentences_list.append([sentence_id, sentence_text, category_matrix, 1])
+
                     elif(polarity == "negative"):
-                        polarity_val = -1
-                    else:
-                        polarity_val = 0 
-
-                    sentences_list.append([sentence_id, sentence_text, category_matrix, polarity_val])
-
+                        sentences_list.append([sentence_id, sentence_text, category_matrix, 0])
 
                 except:
                     continue
@@ -127,7 +123,7 @@ test_df = df_polarity(TEST_XML_PATH, 16, category_dict)
 train_df_name = 'TRAIN_POLARITY.pkl'
 test_df_name =  'TEST_POLARITY.pkl'
 
-print(train_df)
+print(train_df.tail(10))
 
 train_df.to_pickle(path.join('polarity', path.join('pandas_data', train_df_name)))
 test_df.to_pickle(path.join('polarity', path.join('pandas_data', test_df_name)))
