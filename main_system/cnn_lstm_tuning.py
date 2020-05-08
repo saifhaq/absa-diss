@@ -170,6 +170,7 @@ def build_model(hp):
             default=0.25,
             step=0.05)
             )(channels_output)
+    # dropout = layers.Dropout(0.5)(channels_output)
 
     outputs = tf.keras.layers.Dense(16, activation='sigmoid')(dropout)
     model = tf.keras.Model(inputs=input_layer, outputs = outputs)
@@ -214,7 +215,7 @@ input_length = x_train.shape[1]
 tuner = RandomSearch(
     build_model,
     objective='val_accuracy',
-    max_trials=75,
+    max_trials=150,
     executions_per_trial=5,
     directory='cnn_lstm_randomsearch',
     project_name='model_tuning')
@@ -226,14 +227,17 @@ earlystop_callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patien
 tuner.search(x_train, y_train,
              epochs=40,
              validation_data=(x_val, y_val),
-             callbacks=[])
+             callbacks=[earlystop_callback])
 
 models = tuner.get_best_models(num_models=10)
 
-data_df = pd.DataFrame(columns = ["n_channels", "dropout", "filters", "test_acc", "test_f1"])
 
+try:
+    data_df = pd.read_pickle(path.join('acd', path.join('results', 'gem.pkl')))
+except:
+    data_df = pd.DataFrame(columns = ["n_channels", "dropout", "filters", "test_acc", "test_f1"])
 
-for i in range(0, 10):
+for i in range(0, len(models)):
     models[i].save('cnn_lstm_model2_'+str(i))
 
     layer_names=[layer.name for layer in models[i].layers]
@@ -244,11 +248,12 @@ for i in range(0, 10):
     test_loss, test_acc, test_precision, test_recall = models[i].evaluate(x_test, y_test)
     test_f1 = 2 * (test_precision * test_recall) / (test_precision + test_recall)
 
-    data_df = data_df.append({'n_channels': n_channels, 'dropout': dropout, 'filters': filters, 'test_acc': test_acc, 'test_f1': test_f1}, ignore_index=True)
+    data_df = data_df.append({'n_channels': n_channels,  'filters': filters, 'test_acc': test_acc, 'test_f1': test_f1}, ignore_index=True)
+    data_df.to_pickle(path.join('acd', path.join('results', 'gem.pkl')))
 
 tuner.results_summary()
 print(data_df)
-data_df.to_pickle(path.join('acd', path.join('results', 'cnn_lstm_tuning_info.pkl')))
+# data_df.to_pickle(path.join('acd', path.join('results', 'cnn_lstm_tuning_info.pkl')))
 
 
 # model = tf.keras.models.load_model('cnn_lstm_model_'+str(4))

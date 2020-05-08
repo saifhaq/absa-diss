@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from statistics import mean 
 
 data_df = pd.read_pickle(path.join('acd', path.join('results', 'data_f1s.pkl')))
-data_df = pd.read_pickle(path.join('main_system', path.join('aspect', 'cnn_lstm_data.pkl')))
+# data_df = pd.read_pickle(path.join('main_system', path.join('aspect', 'cnn_lstm_data.pkl')))
 
 
 

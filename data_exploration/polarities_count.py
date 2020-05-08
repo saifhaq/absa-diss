@@ -101,7 +101,7 @@ print(polarities_df)
 
 
 
-polarities_df.to_pickle(path.join('data_exploration', path.join('results', 'polarities_df.pkl')))
+# polarities_df.to_pickle(path.join('data_exploration', path.join('results', 'polarities_df.pkl')))
 
 # polarities_df = pd.read_pickle(path.join('data_exploration', path.join('results', 'polarities_df.pkl')))
 train_percentages = [float(x) for x in polarities_df['Train Percentage']]
@@ -114,7 +114,7 @@ test_percentages = [float(x) for x in polarities_df['Test Percentage']]
 n_groups = 3
 
 fig, ax = plt.subplots()
-fig.set_size_inches(10, 10)
+# fig.set_size_inches(10, 10)
 
 ax.yaxis.set_major_formatter(mtick.PercentFormatter())
 
@@ -150,11 +150,12 @@ color='b',
 label='Test')
 
 autolabel(train)
+
 autolabel(test)
 
 plt.xlabel('Polarity')
-plt.ylabel('% of aspects in data')
-plt.xticks(index + bar_width, ('Neural', 'Positive', 'Negative'))
+plt.ylabel('Percentage of training samples')
+plt.xticks(index + bar_width/2, ('Neural', 'Positive', 'Negative'))
 plt.legend()
 
 plt.tight_layout()
