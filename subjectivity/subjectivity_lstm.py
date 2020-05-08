@@ -164,7 +164,7 @@ def build_model(word_index, filters, kernel_array):
 
         channels_output = tf.keras.layers.concatenate(poolings)
 
-    dropout = layers.Dropout(0.2)(channels_output)
+    dropout = layers.Dropout(0.3)(channels_output)
     outputs = tf.keras.layers.Dense(1, activation='sigmoid')(dropout)
     model = tf.keras.Model(inputs=input_layer, outputs = outputs)
 
@@ -183,7 +183,7 @@ def build_model(word_index, filters, kernel_array):
 
 initalize_tensorflow_gpu(1024)
 
-earlystop_callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=75, restore_best_weights=False)  
+earlystop_callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=50, restore_best_weights=False)  
 
     
 for k in range(1,4):

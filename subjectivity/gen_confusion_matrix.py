@@ -65,6 +65,8 @@ def plot_cm(cm,
 
 
     thresh = cm.max() / 1.5 if normalize else cm.max() / 2
+    thresh = 0.9
+    
     for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
         if normalize:
             plt.text(j, i, "{:0.4f}".format(cm[i, j]),
@@ -144,6 +146,6 @@ pred_labels = (predicted > 0.5).astype(np.int)
 
 cm = confusion_matrix(y_test, pred_labels)
 
-class_names = ["Subjective", "Objective"]
-title = model_name.upper() + " Model Normalized Confusion Matrix"
+class_names = ["Objective", "Subjective"]
+title = "Bi-LSTM CNN Subjectivity Normalized Confusion Matrix"
 plot_cm(cm, class_names, title=title)

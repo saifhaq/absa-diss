@@ -76,6 +76,8 @@ def plot_cm(cm,
 
 
     thresh = cm.max() / 1.5 if normalize else cm.max() / 2
+    thresh = 0.9
+
     for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
         if normalize:
             plt.text(j, i, "{:0.4f}".format(cm[i, j]),
@@ -118,6 +120,7 @@ def print_stats(y_test, y_pred, model_name):
 
     try:
         best_f1 = data_df[data_df['model']==model_name]['f1'].values[0]
+        best_f1 = 0 
     except: 
         best_f1 = 0 
 
@@ -125,10 +128,9 @@ def print_stats(y_test, y_pred, model_name):
         best_f1 = test_f1   
         data_df = data_df[data_df.model != model_name]
         data_df = data_df.append({'model': model_name, 'acc': mean, 'f1': test_f1}, ignore_index=True)
-        print("yes")
         
     data_df.to_pickle(path.join('subjectivity', path.join('results', 'data_df.pkl')))
-
+    print(data_df)
 
     print('Test Mean: {}'.format(mean))
     print('---------------')
@@ -161,5 +163,8 @@ predicted = text_clf.predict(x_test)
 print_stats(y_test, predicted, 'svm')
 cm = confusion_matrix(y_test, predicted)
 
-class_names = ["Subjective", "Objective"]
-plot_cm(cm, class_names)
+title = "SVM Model Subjectivity Normalized Confusion Matrix"
+
+class_names = ["Objective", "Subjective"]
+plot_cm(cm, class_names, title=title)
+
