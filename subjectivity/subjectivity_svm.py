@@ -141,7 +141,7 @@ def print_stats(y_test, y_pred, model_name):
     return test_f1
 
 train_df = pd.read_pickle(path.join('subjectivity', path.join('pandas_data', 'TRAIN_SUBJECTIVITY.pkl')))
-test_df = pd.read_pickle(path.join('subjectivity', path.join('pandas_data', 'TRAIN_SUBJECTIVITY.pkl')))
+test_df = pd.read_pickle(path.join('subjectivity', path.join('pandas_data', 'TEST_SUBJECTIVITY.pkl')))
 
 stopwords = stoplist()
 train_df['text'] = train_df['text'].apply(lambda x: ' '.join([item for item in x.split() if item not in stopwords]))
