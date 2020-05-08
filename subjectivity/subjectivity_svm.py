@@ -79,5 +79,9 @@ text_clf.fit(x_train, y_train)
 predicted = text_clf.predict(x_test)
 
 print_stats(y_test, predicted, 'svm')
-# print(confusion_matrix(y_test, predicted))
-print(pd.read_pickle(path.join('subjectivity', path.join('results', 'data_df.pkl'))))
+tn, fp, fn, tp = confusion_matrix(y_test, predicted).ravel()
+
+print(tp)
+
+# print(confusion_matrix(y_test, predicted, labels=["objective", "subjective"]))
+# print(pd.read_pickle(path.join('subjectivity', path.join('results', 'data_df.pkl'))))

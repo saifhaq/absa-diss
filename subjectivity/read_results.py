@@ -8,7 +8,9 @@ train_df = pd.read_pickle(path.join('subjectivity', path.join('pandas_data', 'TR
 
 train_df = train_df.loc[train_df['subjectivity'] == 1]
 
-print(train_df)
+print(data_df)
+
+
 # print(data_df.dimension.head(5), data_df.head(5).f1)
 
 
