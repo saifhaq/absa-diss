@@ -70,21 +70,20 @@ def print_stats(test_loss, test_acc, test_precision, test_recall, model_name):
     """
     test_f1 = 2 * (test_precision * test_recall) / (test_precision + test_recall)
 
-    # data_df = pd.read_pickle(path.join('polarity', path.join('results', 'data_df.pkl')))
+    data_df = pd.read_pickle(path.join('polarity', path.join('results', 'data_df.pkl')))
 
-    # try:
-    #     best_f1 = data_df[data_df['model']==model_name]['f1'].values[0]
-    # except: 
-    #     best_f1 = 0 
+    try:
+        best_f1 = data_df[data_df['model']==model_name]['f1'].values[0]
+    except: 
+        best_f1 = 0 
 
-    # if test_f1 > best_f1:
-    #     best_f1 = test_f1   
-    #     data_df = data_df[data_df.model != model_name]
-    #     data_df = data_df.append({'model': model_name, 'acc': test_acc, 'f1': test_f1}, ignore_index=True)
-    #     model.save(path.join('polarity', path.join('tf_models', model_name+"_model")))
-    #     print("yes")
+    if test_f1 > best_f1:
+        best_f1 = test_f1   
+        data_df = data_df[data_df.model != model_name]
+        data_df = data_df.append({'model': model_name, 'acc': test_acc, 'f1': test_f1}, ignore_index=True)
+        model.save(path.join('polarity', path.join('tf_models', model_name+"_model")))
         
-    # data_df.to_pickle(path.join('polarity', path.join('results', 'data_df.pkl')))
+    data_df.to_pickle(path.join('polarity', path.join('results', 'data_df.pkl')))
 
     print('---------------')
     print('Test Loss: {}'.format(test_loss))
@@ -170,17 +169,13 @@ def build_model(word_index, filters, kernel_array):
         channels_output = tf.keras.layers.concatenate(poolings)
 
     dropout = layers.Dropout(0.3)(channels_output)
-    d2 = tf.keras.layers.Dense(16, activation='sigmoid')(dropout)
 
 
-
-
+    dropout_dense = tf.keras.layers.Dense(16, activation='sigmoid')(dropout)
     category_dense = layers.Dense(16, activation='sigmoid')(intput_layer_category)
-    merged_inputs = layers.concatenate([d2, category_dense])
+    merged_inputs = layers.concatenate([dropout_dense, category_dense])
 
-    dense2 = layers.Dense(128)(merged_inputs)
-
-    outputs = tf.keras.layers.Dense(1, activation='sigmoid')(dense2)
+    outputs = tf.keras.layers.Dense(1, activation='sigmoid')(merged_inputs)
 
 
     model = tf.keras.Model(inputs=[input_layer, intput_layer_category], outputs = outputs)
@@ -207,17 +202,18 @@ x_trains, y_train, x_vals, y_val, x_tests, y_test, word_index = load_data(16, 17
 input_length = x_trains[0].shape[0]
 
 
-model = build_model(word_index, 256, [1,2,3])
-print(model.summary())
-history = model.fit(x_trains, 
-    y_train, 
-    epochs=250,
-    validation_data=(x_vals, y_val),
-    callbacks=[earlystop_callback],
-    verbose = 1)     
+for i in range(0,5):
+    model = build_model(word_index, 256, [1,2,3])
+    print(model.summary())
+    history = model.fit(x_trains, 
+        y_train, 
+        epochs=250,
+        validation_data=(x_vals, y_val),
+        callbacks=[earlystop_callback],
+        verbose = 1)     
 
-test_loss, test_acc, test_precision, test_recall = model.evaluate(x_tests, y_test)
-test_f1 = print_stats(test_loss, test_acc, test_precision, test_recall, 'lstm')
-    
+    test_loss, test_acc, test_precision, test_recall = model.evaluate(x_tests, y_test)
+    test_f1 = print_stats(test_loss, test_acc, test_precision, test_recall, 'lstm')
+        
 
-# print(pd.read_pickle(path.join('polarity', path.join('results', 'data_df.pkl'))))
+print(pd.read_pickle(path.join('polarity', path.join('results', 'data_df.pkl'))))
