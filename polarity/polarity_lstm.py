@@ -213,7 +213,7 @@ for i in range(0,5):
         verbose = 1)     
 
     test_loss, test_acc, test_precision, test_recall = model.evaluate(x_tests, y_test)
-    test_f1 = print_stats(test_loss, test_acc, test_precision, test_recall, 'lstm')
+    test_f1 = print_stats(test_loss, test_acc, test_precision, test_recall, 'lstm_by_category')
         
 
 print(pd.read_pickle(path.join('polarity', path.join('results', 'data_df.pkl'))))

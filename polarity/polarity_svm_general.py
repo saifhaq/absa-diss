@@ -141,8 +141,8 @@ def print_stats(y_test, y_pred, model_name):
     return test_f1
 
 
-train_df = pd.read_pickle(path.join('polarity', path.join('pandas_data', 'TRAIN_POLARITY_WITHOUT_CATEGORY.pkl')))
-test_df = pd.read_pickle(path.join('polarity', path.join('pandas_data', 'TEST_POLARITY_WITHOUT_CATEGORY.pkl')))
+train_df = pd.read_pickle(path.join('polarity', path.join('pandas_data', 'TRAIN_POLARITY_GENERAL.pkl')))
+test_df = pd.read_pickle(path.join('polarity', path.join('pandas_data', 'TEST_POLARITY_GENERAL.pkl')))
 
 stopwords = stoplist()
 train_df['text'] = train_df['text'].apply(lambda x: ' '.join([item for item in x.split() if item not in stopwords]))

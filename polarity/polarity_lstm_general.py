@@ -97,8 +97,8 @@ def print_stats(test_loss, test_acc, test_precision, test_recall, model_name):
 
 def load_data(n_classes, n_words, stop_words = True):
 
-    train_df = pd.read_pickle(path.join('polarity', path.join('pandas_data', 'TRAIN_POLARITY_WITHOUT_CATEGORY.pkl')))
-    test_df = pd.read_pickle(path.join('polarity', path.join('pandas_data', 'TEST_POLARITY_WITHOUT_CATEGORY.pkl')))
+    train_df = pd.read_pickle(path.join('polarity', path.join('pandas_data', 'TRAIN_POLARITY_GENERAL.pkl')))
+    test_df = pd.read_pickle(path.join('polarity', path.join('pandas_data', 'TEST_POLARITY_GENERAL.pkl')))
 
     if stop_words:
         stopwords = stoplist()

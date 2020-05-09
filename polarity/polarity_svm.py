@@ -85,6 +85,10 @@ def df_single_category(xml_path, desired_category):
             opinions = list(sentence)[1]
             for opinion in opinions:
                 if(opinion.attrib['category'] == desired_category):
+                    polarity = opinion.attrib['polarity']
+
+                    location = category_dict[opinion.attrib['category']]
+                    sentence_id = sentence.attrib['id'] + '__' + str(location)                
 
                     if(polarity == "positive"):
                         sentences_list.append([sentence_id, sentence_text, 1])
@@ -95,52 +99,9 @@ def df_single_category(xml_path, desired_category):
         except:
             pass
 
-    return pd.DataFrame(sentences_list, columns = ["id", "text", "desired_category"])
+    return pd.DataFrame(sentences_list, columns = ["id", "text", "polarity"])
 
 
-def df_actual(xml_path, n, category_dict):
-    """
-        Takes XML Training data and returns a pandas dataframe of sentences;
-        returns duplicate sentences if each sentence has multiple aspects of polarity   
-    """
-
-    tree = et.parse(xml_path)
-    reviews = tree.getroot()
-    sentences = reviews.findall('**/sentence')
-
-    sentences_list = []
-
-    for sentence in sentences:
-
-        sentence_id = sentence.attrib['id']                
-        sentence_text = sentence.find('text').text
-        sentence_text =  re.sub(r'[^\w\s]','',sentence_text.lower())
-
-        try: 
-            opinions = list(sentence)[1]
-            for opinion in opinions:
-                category_matrix = np.zeros((16, ), dtype=int)
-
-                try:
-                    polarity = opinion.attrib['polarity']
-                    
-                    location = category_dict[opinion.attrib['category']]
-                    category_matrix[location] = 1
-    
-                    if(polarity == "positive"):
-                        sentences_list.append([sentence_id, sentence_text, category_matrix, 1])
-
-                    elif(polarity == "negative"):
-                        sentences_list.append([sentence_id, sentence_text, category_matrix, 0])
-
-                except:
-                    continue
-
-        except:
-            pass
-
-
-    return pd.DataFrame(sentences_list, columns = ["id", "text", "category", "polarity"])
 
 def df_predicted(xml_path, n, category_dict):
     """
@@ -154,7 +115,6 @@ def df_predicted(xml_path, n, category_dict):
 
     for sentence in sentences:
 
-        sentence_id = sentence.attrib['id']                
         sentence_text = sentence.find('text').text
         sentence_text =  re.sub(r'[^\w\s]','',sentence_text.lower())
 
@@ -169,11 +129,13 @@ def df_predicted(xml_path, n, category_dict):
                     location = category_dict[opinion.attrib['category']]
                     category_matrix[location] = 1
     
+                    sentence_id = sentence.attrib['id'] + '__' + str(location)                
+
                     if(polarity == "positive"):
-                        sentences_list.append([sentence_id, sentence_text, category_matrix, -2])
+                        sentences_list.append([sentence_id, sentence_text, category_matrix, 1, None])
 
                     elif(polarity == "negative"):
-                        sentences_list.append([sentence_id, sentence_text, category_matrix, -2])
+                        sentences_list.append([sentence_id, sentence_text, category_matrix, 0, None])
 
                 except:
                     continue
@@ -182,7 +144,7 @@ def df_predicted(xml_path, n, category_dict):
             pass
 
 
-    return pd.DataFrame(sentences_list, columns = ["id", "text", "category", "polarity"])
+    return pd.DataFrame(sentences_list, columns = ["id", "text", "category", "polarity", "predicted"])
 
 
 def assign_category(xml_path, n):
@@ -211,11 +173,19 @@ categories = Counter(sentences.category).most_common(n)
 
 data_df = pd.read_pickle(path.join('polarity', path.join('results', 'data_df.pkl')))
 
-category_dict = assign_category(TRAIN_XML_PATH, 16)
+category_dict = assign_category(TRAIN_XML_PATH, n)
+
 pred_df = df_predicted(TEST_XML_PATH, n, category_dict)
 
+# test_df = pd.read_pickle(path.join('polarity', path.join('pandas_data', 'TEST_POLARITY.pkl')))
+
+# test_df = pd.read_pickle(path.join('polarity', path.join('pandas_data', 'TEST_POLARITY_WITHOUT_CATEGORY.pkl')))
+# test_df = pd.read_pickle(path.join('polarity', path.join('pandas_data', 'TEST_POLARITY.pkl')))
 
 stoplist = stoplist()
+
+
+
 for i in range(0,n):
     
     DESIRED_CATEGORY = categories[i][0]
@@ -236,7 +206,7 @@ for i in range(0,n):
 
 
     x_train, y_train = train_df.text, train_df.polarity
-    x_test, y_test = test_df.text, test_df.polarity
+    # x_test, y_test = test_df.text, test_df.polarity
 
     text_clf = Pipeline([
         ('vect', CountVectorizer()),
@@ -246,44 +216,37 @@ for i in range(0,n):
 
     text_clf.fit(x_train, y_train)
 
-    predicted = text_clf.predict(x_test)
+    predicted = text_clf.predict(test_df.text)
 
     for j in range(0, len(predicted)):
-        pred_df['polarity'][j] = predicted[j] 
+        pred_df.loc[(pred_df['id'] == test_df['id'].iat[j]), ['predicted']] = predicted[j]
 
-    total_test_samples = len(x_test)
-    desired_category_index = category_dict[DESIRED_CATEGORY]
-
-    TP = 0 
-    for k in range(total_test_samples):
-        if pred_df.polarity == 
-        if pred_df.predicted_matrix[k][desired_category_index] == 1:
-            TP +=1
-
-    acc = TP/total_test_samples
-    data_df.at[i, 'baseline'] = str('{0:.2f}'.format(acc*100)) + "%"
-
-predicted_matrix = pred_df.predicted_matrix
-category_dict = assign_category(TRAIN_XML_PATH, n)
-actual_df = df_something(TEST_XML_PATH, n, category_dict)
-
-a  = []
-p = []
-for i in range(len(actual_df.matrix)):
-    a.append(actual_df.matrix[i].tolist())
-
-for i in range(len(predicted_matrix)):
-    p.append(predicted_matrix[i].tolist())
+print(pred_df.head)
 
 
+a = pred_df.polarity.to_list()
+p = pred_df.predicted.to_list()
+
+test_f1 = f1_score(a, p, average="macro")
+test_acc = accuracy_score(a, p)
 
 print('---------------')
 print('Test Precision: {}'.format(precision_score(a, p, average="macro")))
 print('Test Recall: {}'.format(recall_score(a, p, average="macro")))
-print('Test Accuracy: {}'.format(accuracy_score(a, p)))
+print('Test Accuracy: {}'.format(test_acc))
 print('---------------')
-print('Test F1: {}'.format(f1_score(a, p, average="macro")))
+print('Test F1: {}'.format(test_f1))
 
+model_name = 'svm_by_category'
+try:
+    best_f1 = data_df[data_df['model']==model_name]['f1'].values[0]
+except: 
+    best_f1 = 0 
+
+if test_f1 > best_f1:
+    best_f1 = test_f1   
+    data_df = data_df[data_df.model != model_name]
+    data_df = data_df.append({'model': model_name, 'acc': test_acc, 'f1': test_f1}, ignore_index=True)
 
 data_df.to_pickle(path.join('polarity', path.join('results', 'data_df.pkl')))
 
