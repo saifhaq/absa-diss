@@ -79,16 +79,18 @@ def df_single_category(xml_path, desired_category):
 
         sentence_id = sentence.attrib['id']                
         sentence_text = sentence.find('text').text
-        label = 0
         sentence_text =  re.sub(r'[^\w\s]','',sentence_text.lower())
 
         try: 
             opinions = list(sentence)[1]
             for opinion in opinions:
                 if(opinion.attrib['category'] == desired_category):
-                    label = 1
-            
-            sentences_list.append([sentence_id, sentence_text, label])
+
+                    if(polarity == "positive"):
+                        sentences_list.append([sentence_id, sentence_text, 1])
+
+                    elif(polarity == "negative"):
+                        sentences_list.append([sentence_id, sentence_text, 0])
 
         except:
             pass
@@ -96,35 +98,10 @@ def df_single_category(xml_path, desired_category):
     return pd.DataFrame(sentences_list, columns = ["id", "text", "desired_category"])
 
 
-def df_predicted_category(xml_path, n):
-    """
-
-    """
-    tree = et.parse(xml_path)
-    reviews = tree.getroot()
-    sentences = reviews.findall('**/sentence')
-
-    sentences_list = []
-    
-    for sentence in sentences:
-
-        sentence_id = sentence.attrib['id']                
-        sentence_text = sentence.find('text').text
-        sentence_text =  re.sub(r'[^\w\s]','',sentence_text.lower())
-
-        try: 
-            matrix = np.zeros((n,), dtype=int)
-            sentences_list.append([sentence_id, sentence_text, matrix])
-
-        except:
-            pass
-
-    return pd.DataFrame(sentences_list, columns = ["id", "text", "predicted_matrix"])
-
-
-def df_something(xml_path, n, category_dict):
+def df_actual(xml_path, n, category_dict):
     """
         Takes XML Training data and returns a pandas dataframe of sentences;
+        returns duplicate sentences if each sentence has multiple aspects of polarity   
     """
 
     tree = et.parse(xml_path)
@@ -132,32 +109,81 @@ def df_something(xml_path, n, category_dict):
     sentences = reviews.findall('**/sentence')
 
     sentences_list = []
-    
+
     for sentence in sentences:
 
         sentence_id = sentence.attrib['id']                
         sentence_text = sentence.find('text').text
-        category_matrix = np.zeros((n, ), dtype=int)
         sentence_text =  re.sub(r'[^\w\s]','',sentence_text.lower())
 
         try: 
             opinions = list(sentence)[1]
-            categories = []
             for opinion in opinions:
-            
-                categories.append(opinion.attrib['category'])
+                category_matrix = np.zeros((16, ), dtype=int)
+
                 try:
+                    polarity = opinion.attrib['polarity']
+                    
                     location = category_dict[opinion.attrib['category']]
                     category_matrix[location] = 1
+    
+                    if(polarity == "positive"):
+                        sentences_list.append([sentence_id, sentence_text, category_matrix, 1])
+
+                    elif(polarity == "negative"):
+                        sentences_list.append([sentence_id, sentence_text, category_matrix, 0])
+
                 except:
                     continue
-
-            sentences_list.append([sentence_id, sentence_text, categories, category_matrix])
 
         except:
             pass
 
-    return pd.DataFrame(sentences_list, columns = ["id", "text", "category", "matrix"])
+
+    return pd.DataFrame(sentences_list, columns = ["id", "text", "category", "polarity"])
+
+def df_predicted(xml_path, n, category_dict):
+    """
+    """
+
+    tree = et.parse(xml_path)
+    reviews = tree.getroot()
+    sentences = reviews.findall('**/sentence')
+
+    sentences_list = []
+
+    for sentence in sentences:
+
+        sentence_id = sentence.attrib['id']                
+        sentence_text = sentence.find('text').text
+        sentence_text =  re.sub(r'[^\w\s]','',sentence_text.lower())
+
+        try: 
+            opinions = list(sentence)[1]
+            for opinion in opinions:
+                category_matrix = np.zeros((16, ), dtype=int)
+
+                try:
+                    polarity = opinion.attrib['polarity']
+                    
+                    location = category_dict[opinion.attrib['category']]
+                    category_matrix[location] = 1
+    
+                    if(polarity == "positive"):
+                        sentences_list.append([sentence_id, sentence_text, category_matrix, -2])
+
+                    elif(polarity == "negative"):
+                        sentences_list.append([sentence_id, sentence_text, category_matrix, -2])
+
+                except:
+                    continue
+
+        except:
+            pass
+
+
+    return pd.DataFrame(sentences_list, columns = ["id", "text", "category", "polarity"])
+
 
 def assign_category(xml_path, n):
     """
@@ -183,9 +209,10 @@ n = 16
 sentences = df_aspect_category(TRAIN_XML_PATH)
 categories = Counter(sentences.category).most_common(n)
 
-data_df = pd.read_pickle(path.join('acd', path.join('results', 'data_df.pkl')))
+data_df = pd.read_pickle(path.join('polarity', path.join('results', 'data_df.pkl')))
 
-pred_df = df_predicted_category(TEST_XML_PATH, n)
+category_dict = assign_category(TRAIN_XML_PATH, 16)
+pred_df = df_predicted(TEST_XML_PATH, n, category_dict)
 
 
 stoplist = stoplist()
@@ -204,12 +231,12 @@ for i in range(0,n):
     train_df_name = 'BASELINE_'+'TRAIN_'+DESIRED_CATEGORY + '.pkl'
     test_df_name =  'BASELINE_'+'TEST_'+DESIRED_CATEGORY + '.pkl'
 
-    train_df.to_pickle(path.join('acd', path.join('pandas_data', train_df_name)))
-    test_df.to_pickle(path.join('acd', path.join('pandas_data', test_df_name)))
+    train_df.to_pickle(path.join('polarity', path.join('pandas_data', train_df_name)))
+    test_df.to_pickle(path.join('polarity', path.join('pandas_data', test_df_name)))
 
 
-    x_train, y_train = train_df.text, train_df.desired_category
-    x_test, y_test = test_df.text, test_df.desired_category
+    x_train, y_train = train_df.text, train_df.polarity
+    x_test, y_test = test_df.text, test_df.polarity
 
     text_clf = Pipeline([
         ('vect', CountVectorizer()),
@@ -222,15 +249,14 @@ for i in range(0,n):
     predicted = text_clf.predict(x_test)
 
     for j in range(0, len(predicted)):
-        matrix = pred_df['predicted_matrix'][j] 
-        matrix[i] = predicted[j] 
+        pred_df['polarity'][j] = predicted[j] 
 
     total_test_samples = len(x_test)
-    category_dict = assign_category(TRAIN_XML_PATH, 16)
     desired_category_index = category_dict[DESIRED_CATEGORY]
 
     TP = 0 
     for k in range(total_test_samples):
+        if pred_df.polarity == 
         if pred_df.predicted_matrix[k][desired_category_index] == 1:
             TP +=1
 
@@ -259,6 +285,6 @@ print('---------------')
 print('Test F1: {}'.format(f1_score(a, p, average="macro")))
 
 
-data_df.to_pickle(path.join('acd', path.join('results', 'data_df.pkl')))
+data_df.to_pickle(path.join('polarity', path.join('results', 'data_df.pkl')))
 
 print(data_df)
