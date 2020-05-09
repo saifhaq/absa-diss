@@ -177,11 +177,6 @@ category_dict = assign_category(TRAIN_XML_PATH, n)
 
 pred_df = df_predicted(TEST_XML_PATH, n, category_dict)
 
-# test_df = pd.read_pickle(path.join('polarity', path.join('pandas_data', 'TEST_POLARITY.pkl')))
-
-# test_df = pd.read_pickle(path.join('polarity', path.join('pandas_data', 'TEST_POLARITY_WITHOUT_CATEGORY.pkl')))
-# test_df = pd.read_pickle(path.join('polarity', path.join('pandas_data', 'TEST_POLARITY.pkl')))
-
 stoplist = stoplist()
 
 
@@ -250,4 +245,4 @@ if test_f1 > best_f1:
 
 data_df.to_pickle(path.join('polarity', path.join('results', 'data_df.pkl')))
 
-print(data_df)
+print(pd.read_pickle(path.join('polarity', path.join('results', 'data_df.pkl'))))

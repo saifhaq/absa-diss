@@ -181,12 +181,6 @@ model = tf.keras.models.load_model(path.join('polarity', path.join('tf_models', 
 test_loss, test_acc, test_precision, test_recall = model.evaluate(x_tests, y_test)
 test_f1 = print_stats(test_loss, test_acc, test_precision, test_recall, model_name)
     
-model_name = 'lstm_categories'
-x_trains, y_train, x_vals, y_val, x_tests, y_test, word_index = load_data_by_category(16, 1750)
-model = tf.keras.models.load_model(path.join('polarity', path.join('tf_models', model_name+"_model")))
-test_loss, test_acc, test_precision, test_recall = model.evaluate(x_tests, y_test)
-test_f1 = print_stats(test_loss, test_acc, test_precision, test_recall, model_name)
-
 model_name = 'lstm_general'
 x_train, y_train, x_vals, y_val, x_test, y_test, word_index = load_data_general(16, 1750)
 model = tf.keras.models.load_model(path.join('polarity', path.join('tf_models', model_name+"_model")))

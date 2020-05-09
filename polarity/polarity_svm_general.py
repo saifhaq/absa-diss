@@ -162,6 +162,9 @@ text_clf.fit(x_train, y_train)
 predicted = text_clf.predict(x_test)
 
 print_stats(y_test, predicted, 'svm_general')
+
+print(pd.read_pickle(path.join('polarity', path.join('results', 'data_df.pkl'))))
+
 # cm = confusion_matrix(y_test, predicted)
 
 # title = "SVM Model polarity Normalized Confusion Matrix"
