@@ -9,7 +9,7 @@ data_df = pd.read_pickle(path.join('acd', path.join('results', 'gem.pkl')))
 
 
 # print(data_df.to_latex())
-print(data_df)
+# print(data_df)
 # data_df = pd.read_pickle(path.join('acd', path.join('results', 'data_f1s.pkl')))
 
 # p_increase = []
