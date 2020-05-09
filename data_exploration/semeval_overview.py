@@ -4,6 +4,7 @@ import xml.etree.ElementTree as et
 from collections import Counter
 import matplotlib.pyplot as plt
 import numpy as np 
+import re
 
 def df_semeval(xml_path):
     """
@@ -25,6 +26,7 @@ def df_semeval(xml_path):
 
         sentence_id = sentence.attrib['id']                
         sentence_text = sentence.find('text').text
+        sentence_text =  re.sub(r'[^\w\s]','',sentence_text.lower())
 
         try: 
             opinions = list(sentence)[1]
@@ -37,6 +39,7 @@ def df_semeval(xml_path):
             sentences_list.append([sentence_id, sentence_text, labels])
 
         except:
+            sentences_list.append([sentence_id, sentence_text, []])
             pass
 
     return pd.DataFrame(sentences_list, columns = ["id", "text", "labels"])
@@ -63,3 +66,10 @@ print("--")
 print(n_train_tuples)
 print("--")
 print(n_test_tuples)
+
+train_df.text.to_list()
+
+# total_avg = sum( map(len, train_df.text) ) / len(train_df.text)
+
+# print(total_avg)
+# print(train_df.text.to_list())
