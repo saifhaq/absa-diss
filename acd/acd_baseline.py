@@ -282,7 +282,7 @@ for i in range(len(actual_df.matrix)):
 for i in range(len(predicted_matrix)):
     p.append(predicted_matrix[i].tolist())
 
-test_acc = accuracy_score(a, p)
+test_acc = None
 test_precision = precision_score(a, p, average="macro")
 test_recall = recall_score(a, p, average="macro")
 test_f1 = print_stats( test_acc, test_precision, test_recall, 'svm')

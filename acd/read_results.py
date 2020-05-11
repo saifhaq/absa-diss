@@ -3,8 +3,11 @@ import os.path as path
 import matplotlib.pyplot as plt
 from statistics import mean 
 
-data_df = pd.read_pickle(path.join('acd', path.join('results', 'gem.pkl')))
+# data_df = pd.read_pickle(path.join('acd', path.join('results', 'gem.pkl')))
+# data_df = pd.read_pickle(path.join('acd', path.join('results', 'data_f1s.pkl')))
+data_df = pd.read_pickle(path.join('acd', path.join('results', 'data_df.pkl')))
 
+# 18         3.0    0.30    256.0  0.955059  0.494343
 
 # data_df = pd.read_pickle(path.join('acd', path.join('results', 'data_f1s.pkl')))
 # data_df = pd.read_pickle(path.join('acd', path.join('results', 'data_df.pkl')))
