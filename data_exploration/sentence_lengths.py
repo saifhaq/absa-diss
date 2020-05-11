@@ -5,6 +5,7 @@ from collections import Counter
 import matplotlib.pyplot as plt
 import numpy as np 
 import re
+import itertools
 
 def stoplist(file_name = "stopwords.txt"):
     """
@@ -66,29 +67,24 @@ train_df = df_semeval(TRAIN_XML_PATH, False)
 test_df = df_semeval(TEST_XML_PATH, False)
 
 
+stopping = True
 
+if stopping:
+    stopwords = stoplist()
+    train_sentences = train_df['text'] = train_df['text'].apply(lambda x: [item for item in x.split() if item not in stopwords])
+    test_sentences = test_df['text'] = test_df['text'].apply(lambda x: [item for item in x.split() if item not in stopwords])
+    
+else:
+    train_sentences = train_df['text'].apply(lambda x: [item for item in x.split()])
+train_words = []
 
-stopwords = stoplist()
+sentence_lengths = []
+for index, row in train_df.iterrows():
+    sentence_lengths.append(len(row.text))
 
-train_text_array = train_df['text'].apply(lambda x: [item for item in x.split()])
-test_text_array = test_df['text'].apply(lambda x: [item for item in x.split()])
+print(len(sentence_lengths))
+print(np.mean(sentence_lengths))
 
-train_text_array_stoplist = train_df['text'] = test_df['text'].apply(lambda x: [item for item in x.split() if item not in stopwords])
-test_text_array_stoplist = test_df['text'] = test_df['text'].apply(lambda x: [item for item in x.split() if item not in stopwords])
-
-train_avg_words = sum( map(len, train_text_array) ) / len(train_text_array)
-# test_avg_words = sum( map(len, test_text_array) ) / len(test_text_array)
-
-train_avg_words_stoplist = sum( map(len, train_text_array_stoplist) ) / len(train_text_array_stoplist)
-# test_avg_words_stoplist = sum( map(len, test_avg_words) ) / len(test_avg_words)
-
-print(train_avg_words_stoplist)
-# print(train_avg_words_stoplist)
-
-
-
-
-# train_avg_words_after_stoplist = sum( map(len, train_df.text) ) / len(train_df.text)
-# test_avg_words_after_stoplist = sum( map(len, test_df.text) ) / len(test_df.text)
-
-# print(train_avg_words_after_stoplist)
+print(train_sentences[2498])
+# 5.0924 with stopping
+# 5.0924 with stopping
