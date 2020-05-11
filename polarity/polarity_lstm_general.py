@@ -117,7 +117,7 @@ def load_data(n_classes, n_words, stop_words = True):
 
     tokenizer.word_index['<unk>'] = 1
     tokenizer.index_word[1] = '<unk>'
-
+    
     train_seqs = tokenizer.texts_to_sequences(train_df.text)
     train_vector = tf.keras.preprocessing.sequence.pad_sequences(train_seqs, padding='post')
     train_labels = np.stack(train_df.polarity, axis=0)
@@ -187,12 +187,12 @@ def build_model(word_index, filters, kernel_array):
 
 initalize_tensorflow_gpu(1024)
 
-earlystop_callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=50, restore_best_weights=False)  
+earlystop_callback = tf.keras.callbacks.EarlyStopping(monitor='val_acc', patience=50, restore_best_weights=False)  
 
     
 x_train, y_train, x_vals, y_val, x_test, y_test, word_index = load_data(16, 1750)
 
-for i in range(0, 5):
+for i in range(0, 1):
     model = build_model(word_index, 256, [1,2,3])
     print(model.summary())
     history = model.fit(x_train, 
@@ -207,3 +207,16 @@ for i in range(0, 5):
         
 
 print(pd.read_pickle(path.join('polarity', path.join('results', 'data_df.pkl'))))
+
+
+#               model       acc        f1
+# 0      lstm_general  0.725828  0.775731
+# 1   svm_by_category  0.743546  0.708283
+# 2       svm_general  0.713907  0.695633
+# 3  lstm_by_category  0.783133  0.839286
+
+#               model       acc        f1
+# 0   svm_by_category  0.743546  0.708283
+# 1       svm_general  0.713907  0.695633
+# 2  lstm_by_category  0.783133  0.839286
+# 3      lstm_general  0.743046  0.795789
