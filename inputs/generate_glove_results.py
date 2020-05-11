@@ -80,7 +80,7 @@ def apply_stoplist(df):
         row.text = sentence_words
     return df
 
-def load_data(n_classes, n_words, stop_words = 1):
+def load_data(n_classes, n_words, stop_words = 2):
     """
     :stopwords: Choice of (1, 2, 3) with
         - 1 being no stoplist
@@ -156,27 +156,24 @@ def build_model():
 
 initalize_tensorflow_gpu(1024)
 
-earlystop_callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=5, restore_best_weights=True)  
-n_words_array = [250, 500, 750, 1000, 1250, 1500, 1750, 2000, 2250, 2500, 2750, 3000]
+earlystop_callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=20, restore_best_weights=True)  
+glove_embedding_array = [50, 100, 200, 300]
 
-data_df = pd.DataFrame(columns = ['n_words', 'stoplist', 'f1'])
+data_df = pd.DataFrame(columns = ['type', 'dimension', 'f1'])
 
+ea = glove_embedding_array 
 
-# data_df = pd.read_pickle(path.join('inputs', path.join('results', 'tokenizer_words_replace_stopwords.pkl')))
+for i in range(0, len(ea)):
+    embedding_type = 'Trainable GloVe seed' 
+    data_df = data_df.append({'type': embedding_type, 'dimension': int(ea[i]), 'f1': 0}, ignore_index=True)
 
-stoplist_choice = 3
-data_df_name = 'tokenizer_words_'+str(stoplist_choice)+'.pkl'
+    for k in range(1,6):
+        x_train, y_train, x_val, y_val, x_test, y_test, word_index = load_data(16, 1750)
 
-for i in range(0, len(n_words_array)):
-    test_id = str(stoplist_choice) + '_' + str(n_words_array[i])
-    data_df = data_df.append({'n_words': int(n_words_array[i]), 'stoplist': stoplist_choice, 'f1': 0}, ignore_index=True)
-    for j in range(1,5):
-        x_train, y_train, x_val, y_val, x_test, y_test, word_index = load_data(16, n_words_array[i], stoplist_choice)
-
-        model = build_model()
+        model = build_model(ea[i], True)
         history = model.fit(x_train, 
             y_train, 
-            epochs=150,
+            epochs=250,
             validation_data=(x_val, y_val),
             callbacks=[earlystop_callback],
             verbose = 1)     
@@ -188,19 +185,53 @@ for i in range(0, len(n_words_array)):
         if test_f1 > data_df.at[i,'f1']:
              data_df.at[i,'f1'] = test_f1
 
+for i in range(len(ea), 2 * len(ea)):
 
+    embedding_type = 'GloVe layer'
+    data_df = data_df.append({'type': embedding_type, 'dimension': int(ea[i-len(ea)]), 'f1': 0}, ignore_index=True)
+
+    for k in range(1,6):
+
+        x_train, y_train, x_val, y_val, x_test, y_test, word_index = load_data(16, 1750)
+
+        model = build_model(ea[i-len(ea)], False)
+        history = model.fit(x_train, 
+            y_train, 
+            epochs=250,
+            validation_data=(x_val, y_val),
+            callbacks=[earlystop_callback],
+            verbose = 1)     
+
+
+        test_loss, test_acc, test_precision, test_recall = model.evaluate(x_test, y_test)
+        test_f1 = print_stats(test_loss, test_acc, test_precision, test_recall)
+        
+        if test_f1 > data_df.at[i,'f1']:
+             data_df.at[i,'f1'] = test_f1
+
+for i in range(0, len(ea)):
+    embedding_type = 'Embedding layer'
+    data_df = data_df.append({'type': embedding_type, 'dimension': int(ea[i]), 'f1': 0}, ignore_index=True)
+    
+    for k in range(1,6):
+        x_train, y_train, x_val, y_val, x_test, y_test, word_index = load_data(16, 1750)
+
+        model = build_model(ea[i], word_index)
+        history = model.fit(x_train, 
+            y_train, 
+            epochs=250,
+            validation_data=(x_val, y_val),
+            callbacks=[earlystop_callback],
+            verbose = 1)     
+
+
+        test_loss, test_acc, test_precision, test_recall = model.evaluate(x_test, y_test)
+        test_f1 = print_stats(test_loss, test_acc, test_precision, test_recall)
+        
+        if test_f1 > data_df.at[i,'f1']:
+             data_df.at[i,'f1'] = test_f1
+
+             
 print(data_df)
-data_df.to_pickle(path.join('inputs', path.join('results', data_df_name)))
+data_df.to_pickle(path.join('inputs', path.join('results', 'aspect_embedding_layer.pkl')))
 
-# 0      250        3  0.385142
-# 1      500        3  0.414122
-# 2      750        3  0.417132
-# 3     1000        3  0.413858
-# 4     1250        3  0.422932
-# 5     1500        3  0.423041
-# 6     1750        3  0.426443
-# 7     2000        3  0.423221
-# 8     2250        3  0.433272
-# 9     2500        3  0.421348
-# 10    2750        3  0.420358
-# 11    3000        3  0.421642

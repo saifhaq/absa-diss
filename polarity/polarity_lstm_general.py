@@ -117,7 +117,7 @@ def load_data(n_classes, n_words, stop_words = True):
 
     tokenizer.word_index['<unk>'] = 1
     tokenizer.index_word[1] = '<unk>'
-    
+
     train_seqs = tokenizer.texts_to_sequences(train_df.text)
     train_vector = tf.keras.preprocessing.sequence.pad_sequences(train_seqs, padding='post')
     train_labels = np.stack(train_df.polarity, axis=0)
@@ -220,3 +220,5 @@ print(pd.read_pickle(path.join('polarity', path.join('results', 'data_df.pkl')))
 # 1       svm_general  0.713907  0.695633
 # 2  lstm_by_category  0.783133  0.839286
 # 3      lstm_general  0.743046  0.795789
+
+# 0.7456953525543213 0.7935483895319572

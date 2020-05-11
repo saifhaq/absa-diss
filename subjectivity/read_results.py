@@ -2,13 +2,13 @@ import pandas as pd
 import os.path as path 
 import matplotlib.pyplot as plt
 
-data_df = pd.read_pickle(path.join('subjectivity', path.join('results', 'data_df.pkl')))
-train_df = pd.read_pickle(path.join('subjectivity', path.join('pandas_data', 'TRAIN_SUBJECTIVITY.pkl')))
+# data_df = pd.read_pickle(path.join('subjectivity', path.join('results', 'data_df.pkl')))
+# train_df = pd.read_pickle(path.join('subjectivity', path.join('pandas_data', 'TRAIN_SUBJECTIVITY.pkl')))
 
 
-train_df = train_df.loc[train_df['subjectivity'] == 1]
+# train_df = train_df.loc[train_df['subjectivity'] == 1]
 
-print(data_df)
+# print(data_df)
 
 
 # print(data_df.dimension.head(5), data_df.head(5).f1)
@@ -17,34 +17,36 @@ print(data_df)
 
 # # Impact of embedding dimension and type of weights on test performance
 
-# embedding_df = pd.read_pickle(path.join('main_system', path.join('aspect', 'aspect_embedding_layer.pkl')))
-# data_df = pd.read_pickle(path.join('main_system', path.join('aspect', 'aspects_glove.pkl')))
-# dimension = data_df.head(4).dimension.to_list() 
-# glove_trainable_f1 = data_df.head(4).f1.to_list()
-# glove_non_trainable_f1 = data_df.tail(4).f1.to_list()
-# trainable_f1 = embedding_df.tail(4).f1.to_list()
+embedding_df = pd.read_pickle(path.join('main_system', path.join('aspect', 'aspect_embedding_layer.pkl')))
+data_df = pd.read_pickle(path.join('main_system', path.join('aspect', 'aspects_glove.pkl')))
+dimension = data_df.head(4).dimension.to_list() 
+glove_trainable_f1 = data_df.head(4).f1.to_list()
+glove_non_trainable_f1 = data_df.tail(4).f1.to_list()
+trainable_f1 = embedding_df.tail(4).f1.to_list()
 
-# def yticks():
-#     yticks = []
-#     start = 0.36
-#     finish = 0.49
-#     while start<=finish:
-#         yticks.append(start)
-#         start+=0.01
-#     return yticks
-# print(data_df)
+def yticks():
+    yticks = []
+    start = 0.36
+    finish = 0.49
+    while start<=finish:
+        yticks.append(start)
+        start+=0.01
+    return yticks
+print(data_df)
 
-# plt.plot(dimension, glove_non_trainable_f1, color='g', label="Static GloVe Seed")
-# plt.plot(dimension, glove_trainable_f1, color='orange', label="Trainable GloVe Seed")
-# plt.plot(dimension, trainable_f1, color='red', label="Trainable without seed")
+plt.plot(dimension, glove_non_trainable_f1, color='g', label="Static GloVe Seed")
+plt.plot(dimension, glove_trainable_f1, color='orange', label="Trainable GloVe Seed")
+plt.plot(dimension, trainable_f1, color='red', label="Trainable without seed")
 
-# plt.xticks(data_df.head(4).dimension.to_list())
-# plt.yticks(yticks())
+plt.xticks(data_df.head(4).dimension.to_list())
+plt.yticks(yticks())
 
-# plt.xlabel('Embedding Dimension')
-# plt.ylabel('Test F1')
-# plt.legend()
-# plt.show()
+plt.xlabel('Embedding Dimension')
+plt.ylabel('Test F1')
+plt.legend()
+plt.show()
+
+
 
 # data_df = pd.read_pickle(path.join('main_system', path.join('aspect', 'aspect_baselinenn_data')))
 
