@@ -66,25 +66,48 @@ TEST_XML_PATH = "ABSA16_Laptops_Test_GOLD_SB1.xml"
 train_df = df_semeval(TRAIN_XML_PATH, False)
 test_df = df_semeval(TEST_XML_PATH, False)
 
+def apply_stoplist(df):
+    stopwords = stoplist()
+    for index, row in df.iterrows():
+        split = row.text.split()
+        sentence_words = []
+        for item in split:
+            if item in stopwords:
+                item = '<oov>' 
+            sentence_words.append(item)
+        row.text = sentence_words
+    return df
 
 stopping = True
 
-if stopping:
-    stopwords = stoplist()
-    train_sentences = train_df['text'] = train_df['text'].apply(lambda x: [item for item in x.split() if item not in stopwords])
-    test_sentences = test_df['text'] = test_df['text'].apply(lambda x: [item for item in x.split() if item not in stopwords])
+# stopwords = stoplist()
+# if stopping:
+#     stopwords = stoplist()
+#     train_sentences = train_df['text'] = train_df['text'].apply(lambda x: [item for item in x.split() if item not in stopwords])
+#     test_sentences = test_df['text'] = test_df['text'].apply(lambda x: [item for item in x.split() if item not in stopwords])
     
-else:
-    train_sentences = train_df['text'].apply(lambda x: [item for item in x.split()])
-train_words = []
+# else:
+#     train_sentences = train_df['text'] = train_df['text'].apply(lambda x: [item for item in x.split()])
+# train_words = []
 
-sentence_lengths = []
-for index, row in train_df.iterrows():
-    sentence_lengths.append(len(row.text))
+# max_length = 0
+# sentence_lengths = []
+# for index, row in train_df.iterrows():
+#     sentence_lengths.append(len(row.text))
 
-print(len(sentence_lengths))
-print(np.mean(sentence_lengths))
+#     if len(row.text)  > max_length:
+#         max_length = len(row.text)
+#         if 20< max_length <60:
+#             print(index)
 
-print(train_sentences[2498])
+print(apply_stoplist(train_df))
+
+# print(len(sentence_lengths))
+# print(max_length)
+# print(np.mean(sentence_lengths))
+
+# print(train_df.text[240])
+# print(train_sentences[2498])
+
 # 5.0924 with stopping
 # 5.0924 with stopping
