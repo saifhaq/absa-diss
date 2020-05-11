@@ -117,9 +117,9 @@ TRAIN_XML_PATH = "ABSA16_Laptops_Train_SB1_v2.xml"
 TEST_XML_PATH = "ABSA16_Laptops_Test_GOLD_SB1.xml"
 n = 16
 
-model_names = ['cnn']
-
-# model_names = ['dnn', 'cnn', 'lstm', 'cnn_lstm']
+# 0.493031
+# 0.494343 2 
+model_names = ['dnn', 'cnn', 'lstm', 'cnn_lstm']
 for i in range (0, len(model_names)):
     data_df = pd.read_pickle(path.join('acd', path.join('results', 'data_df.pkl')))
 

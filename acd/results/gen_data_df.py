@@ -140,7 +140,7 @@ categories = Counter(sentences.category).most_common(n)
 
 data_df = pd.read_pickle(path.join('acd', path.join('results', 'data_df.pkl')))
 
-model_names = ['cnn', 'lstm']
+model_names = ['dnn', 'cnn', 'lstm', 'cnn_lstm']
 for i in range (0, len(model_names)):
     model_name = model_names[i]+'_model'
 
