@@ -137,12 +137,15 @@ def load_data(n_classes, n_words, stop_words = True):
 
 initalize_tensorflow_gpu(1024)
 
-model_name = 'lstm'
-x_train, y_train, x_val, y_val, x_test, y_test, word_index = load_data(16, 1750)
-model = tf.keras.models.load_model(path.join('subjectivity', path.join('tf_models', model_name+"_model")))
 
-test_loss, test_acc, test_precision, test_recall = model.evaluate(x_test, y_test)
-test_f1 = print_stats(test_loss, test_acc, test_precision, test_recall, 'lstm')
-    
+model_names = ['dnn', 'cnn', 'lstm']
+for i in range (0, len(model_names)):
+    model_name = model_names[i]
+    x_train, y_train, x_val, y_val, x_test, y_test, word_index = load_data(16, 1750)
+    model = tf.keras.models.load_model(path.join('subjectivity', path.join('tf_models', model_name+"_model")))
+
+    test_loss, test_acc, test_precision, test_recall = model.evaluate(x_test, y_test)
+    test_f1 = print_stats(test_loss, test_acc, test_precision, test_recall, model_name)
+        
 
 print(pd.read_pickle(path.join('subjectivity', path.join('results', 'data_df.pkl'))))
