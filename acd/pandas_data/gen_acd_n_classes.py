@@ -117,7 +117,7 @@ category_dict = assign_category(TRAIN_XML_PATH, n)
 train_df = df_acd(TRAIN_XML_PATH, n, category_dict)
 test_df = df_acd(TEST_XML_PATH, n, category_dict)
 
-print(test_df)
+print(train_df)
 
 train_df_name = 'MAIN_TRAIN_'+str(n)+'_CLASSES.pkl'
 test_df_name =  'MAIN_TEST_'+str(n)+'_CLASSES.pkl'

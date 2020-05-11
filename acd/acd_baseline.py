@@ -21,6 +21,39 @@ import numpy as np
 import os.path as path 
 
 
+def print_stats(test_acc, test_precision, test_recall, model_name):
+    """
+        Helper function using data from Precision and Recall
+        to return the F1 and print model performance stats. 
+        Also updates data_f1s df to contain model acc and f1
+    """
+    test_f1 = 2 * (test_precision * test_recall) / (test_precision + test_recall)
+
+    data_f1s = pd.read_pickle(path.join('acd', path.join('results', 'data_f1s.pkl')))
+
+    try:
+        best_f1 = data_f1s[data_f1s['model']==model_name]['f1'].values[0]
+        best_f1 = 0 
+
+    except: 
+        best_f1 = 0 
+
+    if test_f1 > best_f1:
+        best_f1 = test_f1   
+        data_f1s = data_f1s[data_f1s.model != model_name]
+        data_f1s = data_f1s.append({'model': model_name, 'acc': test_acc, 'f1': test_f1}, ignore_index=True)
+        
+    data_f1s.to_pickle(path.join('acd', path.join('results', 'data_f1s.pkl')))
+    print(data_f1s)
+
+    print('---------------')
+    print('Test Accuracy: {}'.format(test_acc))
+    print('Test Precision: {}'.format(test_precision))
+    print('Test Recall: {}'.format(test_recall))
+    print('---------------')
+    print('Test F1: {}'.format(test_f1))
+    return test_f1
+
 def stoplist(file_name = "stopwords.txt"):
   stopwords_txt = open(path.join('preprocessing', file_name))
   stoplist = []
@@ -249,16 +282,11 @@ for i in range(len(actual_df.matrix)):
 for i in range(len(predicted_matrix)):
     p.append(predicted_matrix[i].tolist())
 
-
-
-print('---------------')
-print('Test Precision: {}'.format(precision_score(a, p, average="macro")))
-print('Test Recall: {}'.format(recall_score(a, p, average="macro")))
-print('Test Accuracy: {}'.format(accuracy_score(a, p)))
-print('---------------')
-print('Test F1: {}'.format(f1_score(a, p, average="macro")))
-
+test_acc = accuracy_score(a, p)
+test_precision = precision_score(a, p, average="macro")
+test_recall = recall_score(a, p, average="macro")
+test_f1 = print_stats( test_acc, test_precision, test_recall, 'svm')
 
 data_df.to_pickle(path.join('acd', path.join('results', 'data_df.pkl')))
 
-print(data_df)
+# print(data_df)

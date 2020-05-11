@@ -107,7 +107,7 @@ def load_data(n_classes, n_words, stop_words = True):
 
     tokenizer = tf.keras.preprocessing.text.Tokenizer(
         num_words=n_words,
-        oov_token="<unk>",
+        oov_token="<oov>",
         filters='!"#$%&()*+.,-/:;=?@[\]^_`{|}~ ')
 
     tokenizer.fit_on_texts(train_df.text)
@@ -115,8 +115,8 @@ def load_data(n_classes, n_words, stop_words = True):
     tokenizer.word_index['<pad>'] = 0
     tokenizer.index_word[0] = '<pad>'
 
-    tokenizer.word_index['<unk>'] = 1
-    tokenizer.index_word[1] = '<unk>'
+    tokenizer.word_index['<oov>'] = 1
+    tokenizer.index_word[1] = '<oov>'
 
     train_seqs = tokenizer.texts_to_sequences(train_df.text)
     train_vector = tf.keras.preprocessing.sequence.pad_sequences(train_seqs, padding='post')
@@ -182,21 +182,26 @@ def build_model(word_index, filters, kernel_array):
 
 initalize_tensorflow_gpu(1024)
 
-earlystop_callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=50, restore_best_weights=False)  
+earlystop_callback = tf.keras.callbacks.EarlyStopping(monitor='val_acc', patience=20, restore_best_weights=False)  
 
+data_testing = pd.DataFrame(columns = ['iteration', 'model', 'acc', 'f1'])
     
-for k in range(1,2):
+for k in range(1,6):
     x_train, y_train, x_val, y_val, x_test, y_test, word_index = load_data(16, 1750)
     input_length = x_train.shape[0]
     model = build_model(word_index, 256, [1,2,3])
     history = model.fit(x_train, 
         y_train, 
-        epochs=40,
+        epochs=250,
         validation_data=(x_val, y_val),
         callbacks=[],
         verbose = 1)     
     test_loss, test_acc, test_precision, test_recall = model.evaluate(x_test, y_test)
     test_f1 = print_stats(test_loss, test_acc, test_precision, test_recall, 'lstm')
-    
+    data_testing = data_testing.append({'iteration': k, 'model': 'lstm', 'acc': test_acc, 'f1': test_f1}, ignore_index=True)
+
+data_testing.to_pickle(path.join('acd', path.join('results', 'data_testing_lstm.pkl')))
 
 print(pd.read_pickle(path.join('acd', path.join('results', 'data_f1s.pkl'))))
+print("------------------------------")
+print(data_testing)
