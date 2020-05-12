@@ -96,8 +96,8 @@ def print_stats(test_loss, test_acc, test_precision, test_recall, model_name):
 
 def load_data(n_classes, n_words, stop_words = True):
 
-    train_df = pd.read_pickle(path.join('subjectivity', path.join('pandas_data', 'TRAIN_SUBJECTIVITY_ONE_HOT.pkl')))
-    test_df = pd.read_pickle(path.join('subjectivity', path.join('pandas_data', 'TRAIN_SUBJECTIVITY_ONE_HOT.pkl')))
+    train_df = pd.read_pickle(path.join('subjectivity', path.join('pandas_data', 'TRAIN_SUBJECTIVITY.pkl')))
+    test_df = pd.read_pickle(path.join('subjectivity', path.join('pandas_data', 'TEST_SUBJECTIVITY.pkl')))
 
     if stop_words:
         stopwords = stoplist()
@@ -146,6 +146,7 @@ def build_model(word_index, filters, kernel_array):
     
     input_layer = layers.Input(shape=(input_length,))
     embedding = embedding_layer(input_layer)
+
     if (n_channels == 1):
         conv = layers.Conv1D(filters=filters, kernel_size=kernel_array[0], activation='relu')(embedding)
         channels_output = layers.GlobalMaxPooling1D()(conv) 
@@ -178,12 +179,12 @@ def build_model(word_index, filters, kernel_array):
 
 initalize_tensorflow_gpu(1024)
 
-earlystop_callback = tf.keras.callbacks.EarlyStopping(monitor='val_accuracy', patience=5, restore_best_weights=False)  
+earlystop_callback = tf.keras.callbacks.EarlyStopping(monitor='val_accuracy', patience=50, restore_best_weights=False)  
 
 x_train, y_train, x_val, y_val, x_test, y_test, word_index = load_data(16, 1750)
 input_length = x_train.shape[0]
 
-for k in range(0,2):
+for k in range(0,5):
     model = build_model(word_index, 256, [1,2,3])
     history = model.fit(x_train, 
         y_train, 
@@ -194,5 +195,4 @@ for k in range(0,2):
     test_loss, test_acc, test_precision, test_recall = model.evaluate(x_test, y_test)
     test_f1 = print_stats(test_loss, test_acc, test_precision, test_recall, 'cnn')
     
-
 print(pd.read_pickle(path.join('subjectivity', path.join('results', 'data_df.pkl'))))

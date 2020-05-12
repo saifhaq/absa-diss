@@ -146,8 +146,8 @@ stopwords = stoplist()
 train_df['text'] = train_df['text'].apply(lambda x: ' '.join([item for item in x.split() if item not in stopwords]))
 test_df['text'] = test_df['text'].apply(lambda x: ' '.join([item for item in x.split() if item not in stopwords]))
 
-x_train, y_train = train_df.text, train_df.subjectivity
-x_test, y_test = test_df.text, test_df.subjectivity
+x_train, y_train = train_df.text, np.array(train_df.subjectivity.to_list()).argmax(axis = 1)
+x_test, y_test = test_df.text, np.array(test_df.subjectivity.to_list()).argmax(axis = 1) 
 
 text_clf = Pipeline([
     ('vect', CountVectorizer()),

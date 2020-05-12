@@ -97,8 +97,8 @@ def print_stats(test_loss, test_acc, test_precision, test_recall, model_name):
 
 def load_data(n_words, stop_words = True):
 
-    train_df = pd.read_pickle(path.join('subjectivity', path.join('pandas_data', 'TRAIN_SUBJECTIVITY_ONE_HOT.pkl')))
-    test_df = pd.read_pickle(path.join('subjectivity', path.join('pandas_data', 'TRAIN_SUBJECTIVITY_ONE_HOT.pkl')))
+    train_df = pd.read_pickle(path.join('subjectivity', path.join('pandas_data', 'TRAIN_SUBJECTIVITY.pkl')))
+    test_df = pd.read_pickle(path.join('subjectivity', path.join('pandas_data', 'TEST_SUBJECTIVITY.pkl')))
 
     if stop_words:
         stopwords = stoplist()

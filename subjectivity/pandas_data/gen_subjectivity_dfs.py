@@ -22,7 +22,7 @@ import tensorflow as tf
 def df_subjectivity(xml_path):
     """
         Takes XML Training data and returns a pandas dataframe of unique sentences;
-        with subjectivity 1 if they express an opinion, 0 if not 
+        with subjectivity as [1,0] if they express an opinion, [0,1] if not 
     """
 
     tree = et.parse(xml_path)
@@ -36,24 +36,22 @@ def df_subjectivity(xml_path):
         sentence_id = sentence.attrib['id']                
         sentence_text = sentence.find('text').text
         sentence_text =  re.sub(r'[^\w\s]','',sentence_text.lower())
-
+        count_subjectivity = 0
 
         try: 
-            num_opinions = 0 
-            count_subjectivity = 0
             try:
                 opinions = list(sentence)[1]
                 for opinion in opinions:
                     polarity = opinion.attrib['polarity']
-                    num_opinions+=1
                     if polarity == "positive" or polarity == "negative":
-                        count_subjectivity += 1
+                        count_subjectivity += 10
+    
             except:
                 pass
-            if (count_subjectivity !=0):
-                sentences_list.append([sentence_id, sentence_text, 1])
-            else:
-                sentences_list.append([sentence_id, sentence_text, 0])
+            if (count_subjectivity ==0):
+                sentences_list.append([sentence_id, sentence_text, [1,0]])
+            elif count_subjectivity >0:
+                sentences_list.append([sentence_id, sentence_text, [0,1]])
 
         except:
             pass
@@ -73,10 +71,8 @@ test_df = df_subjectivity(TEST_XML_PATH)
 train_df_name = 'TRAIN_SUBJECTIVITY.pkl'
 test_df_name =  'TEST_SUBJECTIVITY.pkl'
 
-print(test_df)
-subs = np.array(test_df.subjectivity.to_list())
-print(subs)
-# print(test_df.loc[test_df['subjectivity'] == 1])
+print(train_df)
+
 # train_df.to_pickle(path.join('subjectivity', path.join('pandas_data', train_df_name)))
 # test_df.to_pickle(path.join('subjectivity', path.join('pandas_data', test_df_name)))
 

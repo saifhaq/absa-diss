@@ -73,16 +73,14 @@ def print_stats(test_loss, test_acc, test_precision, test_recall, model_name):
     data_df = pd.read_pickle(path.join('subjectivity', path.join('results', 'data_df.pkl')))
 
     try:
-        best_f1 = data_df[data_df['model']==model_name]['f1'].values[0]
+        best_acc = data_df[data_df['model']==model_name]['acc'].values[0]
     except: 
-        best_f1 = 0 
+        best_acc = 0 
 
-    if test_f1 > best_f1:
-        best_f1 = test_f1   
+    if test_acc > best_acc:
         data_df = data_df[data_df.model != model_name]
         data_df = data_df.append({'model': model_name, 'acc': test_acc, 'f1': test_f1}, ignore_index=True)
         model.save(path.join('subjectivity', path.join('tf_models', model_name+"_model")))
-        print("yes")
         
     data_df.to_pickle(path.join('subjectivity', path.join('results', 'data_df.pkl')))
 
@@ -139,6 +137,7 @@ initalize_tensorflow_gpu(1024)
 
 
 model_names = ['dnn', 'cnn', 'lstm']
+model_names = ['lstm']
 for i in range (0, len(model_names)):
     model_name = model_names[i]
     x_train, y_train, x_val, y_val, x_test, y_test, word_index = load_data(16, 1750)
@@ -146,6 +145,6 @@ for i in range (0, len(model_names)):
 
     test_loss, test_acc, test_precision, test_recall = model.evaluate(x_test, y_test)
     test_f1 = print_stats(test_loss, test_acc, test_precision, test_recall, model_name)
-        
+
 
 print(pd.read_pickle(path.join('subjectivity', path.join('results', 'data_df.pkl'))))

@@ -153,17 +153,19 @@ class_names = ["Objective", "Subjective"]
 # title = "Bi-LSTM CNN Subjectivity Normalized Confusion Matrix"
 # plot_cm(cm, class_names, title=title)
 
+model_names = ['dnn', 'cnn', 'lstm']
+model_names = ['lstm']
+for i in range(0, len(model_names)):
+    
+    model_name = model_names[i]
+    model = tf.keras.models.load_model(path.join('subjectivity', path.join('tf_models', model_name+"_model")))
 
+    predicted = model.predict(x_test)
+    pred_labels = (predicted > 0.5).astype(np.int)
+    actual_labels = np.array(y_test.to_list())
 
-model_name = 'lstm'
-model = tf.keras.models.load_model(path.join('subjectivity', path.join('tf_models', model_name+"_model")))
+    cm = confusion_matrix(actual_labels.argmax(1), pred_labels.argmax(1))
 
-predicted = model.predict(x_test)
-pred_labels = (predicted > 0.5).astype(np.int)
-
-print(predicted)
-
-# cm = confusion_matrix(y_test.argmax(1), pred_labels.argmax(1))
-
-# title = "CNN Subjectivity Normalized Confusion Matrix"
-# plot_cm(cm, class_names, title=title)
+    title = "CNN Subjectivity Classifier: Normalized Confusion Matrix"
+    plot_cm(cm, class_names, title=title)
+# 0  lstm  0.715347  0.715347

@@ -81,9 +81,7 @@ def df_acd(xml_path, n, category_dict):
     sentences = reviews.findall('**/sentence')
 
     sentences_list = []
-    
     for sentence in sentences:
-
         sentence_id = sentence.attrib['id']                
         sentence_text = sentence.find('text').text
         category_matrix = np.zeros((n, ), dtype=int)
@@ -104,6 +102,7 @@ def df_acd(xml_path, n, category_dict):
             sentences_list.append([sentence_id, sentence_text, categories, category_matrix])
 
         except:
+            sentences_list.append([sentence_id, sentence_text, [], category_matrix])
             pass
 
     return pd.DataFrame(sentences_list, columns = ["id", "text", "category", "matrix"])
@@ -118,10 +117,11 @@ category_dict = assign_category(TRAIN_XML_PATH, n)
 train_df = df_acd(TRAIN_XML_PATH, n, category_dict)
 test_df = df_acd(TEST_XML_PATH, n, category_dict)
 
-print(train_df)
 
 train_df_name = 'MAIN_TRAIN_'+str(n)+'_CLASSES.pkl'
 test_df_name =  'MAIN_TEST_'+str(n)+'_CLASSES.pkl'
+
+print(test_df)
 
 train_df.to_pickle(path.join('acd', path.join('pandas_data', train_df_name)))
 test_df.to_pickle(path.join('acd', path.join('pandas_data', test_df_name)))

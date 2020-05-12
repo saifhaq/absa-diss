@@ -97,7 +97,7 @@ def print_stats(test_loss, test_acc, test_precision, test_recall, model_name):
 def load_data(n_classes, n_words, stop_words = True):
 
     train_df = pd.read_pickle(path.join('subjectivity', path.join('pandas_data', 'TRAIN_SUBJECTIVITY.pkl')))
-    test_df = pd.read_pickle(path.join('subjectivity', path.join('pandas_data', 'TRAIN_SUBJECTIVITY.pkl')))
+    test_df = pd.read_pickle(path.join('subjectivity', path.join('pandas_data', 'TEST_SUBJECTIVITY.pkl')))
 
     if stop_words:
         stopwords = stoplist()
@@ -146,7 +146,7 @@ def build_model(word_index, filters, kernel_array):
     
     input_layer = layers.Input(shape=(input_length,))
     embedding = embedding_layer(input_layer)
-    bilstm = layers.Bidirectional(layers.LSTM(128, return_sequences=True))(embedding)
+    bilstm = layers.Bidirectional(layers.LSTM(128, return_sequences=True, activation='relu'))(embedding)
     conc = tf.keras.layers.concatenate([embedding, bilstm])
 
     if (n_channels == 1):
@@ -163,7 +163,7 @@ def build_model(word_index, filters, kernel_array):
         channels_output = tf.keras.layers.concatenate(poolings)
 
     dropout = layers.Dropout(0.3)(channels_output)
-    outputs = tf.keras.layers.Dense(1, activation='sigmoid')(dropout)
+    outputs = tf.keras.layers.Dense(2, activation='softmax')(dropout)
     model = tf.keras.Model(inputs=input_layer, outputs = outputs)
 
 
@@ -181,7 +181,7 @@ def build_model(word_index, filters, kernel_array):
 
 initalize_tensorflow_gpu(1024)
 
-earlystop_callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=100, restore_best_weights=False)  
+earlystop_callback = tf.keras.callbacks.EarlyStopping(monitor='val_accuracy', patience=50, restore_best_weights=False)  
 
 x_train, y_train, x_val, y_val, x_test, y_test, word_index = load_data(16, 1750)
 input_length = x_train.shape[0]

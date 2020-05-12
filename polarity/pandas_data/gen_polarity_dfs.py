@@ -123,8 +123,7 @@ test_df = df_polarity(TEST_XML_PATH, 16, category_dict)
 train_df_name = 'TRAIN_POLARITY.pkl'
 test_df_name =  'TEST_POLARITY.pkl'
 
-print(train_df.tail(10))
-
-train_df.to_pickle(path.join('polarity', path.join('pandas_data', train_df_name)))
-test_df.to_pickle(path.join('polarity', path.join('pandas_data', test_df_name)))
+print(train_df)
+# train_df.to_pickle(path.join('polarity', path.join('pandas_data', train_df_name)))
+# test_df.to_pickle(path.join('polarity', path.join('pandas_data', test_df_name)))
 

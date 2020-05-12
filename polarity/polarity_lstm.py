@@ -203,7 +203,7 @@ x_trains, y_train, x_vals, y_val, x_tests, y_test, word_index = load_data(16, 17
 input_length = x_trains[0].shape[0]
 
 
-for i in range(0,5):
+for i in range(0,1):
     model = build_model(word_index, 256, [1,2,3])
     print(model.summary())
     history = model.fit(x_trains, 
