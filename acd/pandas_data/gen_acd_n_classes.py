@@ -71,6 +71,7 @@ def df_acd(xml_path, n, category_dict):
     """
         Takes *xml_path* and returns dataframe of each sentence and corresponding category. 
         If sentence has multiple categories, the sentence is returned multiple times. 
+        Only returns the sentences in *category_dict*
         
         Dataframe returned as: [id, text, category, polarity] 
     """

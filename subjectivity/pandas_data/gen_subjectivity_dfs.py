@@ -56,7 +56,6 @@ def df_subjectivity(xml_path):
                 sentences_list.append([sentence_id, sentence_text, 0])
 
         except:
-            # Ignore sentences that do have any opinions labelled
             pass
 
 

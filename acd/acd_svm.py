@@ -99,7 +99,8 @@ def df_aspect_category(xml_path):
 def df_single_category(xml_path, desired_category):
     """
         Takes *xml_path* and returns labels of data corresponding to whether data is in *desired_category* or not
-
+        Returns each sentence once. 
+        Returned dataframe in format: [id, text, desired_category in [0,1] ]  
     """
 
     tree = et.parse(xml_path)
@@ -131,7 +132,9 @@ def df_single_category(xml_path, desired_category):
 
 def df_predicted_category(xml_path, n):
     """
-
+        Takes XML Training data and returns a pandas dataframe of sentences;
+        Returns dataframe of and unique sentence, 
+        with empty matrix of 0s *n* dimensions long  
     """
     tree = et.parse(xml_path)
     reviews = tree.getroot()
@@ -155,9 +158,12 @@ def df_predicted_category(xml_path, n):
     return pd.DataFrame(sentences_list, columns = ["id", "text", "predicted_matrix"])
 
 
-def df_something(xml_path, n, category_dict):
+def df_actual(xml_path, n, category_dict):
     """
         Takes XML Training data and returns a pandas dataframe of sentences;
+        Returns dataframe of each unique sentence, 
+        with matrix of actual labels of *n* dimensions long  
+
     """
 
     tree = et.parse(xml_path)
@@ -272,7 +278,7 @@ for i in range(0,n):
 
 predicted_matrix = pred_df.predicted_matrix
 category_dict = assign_category(TRAIN_XML_PATH, n)
-actual_df = df_something(TEST_XML_PATH, n, category_dict)
+actual_df = df_actual(TEST_XML_PATH, n, category_dict)
 
 a  = []
 p = []

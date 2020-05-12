@@ -161,10 +161,10 @@ text_clf.fit(x_train, y_train)
 predicted = text_clf.predict(x_test)
 
 print_stats(y_test, predicted, 'svm')
-cm = confusion_matrix(y_test, predicted)
+# cm = confusion_matrix(y_test, predicted)
 
-title = "SVM Model Subjectivity Normalized Confusion Matrix"
+# title = "SVM Model Subjectivity Normalized Confusion Matrix"
 
-class_names = ["Objective", "Subjective"]
-plot_cm(cm, class_names, title=title)
+# class_names = ["Objective", "Subjective"]
+# plot_cm(cm, class_names, title=title)
 

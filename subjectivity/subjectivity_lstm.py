@@ -82,7 +82,6 @@ def print_stats(test_loss, test_acc, test_precision, test_recall, model_name):
         data_df = data_df[data_df.model != model_name]
         data_df = data_df.append({'model': model_name, 'acc': test_acc, 'f1': test_f1}, ignore_index=True)
         model.save(path.join('subjectivity', path.join('tf_models', model_name+"_model")))
-        print("yes")
         
     data_df.to_pickle(path.join('subjectivity', path.join('results', 'data_df.pkl')))
 
@@ -108,7 +107,7 @@ def load_data(n_classes, n_words, stop_words = True):
 
     tokenizer = tf.keras.preprocessing.text.Tokenizer(
         num_words=n_words,
-        oov_token="<unk>",
+        oov_token="<oov>",
         filters='!"#$%&()*+.,-/:;=?@[\]^_`{|}~ ')
 
     tokenizer.fit_on_texts(train_df.text)
@@ -116,8 +115,8 @@ def load_data(n_classes, n_words, stop_words = True):
     tokenizer.word_index['<pad>'] = 0
     tokenizer.index_word[0] = '<pad>'
 
-    tokenizer.word_index['<unk>'] = 1
-    tokenizer.index_word[1] = '<unk>'
+    tokenizer.word_index['<oov>'] = 1
+    tokenizer.index_word[1] = '<oov>'
 
     train_seqs = tokenizer.texts_to_sequences(train_df.text)
     train_vector = tf.keras.preprocessing.sequence.pad_sequences(train_seqs, padding='post')
@@ -183,10 +182,10 @@ def build_model(word_index, filters, kernel_array):
 
 initalize_tensorflow_gpu(1024)
 
-earlystop_callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=50, restore_best_weights=False)  
+earlystop_callback = tf.keras.callbacks.EarlyStopping(monitor='val_acc', patience=20, restore_best_weights=False)  
 
     
-for k in range(1,4):
+for k in range(0,3):
     x_train, y_train, x_val, y_val, x_test, y_test, word_index = load_data(16, 1750)
     input_length = x_train.shape[0]
     model = build_model(word_index, 256, [1,2,3])

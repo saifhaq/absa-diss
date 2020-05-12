@@ -2,7 +2,8 @@ import pandas as pd
 import os.path as path 
 import matplotlib.pyplot as plt
 
-print(pd.read_pickle(path.join('subjectivity', path.join('results', 'data_df.pkl'))))
+results = pd.read_pickle(path.join('subjectivity', path.join('results', 'data_df.pkl')))
+print(results)
 
 # data_df = pd.read_pickle(path.join('subjectivity', path.join('results', 'data_df.pkl')))
 # train_df = pd.read_pickle(path.join('subjectivity', path.join('pandas_data', 'TRAIN_SUBJECTIVITY.pkl')))
