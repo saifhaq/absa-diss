@@ -91,7 +91,7 @@ def load_data(n_classes, n_words, stop_words = True):
 
     tokenizer = tf.keras.preprocessing.text.Tokenizer(
         num_words=n_words,
-        oov_token="<unk>",
+        oov_token="<oov>",
         filters='!"#$%&()*+.,-/:;=?@[\]^_`{|}~ ')
 
     tokenizer.fit_on_texts(train_df.text)
@@ -99,8 +99,8 @@ def load_data(n_classes, n_words, stop_words = True):
     tokenizer.word_index['<pad>'] = 0
     tokenizer.index_word[0] = '<pad>'
 
-    tokenizer.word_index['<unk>'] = 1
-    tokenizer.index_word[1] = '<unk>'
+    tokenizer.word_index['<oov>'] = 1
+    tokenizer.index_word[1] = '<oov>'
 
     train_seqs = tokenizer.texts_to_sequences(train_df.text)
     train_vector = tf.keras.preprocessing.sequence.pad_sequences(train_seqs, padding='post')
@@ -141,7 +141,7 @@ def build_model(hp):
     n_channels = hp.Int(
                 'n_channels',
                 min_value=1,
-                max_value=5,
+                max_value=6,
                 )
 
     filters = hp.Choice('filters',
@@ -195,18 +195,18 @@ x_train, y_train, x_val, y_val, x_test, y_test, word_index = load_data(16, 1750)
 
 input_length = x_train.shape[0]
 # print(x_train.shape[1])
-chanels = 3
+# chanels = 3
 
-x_train_arr = []
-x_val_arr = []
-x_test_arr = []
-kernel_array = []
+# x_train_arr = []
+# x_val_arr = []
+# x_test_arr = []
+# kernel_array = []
 
-for i in range(0, chanels):
-    x_train_arr.append(x_train)
-    x_val_arr.append(x_val)
-    x_test_arr.append(x_test)
-    kernel_array.append(len(kernel_array)+1)
+# for i in range(0, chanels):
+#     x_train_arr.append(x_train)
+#     x_val_arr.append(x_val)
+#     x_test_arr.append(x_test)
+#     kernel_array.append(len(kernel_array)+1)
 
 
 input_length = x_train.shape[1]
@@ -215,17 +215,17 @@ input_length = x_train.shape[1]
 tuner = RandomSearch(
     build_model,
     objective='val_accuracy',
-    max_trials=150,
-    executions_per_trial=5,
-    directory='cnn_lstm_randomsearch',
-    project_name='model_tuning')
+    max_trials=750,
+    executions_per_trial=6,
+    directory='keras_tuner',
+    project_name='acd_lstm_cnn_randomsearch')
 
 tuner.search_space_summary()
 
 earlystop_callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=50, restore_best_weights=False) 
 
 tuner.search(x_train, y_train,
-             epochs=40,
+             epochs=250,
              validation_data=(x_val, y_val),
              callbacks=[earlystop_callback])
 
@@ -233,12 +233,14 @@ models = tuner.get_best_models(num_models=10)
 
 
 try:
-    data_df = pd.read_pickle(path.join('acd', path.join('results', 'gem.pkl')))
+    data_df = pd.read_pickle(path.join('acd', path.join('results', 'random_search_hyperparameters.pkl')))
 except:
-    data_df = pd.DataFrame(columns = ["n_channels", "dropout", "filters", "test_acc", "test_f1"])
+    data_df = pd.DataFrame(columns = ['model_name', "n_channels", "dropout", "filters", "test_acc", "test_f1"])
 
 for i in range(0, len(models)):
-    models[i].save('cnn_lstm_model2_'+str(i))
+    model_name = 'acd_lstm_cnn_randomsearch_'+str(i)
+
+    models[i].save(model_name)
 
     layer_names=[layer.name for layer in models[i].layers]
     matching = [s for s in layer_names if "conv1d" in s]
@@ -248,8 +250,8 @@ for i in range(0, len(models)):
     test_loss, test_acc, test_precision, test_recall = models[i].evaluate(x_test, y_test)
     test_f1 = 2 * (test_precision * test_recall) / (test_precision + test_recall)
 
-    data_df = data_df.append({'n_channels': n_channels,  'filters': filters, 'test_acc': test_acc, 'test_f1': test_f1}, ignore_index=True)
-    data_df.to_pickle(path.join('acd', path.join('results', 'gem.pkl')))
+    data_df = data_df.append({'model_name': model_name, 'n_channels': n_channels,  'filters': filters, 'test_acc': test_acc, 'test_f1': test_f1}, ignore_index=True)
+    data_df.to_pickle(path.join('acd', path.join('results', 'random_search_hyperparameters.pkl')))
 
 tuner.results_summary()
 print(data_df)
