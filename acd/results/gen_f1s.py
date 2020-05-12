@@ -84,7 +84,7 @@ def load_data(n_classes, n_words, stop_words = True):
 
     tokenizer = tf.keras.preprocessing.text.Tokenizer(
         num_words=n_words,
-        oov_token="<unk>",
+        oov_token="<oov>",
         filters='!"#$%&()*+.,-/:;=?@[\]^_`{|}~ ')
 
     tokenizer.fit_on_texts(train_df.text)
@@ -92,8 +92,8 @@ def load_data(n_classes, n_words, stop_words = True):
     tokenizer.word_index['<pad>'] = 0
     tokenizer.index_word[0] = '<pad>'
 
-    tokenizer.word_index['<unk>'] = 1
-    tokenizer.index_word[1] = '<unk>'
+    tokenizer.word_index['<oov>'] = 1
+    tokenizer.index_word[1] = '<oov>'
 
     train_seqs = tokenizer.texts_to_sequences(train_df.text)
     train_vector = tf.keras.preprocessing.sequence.pad_sequences(train_seqs, padding='post')
@@ -117,9 +117,7 @@ TRAIN_XML_PATH = "ABSA16_Laptops_Train_SB1_v2.xml"
 TEST_XML_PATH = "ABSA16_Laptops_Test_GOLD_SB1.xml"
 n = 16
 
-# 0.493031
-# 0.494343 2 
-model_names = ['dnn', 'cnn', 'lstm', 'cnn_lstm']
+model_names = ['dnn', 'cnn', 'lstm', 'lstm_tuned']
 for i in range (0, len(model_names)):
     data_df = pd.read_pickle(path.join('acd', path.join('results', 'data_df.pkl')))
 

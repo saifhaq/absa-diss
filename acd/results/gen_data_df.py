@@ -140,7 +140,7 @@ categories = Counter(sentences.category).most_common(n)
 
 data_df = pd.read_pickle(path.join('acd', path.join('results', 'data_df.pkl')))
 
-model_names = ['dnn', 'cnn', 'lstm', 'cnn_lstm']
+model_names = ['dnn', 'cnn', 'lstm', 'lstm_tuned']
 for i in range (0, len(model_names)):
     model_name = model_names[i]+'_model'
 
@@ -161,13 +161,13 @@ for i in range (0, len(model_names)):
         train_only_single_matrix_df['text'] = train_only_single_matrix_df['text'].apply(lambda x: ' '.join([item for item in x.split() if item not in stopwords]))
 
         tokenizer = tf.keras.preprocessing.text.Tokenizer(num_words=1750,
-                                                        oov_token="<unk>",
+                                                        oov_token="<oov>",
                                                         filters='!"#$%&()*+.,-/:;=?@[\]^_`{|}~ ')
         tokenizer.fit_on_texts(train_only_single_matrix_df.text)
         tokenizer.word_index['<pad>'] = 0
         tokenizer.index_word[0] = '<pad>'
-        tokenizer.word_index['<unk>'] = 1
-        tokenizer.index_word[1] = '<unk>'
+        tokenizer.word_index['<oov>'] = 1
+        tokenizer.index_word[1] = '<oov>'
 
         train_seqs = tokenizer.texts_to_sequences(train_only_single_matrix_df.text)
         train_vector = tf.keras.preprocessing.sequence.pad_sequences(train_seqs, padding='post')

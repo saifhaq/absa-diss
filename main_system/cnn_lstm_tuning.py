@@ -148,8 +148,6 @@ def build_model(hp):
         values=[64, 128, 256])
 
 
-
-
     if (n_channels == 1):
         conv = layers.Conv1D(filters=filters, kernel_size=kernel_array[0], activation='relu')(conc)
         channels_output = layers.GlobalMaxPooling1D()(conv) 
@@ -170,7 +168,6 @@ def build_model(hp):
             default=0.25,
             step=0.05)
             )(channels_output)
-    # dropout = layers.Dropout(0.5)(channels_output)
 
     outputs = tf.keras.layers.Dense(16, activation='sigmoid')(dropout)
     model = tf.keras.Model(inputs=input_layer, outputs = outputs)
@@ -194,22 +191,6 @@ initalize_tensorflow_gpu(1024)
 x_train, y_train, x_val, y_val, x_test, y_test, word_index = load_data(16, 1750)
 
 input_length = x_train.shape[0]
-# print(x_train.shape[1])
-# chanels = 3
-
-# x_train_arr = []
-# x_val_arr = []
-# x_test_arr = []
-# kernel_array = []
-
-# for i in range(0, chanels):
-#     x_train_arr.append(x_train)
-#     x_val_arr.append(x_val)
-#     x_test_arr.append(x_test)
-#     kernel_array.append(len(kernel_array)+1)
-
-
-input_length = x_train.shape[1]
 
 
 tuner = RandomSearch(
@@ -256,37 +237,3 @@ for i in range(0, len(models)):
 tuner.results_summary()
 print(data_df)
 # data_df.to_pickle(path.join('acd', path.join('results', 'cnn_lstm_tuning_info.pkl')))
-
-
-# model = tf.keras.models.load_model('cnn_lstm_model_'+str(4))
-# model.summary()
-
-
-
-
-
-
-
-# print('---------------')
-# print('Test Loss: {}'.format(test_loss))
-# print('Test Accuracy: {}'.format(test_acc))
-# print('Test Precision: {}'.format(test_precision))
-# print('Test Recall: {}'.format(test_recall))
-# print('---------------')
-# print('Test F1: {}'.format(F1))
-
-
-
-# def plot_graphs(history, metric):
-#   plt.plot(history.history[metric])
-#   plt.plot(history.history['val_'+metric], '')
-#   plt.xlabel("Epochs")
-#   plt.ylabel(metric)
-#   plt.legend([metric, 'val_'+metric])
-#   plt.show()
-
-
-# plot_graphs(history, 'accuracy')
-# plot_graphs(history, 'precision')
-# plot_graphs(history, 'recall')
-

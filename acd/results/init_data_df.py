@@ -37,7 +37,7 @@ def df_aspect_category(xml_path):
 
 
 n = 16
-data_df = pd.DataFrame(columns = ["desired_category", "train_count", "baseline", "dnn","cnn", "lstm_cnn"])
+data_df = pd.DataFrame(columns = ["desired_category", "train_count", "svm", "dnn","cnn", "lstm", "lstm_tuned"])
 category_dict = {'LAPTOP#GENERAL': 0, 'LAPTOP#OPERATION_PERFORMANCE': 1, 'LAPTOP#DESIGN_FEATURES': 2, 'LAPTOP#QUALITY': 3, 'LAPTOP#MISCELLANEOUS': 4, 'LAPTOP#USABILITY': 5, 'SUPPORT#QUALITY': 6, 'LAPTOP#PRICE': 7, 'COMPANY#GENERAL': 8, 'BATTERY#OPERATION_PERFORMANCE': 9, 'LAPTOP#CONNECTIVITY': 10, 'DISPLAY#QUALITY': 11, 'LAPTOP#PORTABILITY': 12, 'OS#GENERAL': 13, 'SOFTWARE#GENERAL': 14, 'KEYBOARD#DESIGN_FEATURES': 15}
 
 TRAIN_XML_PATH = "ABSA16_Laptops_Train_SB1_v2.xml"
