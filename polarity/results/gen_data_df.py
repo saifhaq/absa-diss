@@ -107,7 +107,7 @@ def load_data_general(n_classes, n_words, stop_words = True):
 
     tokenizer = tf.keras.preprocessing.text.Tokenizer(
         num_words=n_words,
-        oov_token="<unk>",
+        oov_token="<oov>",
         filters='!"#$%&()*+.,-/:;=?@[\]^_`{|}~ ')
 
     tokenizer.fit_on_texts(train_df.text)
@@ -115,8 +115,8 @@ def load_data_general(n_classes, n_words, stop_words = True):
     tokenizer.word_index['<pad>'] = 0
     tokenizer.index_word[0] = '<pad>'
 
-    tokenizer.word_index['<unk>'] = 1
-    tokenizer.index_word[1] = '<unk>'
+    tokenizer.word_index['<oov>'] = 1
+    tokenizer.index_word[1] = '<oov>'
 
     train_seqs = tokenizer.texts_to_sequences(train_df.text)
     train_vector = tf.keras.preprocessing.sequence.pad_sequences(train_seqs, padding='post')
@@ -175,16 +175,16 @@ def load_data_by_category(n_classes, n_words, stop_words = True):
 initalize_tensorflow_gpu(1024)
 
 
-model_name = 'lstm_by_category'
+model_name = 'lstm'
 x_trains, y_train, x_vals, y_val, x_tests, y_test, word_index = load_data_by_category(16, 1750)
 model = tf.keras.models.load_model(path.join('polarity', path.join('tf_models', model_name+"_model")))
 test_loss, test_acc, test_precision, test_recall = model.evaluate(x_tests, y_test)
 test_f1 = print_stats(test_loss, test_acc, test_precision, test_recall, model_name)
     
-model_name = 'lstm_general'
-x_train, y_train, x_vals, y_val, x_test, y_test, word_index = load_data_general(16, 1750)
+model_name = 'lstm_basic'
+x_trains, y_train, x_vals, y_val, x_tests, y_test, word_index = load_data_by_category(16, 1750)
 model = tf.keras.models.load_model(path.join('polarity', path.join('tf_models', model_name+"_model")))
-test_loss, test_acc, test_precision, test_recall = model.evaluate(x_test, y_test)
+test_loss, test_acc, test_precision, test_recall = model.evaluate(x_tests, y_test)
 test_f1 = print_stats(test_loss, test_acc, test_precision, test_recall, model_name)
 
 print(pd.read_pickle(path.join('polarity', path.join('results', 'data_df.pkl'))))

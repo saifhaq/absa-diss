@@ -141,15 +141,15 @@ def print_stats(y_test, y_pred, model_name):
     return test_f1
 
 
-train_df = pd.read_pickle(path.join('polarity', path.join('pandas_data', 'TRAIN_POLARITY_GENERAL.pkl')))
-test_df = pd.read_pickle(path.join('polarity', path.join('pandas_data', 'TEST_POLARITY_GENERAL.pkl')))
+train_df = pd.read_pickle(path.join('polarity', path.join('pandas_data', 'TRAIN_POLARITY.pkl')))
+test_df = pd.read_pickle(path.join('polarity', path.join('pandas_data', 'TEST_POLARITY.pkl')))
 
 stopwords = stoplist()
 train_df['text'] = train_df['text'].apply(lambda x: ' '.join([item for item in x.split() if item not in stopwords]))
 test_df['text'] = test_df['text'].apply(lambda x: ' '.join([item for item in x.split() if item not in stopwords]))
 
-x_train, y_train = train_df.text, train_df.polarity
-x_test, y_test = test_df.text, test_df.polarity
+x_train, y_train = train_df.text, np.array(train_df.polarity.to_list()).argmax(axis = 1)
+x_test, y_test = test_df.text, np.array(test_df.polarity.to_list()).argmax(axis = 1)
 
 text_clf = Pipeline([
     ('vect', CountVectorizer()),
@@ -161,14 +161,19 @@ text_clf.fit(x_train, y_train)
 
 predicted = text_clf.predict(x_test)
 
-print_stats(y_test, predicted, 'svm_general')
+print_stats(y_test, predicted, 'svm_basic')
 
 print(pd.read_pickle(path.join('polarity', path.join('results', 'data_df.pkl'))))
 
-# cm = confusion_matrix(y_test, predicted)
 
-# title = "SVM Model polarity Normalized Confusion Matrix"
 
-# class_names = ["Objective", "Subjective"]
-# plot_cm(cm, class_names, title=title)
+class_names = ['Negative', 'Positive']
 
+model_name = 'svm'
+
+pred_labels = (predicted > 0.5).astype(np.int)
+
+cm = confusion_matrix(y_test, pred_labels)
+
+title = "Basic SVM Polarity Classifier: Normalized Confusion Matrix"
+plot_cm(cm, class_names, title=title)

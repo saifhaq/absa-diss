@@ -97,10 +97,10 @@ def df_polarity(xml_path, n, category_dict):
                     category_matrix[location] = 1
     
                     if(polarity == "positive"):
-                        sentences_list.append([sentence_id, sentence_text, category_matrix, 1])
+                        sentences_list.append([sentence_id, sentence_text, category_matrix, [0, 1]])
 
                     elif(polarity == "negative"):
-                        sentences_list.append([sentence_id, sentence_text, category_matrix, 0])
+                        sentences_list.append([sentence_id, sentence_text, category_matrix, [1, 0]])
 
                 except:
                     continue

@@ -158,10 +158,12 @@ class_names = ["Objective", "Subjective"]
 model_name = 'lstm'
 model = tf.keras.models.load_model(path.join('subjectivity', path.join('tf_models', model_name+"_model")))
 
-predicted = np.array(model.predict(x_test))
+predicted = model.predict(x_test)
 pred_labels = (predicted > 0.5).astype(np.int)
 
-cm = confusion_matrix(y_test, pred_labels)
+print(predicted)
 
-title = "CNN Subjectivity Normalized Confusion Matrix"
-plot_cm(cm, class_names, title=title)
+# cm = confusion_matrix(y_test.argmax(1), pred_labels.argmax(1))
+
+# title = "CNN Subjectivity Normalized Confusion Matrix"
+# plot_cm(cm, class_names, title=title)

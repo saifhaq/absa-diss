@@ -73,12 +73,11 @@ def print_stats(test_loss, test_acc, test_precision, test_recall, model_name):
     data_df = pd.read_pickle(path.join('polarity', path.join('results', 'data_df.pkl')))
 
     try:
-        best_f1 = data_df[data_df['model']==model_name]['f1'].values[0]
+        best_acc = data_df[data_df['model']==model_name]['acc'].values[0]
     except: 
-        best_f1 = 0 
+        best_acc = 0 
 
-    if test_f1 > best_f1:
-        best_f1 = test_f1   
+    if test_acc > best_acc:
         data_df = data_df[data_df.model != model_name]
         data_df = data_df.append({'model': model_name, 'acc': test_acc, 'f1': test_f1}, ignore_index=True)
         model.save(path.join('polarity', path.join('tf_models', model_name+"_model")))
@@ -95,6 +94,8 @@ def print_stats(test_loss, test_acc, test_precision, test_recall, model_name):
     return test_f1
 
 
+
+
 def load_data(n_classes, n_words, stop_words = True):
 
     train_df = pd.read_pickle(path.join('polarity', path.join('pandas_data', 'TRAIN_POLARITY.pkl')))
@@ -107,7 +108,7 @@ def load_data(n_classes, n_words, stop_words = True):
 
     tokenizer = tf.keras.preprocessing.text.Tokenizer(
         num_words=n_words,
-        oov_token="<unk>",
+        oov_token="<oov>",
         filters='!"#$%&()*+.,-/:;=?@[\]^_`{|}~ ')
 
     tokenizer.fit_on_texts(train_df.text)
@@ -115,8 +116,8 @@ def load_data(n_classes, n_words, stop_words = True):
     tokenizer.word_index['<pad>'] = 0
     tokenizer.index_word[0] = '<pad>'
 
-    tokenizer.word_index['<unk>'] = 1
-    tokenizer.index_word[1] = '<unk>'
+    tokenizer.word_index['<oov>'] = 1
+    tokenizer.index_word[1] = '<oov>'
 
     train_seqs = tokenizer.texts_to_sequences(train_df.text)
     train_vector = tf.keras.preprocessing.sequence.pad_sequences(train_seqs, padding='post')
@@ -171,11 +172,11 @@ def build_model(word_index, filters, kernel_array):
     dropout = layers.Dropout(0.3)(channels_output)
 
 
-    dropout_dense = tf.keras.layers.Dense(16, activation='sigmoid')(dropout)
-    category_dense = layers.Dense(16, activation='sigmoid')(intput_layer_category)
+    dropout_dense = tf.keras.layers.Dense(16, activation='relu')(dropout)
+    category_dense = layers.Dense(16, activation='relu')(intput_layer_category)
     merged_inputs = layers.concatenate([dropout_dense, category_dense])
 
-    outputs = tf.keras.layers.Dense(1, activation='sigmoid')(merged_inputs)
+    outputs = tf.keras.layers.Dense(2, activation='softmax')(merged_inputs)
 
 
     model = tf.keras.Model(inputs=[input_layer, intput_layer_category], outputs = outputs)
@@ -195,7 +196,7 @@ def build_model(word_index, filters, kernel_array):
 
 initalize_tensorflow_gpu(1024)
 
-earlystop_callback = tf.keras.callbacks.EarlyStopping(monitor='val_acc', patience=50, restore_best_weights=False)  
+earlystop_callback = tf.keras.callbacks.EarlyStopping(monitor='val_accuracy', patience=50, restore_best_weights=False)  
 
     
 x_trains, y_train, x_vals, y_val, x_tests, y_test, word_index = load_data(16, 1750)
@@ -213,7 +214,8 @@ for i in range(0,5):
         verbose = 1)     
 
     test_loss, test_acc, test_precision, test_recall = model.evaluate(x_tests, y_test)
-    test_f1 = print_stats(test_loss, test_acc, test_precision, test_recall, 'lstm_by_category')
+    test_f1 = print_stats(test_loss, test_acc, test_precision, test_recall, 'lstm')
         
 
 print(pd.read_pickle(path.join('polarity', path.join('results', 'data_df.pkl'))))
+
