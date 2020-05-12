@@ -1,6 +1,6 @@
 ## Aspect Category Detection 
 All Aspect Category Detection files are located in the [acd](/acd) folder. 
-To load generate all results dataframes, do the following (Note, only step 4 as dataframes are pre-generated):
+To load generate all results dataframes, do the following (Note, only **step 4** is required as dataframes are pre-generated):
 1. Run [init_data_dfs.py](/acd/results/init_data_df.py)
 2. Run [init_data_f1s.py](/acd/results/init_data_f1s.py)
 3. Run [acd_svm.py](/acd/acd_svm.py)
