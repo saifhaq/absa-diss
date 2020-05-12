@@ -107,7 +107,7 @@ def stoplist(file_name = "stopwords.txt"):
     stopwords_txt.close()
     return stoplist
     
-def print_stats(y_test, y_pred, model_name):
+def print_stats(y_pred, y_test, model_name):
     """
         Helper function using data from Tensorflow's model evaluation
         function to return the F1 and print model performance stats. 
@@ -116,8 +116,7 @@ def print_stats(y_test, y_pred, model_name):
 
     data_df = pd.read_pickle(path.join('subjectivity', path.join('results', 'data_df.pkl')))
     test_f1 = f1_score(y_test, y_pred, average="macro")
-    mean = np.mean(y_pred == y_test)
-
+    acc = accuracy_score(y_pred, y_test)
     try:
         best_f1 = data_df[data_df['model']==model_name]['f1'].values[0]
         best_f1 = 0 
@@ -127,12 +126,12 @@ def print_stats(y_test, y_pred, model_name):
     if test_f1 > best_f1:
         best_f1 = test_f1   
         data_df = data_df[data_df.model != model_name]
-        data_df = data_df.append({'model': model_name, 'acc': mean, 'f1': test_f1}, ignore_index=True)
+        data_df = data_df.append({'model': model_name, 'acc': acc, 'f1': test_f1}, ignore_index=True)
         
     data_df.to_pickle(path.join('subjectivity', path.join('results', 'data_df.pkl')))
     print(data_df)
 
-    print('Test Mean: {}'.format(mean))
+    print('Test Accuracy: {}'.format(acc))
     print('---------------')
     print('Test Precision: {}'.format(precision_score(y_test, y_pred, average="macro")))
     print('Test Recall: {}'.format(recall_score(y_test, y_pred, average="macro")))
@@ -160,11 +159,10 @@ text_clf.fit(x_train, y_train)
 
 predicted = text_clf.predict(x_test)
 
+class_names = ["Objective", "Subjective"]
 print_stats(y_test, predicted, 'svm')
-# cm = confusion_matrix(y_test, predicted)
+cm = confusion_matrix(y_test, predicted)
 
-# title = "SVM Model Subjectivity Normalized Confusion Matrix"
-
-# class_names = ["Objective", "Subjective"]
-# plot_cm(cm, class_names, title=title)
+title = "SVM Model Subjectivity Normalized Confusion Matrix"
+plot_cm(cm, class_names, title=title)
 

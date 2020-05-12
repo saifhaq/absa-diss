@@ -170,7 +170,7 @@ for i in range(0, len(ea)):
     for k in range(1,6):
         x_train, y_train, x_val, y_val, x_test, y_test, word_index = load_data(16, 1750)
 
-        model = build_model(ea[i], True)
+        model = build_model()
         history = model.fit(x_train, 
             y_train, 
             epochs=250,
@@ -194,7 +194,7 @@ for i in range(len(ea), 2 * len(ea)):
 
         x_train, y_train, x_val, y_val, x_test, y_test, word_index = load_data(16, 1750)
 
-        model = build_model(ea[i-len(ea)], False)
+        model = build_model()
         history = model.fit(x_train, 
             y_train, 
             epochs=250,
@@ -216,7 +216,7 @@ for i in range(0, len(ea)):
     for k in range(1,6):
         x_train, y_train, x_val, y_val, x_test, y_test, word_index = load_data(16, 1750)
 
-        model = build_model(ea[i], word_index)
+        model = build_model()
         history = model.fit(x_train, 
             y_train, 
             epochs=250,

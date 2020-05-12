@@ -7,3 +7,4 @@ data_df = pd.DataFrame(columns = ["model", "acc", "f1"])
 
 print(data_df)
 data_df.to_pickle(path.join('subjectivity', path.join('results', 'data_df.pkl')))
+

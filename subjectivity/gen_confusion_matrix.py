@@ -123,19 +123,36 @@ x_test, y_test = test_df.text, test_df.subjectivity
 initalize_tensorflow_gpu(1024)
 
 tokenizer = tf.keras.preprocessing.text.Tokenizer(num_words=1750,
-                                                oov_token="<unk>",
+                                                oov_token="<oov>",
                                                 filters='!"#$%&()*+.,-/:;=?@[\]^_`{|}~ ')
 tokenizer.fit_on_texts(train_df.text)
 tokenizer.word_index['<pad>'] = 0
 tokenizer.index_word[0] = '<pad>'
-tokenizer.word_index['<unk>'] = 1
-tokenizer.index_word[1] = '<unk>'
+tokenizer.word_index['<oov>'] = 1
+tokenizer.index_word[1] = '<oov>'
 
 train_seqs = tokenizer.texts_to_sequences(train_df.text)
 train_vector = tf.keras.preprocessing.sequence.pad_sequences(train_seqs, padding='post')
 
 test_seqs = tokenizer.texts_to_sequences(test_df.text)
 x_test = tf.keras.preprocessing.sequence.pad_sequences(test_seqs, padding='post')
+
+class_names = ["Objective", "Subjective"]
+
+
+
+# model_name = 'lstm'
+# model = tf.keras.models.load_model(path.join('subjectivity', path.join('tf_models', model_name+"_model")))
+
+# predicted = np.array(model.predict(x_test))
+# pred_labels = (predicted > 0.5).astype(np.int)
+
+# print(predicted)
+# cm = confusion_matrix(y_test, predicted.argmax(axis=1))
+
+# title = "Bi-LSTM CNN Subjectivity Normalized Confusion Matrix"
+# plot_cm(cm, class_names, title=title)
+
 
 
 model_name = 'lstm'
@@ -146,6 +163,5 @@ pred_labels = (predicted > 0.5).astype(np.int)
 
 cm = confusion_matrix(y_test, pred_labels)
 
-class_names = ["Objective", "Subjective"]
-title = "Bi-LSTM CNN Subjectivity Normalized Confusion Matrix"
+title = "CNN Subjectivity Normalized Confusion Matrix"
 plot_cm(cm, class_names, title=title)

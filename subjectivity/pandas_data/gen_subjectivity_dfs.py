@@ -73,8 +73,10 @@ test_df = df_subjectivity(TEST_XML_PATH)
 train_df_name = 'TRAIN_SUBJECTIVITY.pkl'
 test_df_name =  'TEST_SUBJECTIVITY.pkl'
 
-print(train_df)
-
-train_df.to_pickle(path.join('subjectivity', path.join('pandas_data', train_df_name)))
-test_df.to_pickle(path.join('subjectivity', path.join('pandas_data', test_df_name)))
+print(test_df)
+subs = np.array(test_df.subjectivity.to_list())
+print(subs)
+# print(test_df.loc[test_df['subjectivity'] == 1])
+# train_df.to_pickle(path.join('subjectivity', path.join('pandas_data', train_df_name)))
+# test_df.to_pickle(path.join('subjectivity', path.join('pandas_data', test_df_name)))
 
