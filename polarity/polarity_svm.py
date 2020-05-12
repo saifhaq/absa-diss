@@ -340,26 +340,13 @@ test_recall = recall_score(a, p)
 
 class_names = ['Negative', 'Positive']
 
-model_name = 'svm_advanced'
+model_name = 'svm'
 
 test_f1 = print_stats(test_acc, test_precision, test_recall, model_name)
 cm = confusion_matrix(a, p)
 
-title = "Advanced SVM Polarity Classifier: Normalized Confusion Matrix"
+title = "SVM Polarity Classifier: Normalized Confusion Matrix"
 plot_cm(cm, class_names, title=title)
-
-
-# class_names = ['Negative', 'Positive']
-
-# model_name = 'svm'
-
-# pred_labels = (predicted > 0.5).astype(np.int)
-
-# cm = confusion_matrix(y_test, pred_labels)
-
-# title = "Basic SVM Polarity Classifier: Normalized Confusion Matrix"
-# plot_cm(cm, class_names, title=title)
-
 
 
 print(pd.read_pickle(path.join('polarity', path.join('results', 'data_df.pkl'))))

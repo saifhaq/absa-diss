@@ -169,7 +169,7 @@ class_names = ["Negative", "Positive"]
 
 
 
-model_name = 'lstm_basic'
+model_name = 'lstm'
 model = tf.keras.models.load_model(path.join('polarity', path.join('tf_models', model_name+"_model")))
 
 predicted = np.array(model.predict([x1_test, x2_test]))
@@ -180,5 +180,5 @@ actual = np.array(y_test.to_list())
 
 cm = confusion_matrix(actual.argmax(axis=1), pred_labels.argmax(axis=1))
 
-title = "Basic Bi-LSTM CNN Polarity Classifier Normalized Confusion Matrix"
+title = "Bi-LSTM CNN Polarity Classifier Normalized Confusion Matrix"
 plot_cm(cm, class_names, title=title)
