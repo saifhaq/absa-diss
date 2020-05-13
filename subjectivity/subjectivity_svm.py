@@ -76,7 +76,7 @@ def plot_cm(cm,
 
 
     thresh = cm.max() / 1.5 if normalize else cm.max() / 2
-    thresh = 0.9
+    thresh = 0.8
 
     for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
         if normalize:

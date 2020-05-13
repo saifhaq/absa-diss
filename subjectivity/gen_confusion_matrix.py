@@ -153,7 +153,6 @@ class_names = ["Objective", "Subjective"]
 # title = "Bi-LSTM CNN Subjectivity Normalized Confusion Matrix"
 # plot_cm(cm, class_names, title=title)
 
-model_names = ['dnn', 'cnn', 'lstm']
 model_names = ['cnn']
 for i in range(0, len(model_names)):
     

@@ -122,7 +122,7 @@ ax.yaxis.set_major_formatter(mtick.PercentFormatter())
 
 index = np.arange(n_groups)
 
-bar_width = 0.35
+bar_width = 0.7
 opacity = 0.8
 
 def autolabel(rects):
@@ -141,19 +141,19 @@ def autolabel(rects):
 
 
 
-train = plt.bar(index + bar_width, train_percentages, bar_width,
+train = plt.bar(index+bar_width/2, train_percentages, bar_width,
 alpha=opacity,
-color='g',
+color=(0.2,0.3,0.5),
 label='Train')
 
-test = plt.bar(index, test_percentages, bar_width,
-alpha=opacity,
-color='b',
-label='Test')
+# test = plt.bar(index, test_percentages, bar_width,
+# alpha=opacity,
+# color='b',
+# label='Test')
 
 autolabel(train)
 
-autolabel(test)
+# autolabel(test)
 
 plt.xlabel('Polarity')
 plt.ylabel('Percentage of training samples')
@@ -163,4 +163,8 @@ plt.legend()
 plt.tight_layout()
 plt.show()
 
-print(polarities_df)
+# print(polarities_df)
+
+
+train_counts = [int(x) for x in polarities_df['Train Count']]
+print(sum(train_counts))

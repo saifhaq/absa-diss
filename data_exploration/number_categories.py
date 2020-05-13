@@ -129,7 +129,7 @@ ax.yaxis.set_major_formatter(mtick.PercentFormatter())
 
 index = np.arange(n_groups)
 
-bar_width = 0.25
+bar_width = 0.4
 opacity = 0.8
 
 bars = []
@@ -153,9 +153,12 @@ plt.xticks(rotation='vertical')
 plt.tight_layout()
 plt.show()
 
-data_df.to_pickle(path.join('data_exploration', path.join('results', 'category_distibutions.pkl')))
+data_df = data_df.drop(columns=['Test Percentage', 'Test Samples'])
 
-data_df = data_df.drop(columns=['Train Samples', 'Test Samples'])
-print(data_df.to_latex())
+
+# print(data_df.to_latex())
+# data_df.to_pickle(path.join('data_exploration', path.join('results', 'category_distibutions.pkl')))
+
+print(data_df)
 
 # print(sentences_test)

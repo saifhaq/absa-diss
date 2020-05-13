@@ -62,8 +62,9 @@ TEST_XML_PATH = "ABSA16_Laptops_Test_GOLD_SB1.xml"
 train_df = df_categories(TRAIN_XML_PATH)
 test_df = df_categories(TEST_XML_PATH)
 
+# polarities_df = pd.DataFrame(columns = ["Polarity", "Train Count", "Train Percentage", "Test Percentage"])
 
-polarities_df = pd.DataFrame(columns = ["Polarity", "Train Count", "Train Percentage", "Test Percentage"])
+polarities_df = pd.DataFrame(columns = ["Polarity", "Train Count", "Train Percentage"])
 
 polarities_df = polarities_df.append({'Polarity': 'Neutral', 'Train Count': 0}, ignore_index=True)
 polarities_df = polarities_df.append({'Polarity': 'Positive', 'Train Count': 0}, ignore_index=True)
@@ -85,23 +86,24 @@ for index, row in polarities_df.iterrows():
 
 
 
-test_flattened_polarities = [polarity for sentence in test_df.polarity for polarity in sentence]
-test_polarities_counter = Counter(test_flattened_polarities)
-test_n_polarites = sum(test_polarities_counter.values())
+# test_flattened_polarities = [polarity for sentence in test_df.polarity for polarity in sentence]
+# test_polarities_counter = Counter(test_flattened_polarities)
+# test_n_polarites = sum(test_polarities_counter.values())
 
-polarities_df.loc[0,'Test Count'] = test_polarities_counter['neutral']
-polarities_df.loc[1,'Test Count'] = test_polarities_counter['positive']
-polarities_df.loc[2,'Test Count'] = test_polarities_counter['negative']
+# polarities_df.loc[0,'Test Count'] = test_polarities_counter['neutral']
+# polarities_df.loc[1,'Test Count'] = test_polarities_counter['positive']
+# polarities_df.loc[2,'Test Count'] = test_polarities_counter['negative']
 
-for index, row in polarities_df.iterrows():
-    p = (row['Test Count'] / test_n_polarites) *100
-    row['Test Percentage'] = str('{0:.2f}'.format(p)) + "%"
+# for index, row in polarities_df.iterrows():
+#     p = (row['Test Count'] / test_n_polarites) *100
+#     row['Test Percentage'] = str('{0:.2f}'.format(p)) + "%"
 
-print("TRAIN")
-print(train_polarities_counter['positive'] + train_polarities_counter['negative'])
-print("TEST")
-print(test_polarities_counter['positive'] + test_polarities_counter['negative'])
+# print("TRAIN")
+# print(train_polarities_counter['positive'] + train_polarities_counter['negative'])
+# print("TEST")
+# print(test_polarities_counter['positive'] + test_polarities_counter['negative'])
 
-# polarities_df.to_pickle(path.join('data_exploration', path.join('results', 'polarities_df.pkl')))
+print(polarities_df.to_latex())
+polarities_df.to_pickle(path.join('data_exploration', path.join('results', 'polarities_df.pkl')))
 
 # polarities_df = pd.read_pickle(path.join('data_exploration', path.join('results', 'polarities_df.pkl')))
