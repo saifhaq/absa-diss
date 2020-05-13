@@ -132,21 +132,21 @@ def load_data(n_classes, n_words, stop_words = True):
 
     return x_train, y_train, x_val, y_val, x_test, y_test, word_index
 
-def build_model(word_index, filters, kernel_size):
+def build_model(word_index):
     
     glove_matrix = gloveEmbedding(300, word_index)
     embedding_layer = layers.Embedding(len(word_index) + 1,
         300,
         weights=[glove_matrix],
         trainable=True)
-    
+        
     input_layer = layers.Input(shape=(input_length,))
     embedding = embedding_layer(input_layer)
 
-    conv = (layers.Conv1D(filters=64, kernel_size=2, activation='relu')(embedding))
-    pooling = (layers.GlobalMaxPooling1D()(conv))
+    conv = layers.Conv1D(filters=128, kernel_size=2, activation='relu')(embedding)
+    pooling = layers.GlobalMaxPooling1D()(conv)
 
-    outputs = tf.keras.layers.Dense(2, activation='softmax')(pooling)
+    outputs = layers.Dense(2, activation='softmax')(pooling)
     model = tf.keras.Model(inputs=input_layer, outputs = outputs)
 
 
@@ -164,13 +164,13 @@ def build_model(word_index, filters, kernel_size):
 
 initalize_tensorflow_gpu(1024)
 
-earlystop_callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=40, restore_best_weights=False)  
+earlystop_callback = tf.keras.callbacks.EarlyStopping(monitor='val_accuracy', patience=20, restore_best_weights=False)  
 
 x_train, y_train, x_val, y_val, x_test, y_test, word_index = load_data(16, 1750)
 input_length = x_train.shape[0]
 
 for k in range(0,1):
-    model = build_model(word_index, 64, 2)
+    model = build_model(word_index)
     history = model.fit(x_train, 
         y_train, 
         epochs=250,
@@ -178,6 +178,8 @@ for k in range(0,1):
         callbacks=[earlystop_callback],
         verbose = 1)     
     test_loss, test_acc, test_precision, test_recall = model.evaluate(x_test, y_test)
-    test_f1 = print_stats(test_loss, test_acc, test_precision, test_recall, 'cnn_2')
+    print(model.evaluate(x_test, y_test))
+    print("----------------")
+    test_f1 = print_stats(test_loss, test_acc, test_precision, test_recall, 'cnn')
     
 print(pd.read_pickle(path.join('subjectivity', path.join('results', 'data_df.pkl'))))
