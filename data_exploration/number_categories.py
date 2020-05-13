@@ -153,7 +153,7 @@ plt.xticks(rotation='vertical')
 plt.tight_layout()
 plt.show()
 
-data_df = data_df.drop(columns=['Test Percentage', 'Test Samples'])
+# data_df = data_df.drop(columns=['Test Percentage', 'Test Samples'])
 
 
 # print(data_df.to_latex())

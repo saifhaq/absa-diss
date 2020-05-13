@@ -132,7 +132,7 @@ def print_stats(test_acc, test_precision, test_recall, model_name):
         data_df = data_df[data_df.model != model_name]
         data_df = data_df.append({'model': model_name, 'acc': test_acc, 'f1': test_f1}, ignore_index=True)
     
-    data_df.to_pickle(path.join('polarity', path.join('results', 'data_df.pkl')))
+    # data_df.to_pickle(path.join('polarity', path.join('results', 'data_df.pkl')))
 
     print('---------------')
     print('Test Accuracy: {}'.format(test_acc))
@@ -143,8 +143,7 @@ def print_stats(test_acc, test_precision, test_recall, model_name):
     return test_f1
 
 
-
-def df_aspect_category(xml_path):
+def df_sentences(xml_path):
     """
         Takes *xml_path* and returns dataframe of each sentence and corresponding category. 
         If sentence has multiple categories, the sentence is returned multiple times. 
@@ -173,6 +172,67 @@ def df_aspect_category(xml_path):
 
         except:
             pass
+
+    return pd.DataFrame(sentences_list, columns = ["id", "text", "category", "polarity"])
+
+def assign_category(xml_path, n):
+    """
+        Returns dictionary of the *n* most common as the keys 
+        The values of each key is the index of the category  
+    """
+
+    sentences = df_sentences(xml_path)
+    categories = Counter(sentences.category).most_common(n)
+    common_categories = [category_tuple[0] for category_tuple in categories]
+    assigned = {}
+
+    for i in range(0, len(common_categories)):
+        assigned[common_categories[i]] = i 
+
+    return assigned
+
+def df_polarity(xml_path, n, category_dict, desired_category):
+    """
+        Takes XML Training data and returns a pandas dataframe of sentences;
+        returns duplicate sentences if each sentence has multiple aspects of polarity   
+    """
+
+    tree = et.parse(xml_path)
+    reviews = tree.getroot()
+    sentences = reviews.findall('**/sentence')
+
+    sentences_list = []
+
+    for sentence in sentences:
+
+        sentence_id = sentence.attrib['id']                
+        sentence_text = sentence.find('text').text
+        sentence_text =  re.sub(r'[^\w\s]','',sentence_text.lower())
+
+        try: 
+            opinions = list(sentence)[1]
+            for opinion in opinions:
+                category_matrix = np.zeros((16, ), dtype=int)
+                if(opinion.attrib['category'] == desired_category):
+                    try:
+                        polarity = opinion.attrib['polarity']
+                        
+                        location = category_dict[opinion.attrib['category']]
+                        
+                        category_matrix[location] = 1
+        
+                        if(polarity == "positive"):
+                            sentences_list.append([sentence_id, sentence_text, category_matrix, [0, 1]])
+
+                        elif(polarity == "negative"):
+                            sentences_list.append([sentence_id, sentence_text, category_matrix, [1, 0]])
+
+                    except:
+                        continue
+
+        except:
+            pass
+
 
     return pd.DataFrame(sentences_list, columns = ["id", "text", "category", "polarity"])
 
@@ -261,21 +321,6 @@ def df_predicted(xml_path, n, category_dict):
     return pd.DataFrame(sentences_list, columns = ["id", "text", "category", "polarity", "predicted"])
 
 
-def assign_category(xml_path, n):
-    """
-        Returns dictionary of the *n* most common as the keys 
-        The values of each key is the index of the category  
-    """
-
-    sentences = df_aspect_category(xml_path)
-    categories = Counter(sentences.category).most_common(n)
-    common_categories = [category_tuple[0] for category_tuple in categories]
-    assigned = {}
-
-    for i in range(0, len(common_categories)):
-        assigned[common_categories[i]] = i 
-
-    return assigned
 
 TRAIN_XML_PATH = "ABSA16_Laptops_Train_SB1_v2.xml"
 TEST_XML_PATH = "ABSA16_Laptops_Test_GOLD_SB1.xml"
@@ -310,44 +355,43 @@ for i in range(0,n):
     train_df_name = 'BASELINE_'+'TRAIN_'+DESIRED_CATEGORY + '.pkl'
     test_df_name =  'BASELINE_'+'TEST_'+DESIRED_CATEGORY + '.pkl'
 
-    train_df.to_pickle(path.join('polarity', path.join('pandas_data', train_df_name)))
-    test_df.to_pickle(path.join('polarity', path.join('pandas_data', test_df_name)))
+
+    print(train_df)
+
+#     x_train, y_train = train_df.text, train_df.polarity
+
+#     text_clf = Pipeline([
+#         ('vect', CountVectorizer()),
+#         ('tfidf', TfidfTransformer()),
+#         ('svc', SGDClassifier()),    
+#         ])
+
+#     text_clf.fit(x_train, y_train)
+
+#     predicted = text_clf.predict(test_df.text)
+
+#     for j in range(0, len(predicted)):
+#         pred_df.loc[(pred_df['id'] == test_df['id'].iat[j]), ['predicted']] = predicted[j]
 
 
-    x_train, y_train = train_df.text, train_df.polarity
 
-    text_clf = Pipeline([
-        ('vect', CountVectorizer()),
-        ('tfidf', TfidfTransformer()),
-        ('svc', SGDClassifier()),    
-        ])
+# a = pred_df.polarity.to_list()
+# p = pred_df.predicted.to_list()
 
-    text_clf.fit(x_train, y_train)
+# test_acc = accuracy_score(a, p)
+# test_precision = precision_score(a, p)
+# test_recall = recall_score(a, p)
 
-    predicted = text_clf.predict(test_df.text)
+# class_names = ['Negative', 'Positive']
 
-    for j in range(0, len(predicted)):
-        pred_df.loc[(pred_df['id'] == test_df['id'].iat[j]), ['predicted']] = predicted[j]
+# model_name = 'svm'
 
+# test_f1 = print_stats(test_acc, test_precision, test_recall, model_name)
+# cm = confusion_matrix(a, p)
 
-
-a = pred_df.polarity.to_list()
-p = pred_df.predicted.to_list()
-
-test_acc = accuracy_score(a, p)
-test_precision = precision_score(a, p)
-test_recall = recall_score(a, p)
-
-class_names = ['Negative', 'Positive']
-
-model_name = 'svm'
-
-test_f1 = print_stats(test_acc, test_precision, test_recall, model_name)
-cm = confusion_matrix(a, p)
-
-title = "SVM Polarity Classifier: Normalized Confusion Matrix"
-plot_cm(cm, class_names, title=title)
+# title = "SVM Polarity Classifier: Normalized Confusion Matrix"
+# plot_cm(cm, class_names, title=title)
 
 
-print(pd.read_pickle(path.join('polarity', path.join('results', 'data_df.pkl'))))
+# print(pd.read_pickle(path.join('polarity', path.join('results', 'data_df.pkl'))))
 
