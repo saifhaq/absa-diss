@@ -163,6 +163,6 @@ class_names = ["Objective", "Subjective"]
 print_stats(y_test, predicted, 'svm')
 cm = confusion_matrix(y_test, predicted)
 
-title = "SVM Model Subjectivity Normalized Confusion Matrix"
+title = "SVM Subjectivity Classifier: Normalized Confusion Matrix"
 plot_cm(cm, class_names, title=title)
 

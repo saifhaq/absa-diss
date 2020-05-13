@@ -137,7 +137,7 @@ initalize_tensorflow_gpu(1024)
 
 
 model_names = ['dnn', 'cnn', 'lstm']
-model_names = ['lstm']
+model_names = ['cnn']
 for i in range (0, len(model_names)):
     model_name = model_names[i]
     x_train, y_train, x_val, y_val, x_test, y_test, word_index = load_data(16, 1750)

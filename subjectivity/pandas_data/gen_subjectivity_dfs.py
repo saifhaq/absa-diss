@@ -73,6 +73,6 @@ test_df_name =  'TEST_SUBJECTIVITY.pkl'
 
 print(train_df)
 
-# train_df.to_pickle(path.join('subjectivity', path.join('pandas_data', train_df_name)))
-# test_df.to_pickle(path.join('subjectivity', path.join('pandas_data', test_df_name)))
+train_df.to_pickle(path.join('subjectivity', path.join('pandas_data', train_df_name)))
+test_df.to_pickle(path.join('subjectivity', path.join('pandas_data', test_df_name)))
 

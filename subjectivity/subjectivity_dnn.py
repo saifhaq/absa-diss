@@ -78,8 +78,9 @@ def print_stats(test_loss, test_acc, test_precision, test_recall, model_name):
         best_acc = 0 
 
     if test_acc > best_acc:
+        best_acc = test_acc
         data_df = data_df[data_df.model != model_name]
-        data_df = data_df.append({'model': model_name, 'acc': test_acc, 'f1': test_f1}, ignore_index=True)
+        data_df = data_df.append({'model': model_name, 'acc': best_acc, 'f1': test_f1}, ignore_index=True)
         model.save(path.join('subjectivity', path.join('tf_models', model_name+"_model")))
         
     data_df.to_pickle(path.join('subjectivity', path.join('results', 'data_df.pkl')))
@@ -145,7 +146,7 @@ def build_model(word_index):
     embedding = embedding_layer(input_layer)
 
     pooling = tf.keras.layers.GlobalMaxPooling1D()(embedding)
-    dense = tf.keras.layers.Dense(256, activation='tanh')(pooling)
+    dense = tf.keras.layers.Dense(64, activation='relu')(pooling)
 
     outputs = tf.keras.layers.Dense(2, activation='softmax')(dense)
     model = tf.keras.Model(inputs=input_layer, outputs = outputs)

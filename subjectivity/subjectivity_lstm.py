@@ -144,9 +144,9 @@ def build_model(word_index, filters, kernel_array):
     convs = []
     poolings = []
     
-    input_layer = layers.Input(shape=(input_length,))
+    input_layer = layers.Input(shape=(29,))
     embedding = embedding_layer(input_layer)
-    bilstm = layers.Bidirectional(layers.LSTM(128, return_sequences=True, activation='relu'))(embedding)
+    bilstm = layers.Bidirectional(layers.LSTM(128, return_sequences=True))(embedding)
     conc = tf.keras.layers.concatenate([embedding, bilstm])
 
     if (n_channels == 1):
@@ -162,8 +162,8 @@ def build_model(word_index, filters, kernel_array):
 
         channels_output = tf.keras.layers.concatenate(poolings)
 
-    dropout = layers.Dropout(0.3)(channels_output)
-    outputs = tf.keras.layers.Dense(2, activation='softmax')(dropout)
+    dropout = tf.keras.layers.Dropout(0.3)(channels_output)
+    outputs = tf.keras.layers.Dense(2, activation='sigmoid')(dropout)
     model = tf.keras.Model(inputs=input_layer, outputs = outputs)
 
 
@@ -181,14 +181,13 @@ def build_model(word_index, filters, kernel_array):
 
 initalize_tensorflow_gpu(1024)
 
-earlystop_callback = tf.keras.callbacks.EarlyStopping(monitor='val_accuracy', patience=50, restore_best_weights=False)  
+earlystop_callback = tf.keras.callbacks.EarlyStopping(monitor='val_accuracy', patience=75, restore_best_weights=False)  
 
 x_train, y_train, x_val, y_val, x_test, y_test, word_index = load_data(16, 1750)
-input_length = x_train.shape[0]
 
-loss_functions = ['']
 
-for k in range(0,1):
+
+for k in range(0,2):
     model = build_model(word_index, 256, [1,2,3])
     history = model.fit(x_train, 
         y_train, 

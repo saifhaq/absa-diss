@@ -154,7 +154,7 @@ class_names = ["Objective", "Subjective"]
 # plot_cm(cm, class_names, title=title)
 
 model_names = ['dnn', 'cnn', 'lstm']
-model_names = ['lstm']
+model_names = ['cnn']
 for i in range(0, len(model_names)):
     
     model_name = model_names[i]
@@ -163,6 +163,7 @@ for i in range(0, len(model_names)):
     predicted = model.predict(x_test)
     pred_labels = (predicted > 0.5).astype(np.int)
     actual_labels = np.array(y_test.to_list())
+
 
     cm = confusion_matrix(actual_labels.argmax(1), pred_labels.argmax(1))
 

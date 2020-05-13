@@ -178,7 +178,8 @@ pred_labels = (predicted > 0.5).astype(np.int)
 
 actual = np.array(y_test.to_list())
 
+
 cm = confusion_matrix(actual.argmax(axis=1), pred_labels.argmax(axis=1))
 
-title = "Bi-LSTM CNN Polarity Classifier Normalized Confusion Matrix"
+title = "Bi-LSTM CNN Polarity Classifier: Normalized Confusion Matrix"
 plot_cm(cm, class_names, title=title)
