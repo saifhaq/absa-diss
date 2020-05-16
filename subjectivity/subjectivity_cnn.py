@@ -167,9 +167,9 @@ initalize_tensorflow_gpu(1024)
 earlystop_callback = tf.keras.callbacks.EarlyStopping(monitor='val_accuracy', patience=20, restore_best_weights=False)  
 
 x_train, y_train, x_val, y_val, x_test, y_test, word_index = load_data(16, 1750)
-input_length = x_train.shape[0]
+input_length = x_train.shape[1]
 
-for k in range(0,1):
+for k in range(0,5):
     model = build_model(word_index)
     history = model.fit(x_train, 
         y_train, 
@@ -180,6 +180,6 @@ for k in range(0,1):
     test_loss, test_acc, test_precision, test_recall = model.evaluate(x_test, y_test)
     print(model.evaluate(x_test, y_test))
     print("----------------")
-    test_f1 = print_stats(test_loss, test_acc, test_precision, test_recall, 'cnn')
+    test_f1 = print_stats(test_loss, test_acc, test_precision, test_recall, 'cnn_2')
     
 print(pd.read_pickle(path.join('subjectivity', path.join('results', 'data_df.pkl'))))

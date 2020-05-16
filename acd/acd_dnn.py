@@ -171,7 +171,7 @@ earlystop_callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patien
     
 for k in range(0,5):
     x_train, y_train, x_val, y_val, x_test, y_test, word_index = load_data(16, 1750)
-    input_length = x_train.shape[0]
+    input_length = x_train.shape[1]
     model = build_model(word_index)
     history = model.fit(x_train, 
         y_train, 
