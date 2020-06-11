@@ -4,12 +4,11 @@ import numpy as np
 import os.path as path
 import pandas as pd 
 from tensorflow.keras import layers
-from tensorflow.keras.callbacks import Callback
-from kerastuner import HyperModel
-from kerastuner.tuners import RandomSearch
+from tensorflow.keras.callbacks import Callback, TensorBoard
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import f1_score
 from collections import Counter 
+from time import time
 
 def initalize_tensorflow_gpu(memory_limit):
     gpus = tf.config.experimental.list_physical_devices('GPU')
@@ -167,9 +166,9 @@ def build_model(word_index):
 initalize_tensorflow_gpu(1024)
 
 earlystop_callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=20, restore_best_weights=False)  
-
+tensorboard = TensorBoard(log_dir='tensorboard_logs/{}'.format(time()))
     
-for k in range(0,5):
+for k in range(0,1):
     x_train, y_train, x_val, y_val, x_test, y_test, word_index = load_data(16, 1750)
     input_length = x_train.shape[1]
     model = build_model(word_index)
@@ -177,7 +176,7 @@ for k in range(0,5):
         y_train, 
         epochs=250,
         validation_data=(x_val, y_val),
-        callbacks=[earlystop_callback],
+        callbacks=[earlystop_callback, tensorboard],
         verbose = 1)     
     test_loss, test_acc, test_precision, test_recall = model.evaluate(x_test, y_test)
     test_f1 = print_stats(test_loss, test_acc, test_precision, test_recall, 'dnn')

@@ -11,6 +11,7 @@ from collections import Counter
 
 def initalize_tensorflow_gpu(memory_limit):
     gpus = tf.config.experimental.list_physical_devices('GPU')
+    
     try:
         tf.config.experimental.set_virtual_device_configuration(
             gpus[0],
@@ -179,12 +180,13 @@ def build_model(word_index, filters, kernel_array):
     return model
 
 initalize_tensorflow_gpu(1024)
+# TF_FORCE_GPU_ALLOW_GROWTH = True
 
 earlystop_callback = tf.keras.callbacks.EarlyStopping(monitor='val_acc', patience=20, restore_best_weights=False)  
 
 data_testing = pd.DataFrame(columns = ['iteration', 'model', 'acc', 'f1'])
     
-for k in range(0,5):
+for k in range(0,1):
     x_train, y_train, x_val, y_val, x_test, y_test, word_index = load_data(16, 1750)
     input_length = x_train.shape[1]
     model = build_model(word_index, 256, [1,2,3])
