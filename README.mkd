@@ -1,3 +1,10 @@
+## Before you start
+wget http://nlp.stanford.edu/data/glove.6B.zip; 
+    mkdir glove.6B; 
+    mv glove.6B.zip glove.6B;
+    cd glove.6B;
+    unzip glove.6B.zip;
+    cd ..; 
 ## Aspect Category Detection 
 All Aspect Category Detection files are located in the [acd](/acd) folder. 
 To load generate all results dataframes, do the following (Note, only **step 4** is required as dataframes are pre-generated):

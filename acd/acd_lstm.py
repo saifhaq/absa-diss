@@ -5,8 +5,6 @@ import os.path as path
 import pandas as pd 
 from tensorflow.keras import layers
 from tensorflow.keras.callbacks import Callback
-from kerastuner import HyperModel
-from kerastuner.tuners import RandomSearch
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import f1_score
 from collections import Counter 
